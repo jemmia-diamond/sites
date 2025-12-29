@@ -13,7 +13,7 @@ const EVENTS = [
         subtitle: "Trụ sở DMCC - Dubai",
         description: "Khẳng định doanh nghiệp Việt đủ bản lĩnh bước vào sân chơi toàn cầu, sẵn sàng cạnh tranh và tạo giá trị ngang tầm quốc tế. Dubai là điểm khởi đầu mang tinh thần Việt đi xa hơn.",
         tag: "Global",
-        image: "https://images.unsplash.com/photo-1512453979798-5ea904ac6605?q=80&w=2070&auto=format&fit=crop"
+        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
     },
     {
         title: "Dạ Tiệc Tri Ân",

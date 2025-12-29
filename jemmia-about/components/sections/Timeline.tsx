@@ -34,7 +34,7 @@ const TIMELINE_DATA = [
                 title: "Khai Trương DMCC Dubai",
                 desc: "Trụ sở tại trung tâm giao dịch kim cương lớn nhất thế giới.",
                 tag: "Global",
-                image: "https://images.unsplash.com/photo-1512453979798-5ea904ac6605?q=80&w=2070&auto=format&fit=crop"
+                image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
             },
             {
                 month: "Q2",
@@ -97,7 +97,7 @@ const TIMELINE_DATA = [
                 title: "Cine Day 'Mưa Đỏ'",
                 desc: "Ôn lại lịch sử & khơi dậy lòng tự hào dân tộc.",
                 tag: "Culture",
-                image: "https://images.unsplash.com/photo-1517649763732-e0c9e2b1660d?q=80&w=2070&auto=format&fit=crop"
+                image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2000&auto=format&fit=crop"
             },
             {
                 month: "20/09",

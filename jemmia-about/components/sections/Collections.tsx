@@ -9,7 +9,7 @@ const COLLECTIONS = [
     {
         title: "Lotus & Sen Quý Hiển",
         desc: "Cảm hứng hoa sen, tôn vinh vẻ đẹp thanh tao & nội lực phụ nữ Việt. Hợp tác cùng Hoa hậu Lương Thùy Linh.",
-        image: "https://images.unsplash.com/photo-1629224316810-9d8805b95076?q=80&w=2000&auto=format&fit=crop", // Elegant Asian vibes or jewelry
+        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2000&auto=format&fit=crop", // Elegant Asian vibes or jewelry
     },
     {
         title: "Vững Cội Vươn Xa",
@@ -24,7 +24,7 @@ const COLLECTIONS = [
     {
         title: "Vững Thế Phồn Vinh",
         desc: "BST Ghim Cài 'Di Sản Non Nước'. Hình tượng bông lúa vàng - Sự thịnh vượng và no ấm bền vững.",
-        image: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=2000&auto=format&fit=crop", // Green/Nature/Gold
+        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2000&auto=format&fit=crop", // Green/Nature/Gold
     },
 ];
 

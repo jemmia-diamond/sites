@@ -1,6 +1,7 @@
 {
   "name": "recap-jemmia-2025",
   "version": "0.1.0",
+  "packageManager": "npm@11.5.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,10 +13,10 @@
     "@gsap/react": "^2.1.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
-    "@studio-freight/react-lenis": "^0.0.47",
     "@types/three": "^0.182.0",
     "clsx": "^2.1.1",
     "gsap": "^3.14.2",
+    "lenis": "^1.3.17",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
