@@ -29,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${playfair.variable} antialiased text-foreground`}
       >
         <WebGLBackground />

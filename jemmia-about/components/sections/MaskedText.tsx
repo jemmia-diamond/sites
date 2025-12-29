@@ -38,18 +38,22 @@ export function MaskedText() {
 
             <div className="relative z-10 text-center px-4 mix-blend-difference text-white">
                 <p className="text-sm uppercase tracking-[0.5em] mb-4 text-neon-green">
-                    Vision 2025
+                    Why Jemmia?
                 </p>
                 <h2 className="text-[8vw] leading-[0.9] font-black uppercase text-center">
-                    Vững Cội<br />
-                    Vươn Xa
+                    Minh Bạch<br />
+                    Tuyệt Đối
                 </h2>
+                <p className="max-w-xl mx-auto mt-8 text-base md:text-xl text-white/80 font-light leading-relaxed">
+                    Giải quyết nỗi đau "Thật - Giả" của thị trường. <br />
+                    Mang đến trải nghiệm mua sắm xa xỉ, an tâm và đầy nhiệt huyết của người Việt.
+                </p>
             </div>
 
             {/* Dynamic Background behind "mix-blend-difference" text */}
             <div className="absolute inset-0 z-0 bg-black">
                 {/* Maybe a video or gradient here */}
-                <div className="masked-bg absolute inset-0 bg-gradient-to-tr from-neon-green/20 via-black to-blue-900/20 opacity-50" />
+                <div className="masked-bg absolute inset-0 bg-linear-to-tr from-neon-green/20 via-black to-blue-900/20 opacity-50" />
             </div>
         </section>
     );

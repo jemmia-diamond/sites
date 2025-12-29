@@ -7,24 +7,24 @@ import Image from "next/image";
 
 const COLLECTIONS = [
     {
-        title: "Lotus & Sen Quý Hiển",
-        desc: "Cảm hứng hoa sen, tôn vinh vẻ đẹp thanh tao & nội lực phụ nữ Việt. Hợp tác cùng Hoa hậu Lương Thùy Linh.",
-        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2000&auto=format&fit=crop", // Elegant Asian vibes or jewelry
+        title: "Máy GIA ID100",
+        desc: "Thiết bị hiện đại nhất phân biệt tức thì kim cương tự nhiên với kim cương nuôi cấy (Lab-grown) & đá giả.",
+        image: "https://images.unsplash.com/photo-1581093458791-9f302e6d8a6b?q=80&w=2070&auto=format&fit=crop", // Lab/Tech
     },
     {
-        title: "Vững Cội Vươn Xa",
-        desc: "BST Ghim Cài 'Di Sản Non Nước'. Hình ảnh Chim Lạc & Trống Đồng - Biểu tượng cội nguồn dân tộc.",
-        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2000&auto=format&fit=crop", // Gold/Bronze Heritage
+        title: "GIA Match iD",
+        desc: "Công nghệ soi mã số cạnh xác thực viên kim cương khớp hoàn toàn với chứng thư Kiểm định đi kèm.",
+        image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=2670&auto=format&fit=crop", // Microscope view
     },
     {
-        title: "Hào Khí Đông A",
-        desc: "BST Ghim Cài 'Di Sản Non Nước'. Biểu tượng cho trí tuệ, bản lĩnh và hào khí dân tộc.",
-        image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=2000&auto=format&fit=crop", // Red/Powerful
+        title: "Kính Gemolite NXT",
+        desc: "Kính hiển vi thế hệ mới của GIA dùng để đánh giá độ sạch và các chi tiết siêu nhỏ bên trong viên đá.",
+        image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2070&auto=format&fit=crop", // Science/Lab
     },
     {
-        title: "Vững Thế Phồn Vinh",
-        desc: "BST Ghim Cài 'Di Sản Non Nước'. Hình tượng bông lúa vàng - Sự thịnh vượng và no ấm bền vững.",
-        image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2000&auto=format&fit=crop", // Green/Nature/Gold
+        title: "Đội Ngũ Chuyên Gia",
+        desc: "Từ giám đốc đến nhân viên tư vấn đều sở hữu các chứng chỉ chuyên môn của GIA (Diamond Essentials, Jewelry Essentials...).",
+        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop", // Professional team
     },
 ];
 
@@ -46,13 +46,13 @@ export function Collections() {
                 scrollTrigger: {
                     trigger: sectionRef.current,
                     start: "top top",
-                    end: `+=${scrollWidth - viewportWidth}`,
+                    end: `+=${scrollWidth - viewportWidth + 500}`, // Added buffer for slower scroll
                     pin: true,
                     anticipatePin: 1,
                     scrub: 1,
                     invalidateOnRefresh: true,
-                    fastScrollEnd: true,
-                    refreshPriority: 1, // Prioritize this calculation
+                    fastScrollEnd: false, // Easier to control
+                    refreshPriority: 1, // Calculated after Culture (10)
                 },
             });
 
@@ -100,10 +100,10 @@ export function Collections() {
             {/* Intro Text Overlay */}
             <div className="absolute top-10 left-10 z-20 pointer-events-none mix-blend-difference">
                 <span className="text-neon-green font-bold tracking-[0.2em] uppercase text-sm block mb-2">
-                    Pillar 02
+                    Technology
                 </span>
                 <h2 className="text-4xl font-black uppercase text-white">
-                    Nghệ Thuật <br /> Chế Tác
+                    Công Nghệ <br /> & Con Người
                 </h2>
             </div>
 
@@ -121,8 +121,8 @@ export function Collections() {
                             />
                         </div>
                         <h2 className="relative z-10 text-[12vw] md:text-[10vw] font-black uppercase text-white leading-none text-center mix-blend-difference">
-                            Bộ Sưu Tập <br />
-                            <span className="text-white/50">Di Sản 2025</span>
+                            Tiên Phong <br />
+                            <span className="text-white/50">Công Nghệ</span>
                         </h2>
                     </div>
 

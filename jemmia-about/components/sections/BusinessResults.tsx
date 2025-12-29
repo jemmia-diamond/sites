@@ -11,28 +11,28 @@ gsap.registerPlugin(ScrollTrigger);
 
 const STATS = [
     {
-        label: "Doanh Thu Q3",
-        value: "104%",
-        desc: "Đạt mục tiêu kế hoạch",
-        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"
-    },
-    {
-        label: "Tăng Trưởng T9",
-        value: "110%",
-        desc: "Vượt kế hoạch tháng",
+        label: "UNESCO",
+        value: "Vinh Danh",
+        desc: "Thương hiệu bản sắc Việt định vị giá trị toàn cầu",
         image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop"
     },
     {
-        label: "Siêu Livestream",
-        value: "80h",
-        desc: "Chiến dịch 'săn deal' - 80 viên kim cương",
-        image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2658&auto=format&fit=crop"
+        label: "GIA Authorized",
+        value: "Đối Tác",
+        desc: "Được GIA ủy quyền phân phối & nhập khẩu chính ngạch",
+        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"
     },
     {
-        label: "Đơn Bespoke",
-        value: "1.2 Tỷ",
-        desc: "Bộ trang sức Eternal Love",
+        label: "Dubai Conference",
+        value: "Góp Mặt",
+        desc: "Tham gia hội nghị kim cương quốc tế DMCC",
         image: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2670&auto=format&fit=crop"
+    },
+    {
+        label: "Từ Thiện",
+        value: "Đấu Giá",
+        desc: "Đấu giá kim cương mã số đẹp vì cộng đồng",
+        image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2658&auto=format&fit=crop"
     },
 ];
 
@@ -74,24 +74,23 @@ export function BusinessResults() {
             <div className="max-w-7xl mx-auto mb-32 relative z-10">
                 <div className="text-center mb-24">
                     <span className="text-neon-green font-bold tracking-[0.3em] uppercase text-xs md:text-sm block mb-4 animate-pulse">
-                        Core Values
+                        Achievements
                     </span>
                     <h2 className="text-4xl md:text-6xl font-black uppercase text-white leading-tight">
-                        Bảo Chứng <span className="text-white/50">Niềm Tin</span>
+                        Dấu Ấn <span className="text-white/50">& Thành Tựu</span>
                     </h2>
-                    <div className="w-[1px] h-24 bg-neon-green mx-auto mt-8" />
+                    <div className="w-px h-24 bg-neon-green mx-auto mt-8" />
                 </div>
 
                 <div className="space-y-24 md:space-y-32">
-
-                    {/* ROW 1: GIA (Image Left, Text Right) */}
+                    {/* ROW 1: GLOBAL (Image Left, Text Right) */}
                     <div className="trust-row flex flex-col md:flex-row items-center gap-12 md:gap-24">
                         <div className="w-full md:w-1/2 relative h-[300px] md:h-[500px]">
                             <div className="absolute top-4 left-4 w-full h-full border border-white/20 z-0" />
                             <div className="relative w-full h-full z-10 overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=2670&auto=format&fit=crop"
-                                    alt="GIA Lab"
+                                    src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2664&auto=format&fit=crop"
+                                    alt="Global Partner"
                                     fill
                                     className="object-cover"
                                 />
@@ -102,48 +101,48 @@ export function BusinessResults() {
                         </div>
                         <div className="w-full md:w-1/2 text-left">
                             <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                                Nói Có Giấy <br /> <span className="text-neon-green">Mách Có Máy</span>
+                                Vươn Tầm <br /> <span className="text-neon-green">Quốc Tế</span>
                             </h3>
                             <p className="text-white/70 text-lg leading-relaxed mb-8 border-l-2 border-neon-green pl-6">
-                                Minh bạch hóa toàn bộ quy trình kiểm định với hệ thống máy móc chuẩn quốc tế. Khách hàng được trực tiếp trải nghiệm và kiểm chứng chất lượng.
+                                Khẳng định vị thế trên bản đồ kim cương thế giới thông qua việc thiết lập quan hệ đối tác chiến lược với các tổ chức uy tín toàn cầu.
                             </p>
                             <ul className="space-y-3 text-sm text-white/60 uppercase tracking-widest">
                                 <li className="flex items-center gap-3">
                                     <span className="w-1.5 h-1.5 bg-neon-green rounded-full" />
-                                    Máy kiểm định GIA ID100
+                                    Đối tác được ủy quyền của GIA
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <span className="w-1.5 h-1.5 bg-neon-green rounded-full" />
-                                    Soi mã số cạnh kim cương
+                                    Thành viên sở giao dịch Dubai DMCC
                                 </li>
                                 <li className="flex items-center gap-3">
                                     <span className="w-1.5 h-1.5 bg-neon-green rounded-full" />
-                                    Quy trình Minđ-set 1:1
+                                    Tham gia hội nghị kim cương quốc tế
                                 </li>
                             </ul>
                         </div>
                     </div>
 
-                    {/* ROW 2: JOURNEY (Text Left, Image Right) */}
+                    {/* ROW 2: CSR (Text Left, Image Right) */}
                     <div className="trust-row flex flex-col-reverse md:flex-row items-center gap-12 md:gap-24">
                         <div className="w-full md:w-1/2 text-left md:text-right">
                             <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                                Hành Trình <br /> <span className="text-white/50">Kim Cương</span>
+                                Trách Nhiệm <br /> <span className="text-white/50">Xã Hội</span>
                             </h3>
                             <p className="text-white/70 text-lg leading-relaxed mb-8 border-l-2 md:border-l-0 md:border-r-2 border-white/30 pl-6 md:pl-0 md:pr-6">
-                                Quy trình tuyển chọn khắt khe, khẳng định triết lý "Minh bạch tuyệt đối". Mỗi viên kim cương là một hành trình di sản đầy tự hào.
+                                Jemmia cam kết đóng góp tích cực cho cộng đồng thông qua các hoạt động thiện nguyện thiết thực, lan tỏa giá trị nhân văn.
                             </p>
                             <ul className="space-y-3 text-sm text-white/60 uppercase tracking-widest flex flex-col items-start md:items-end">
                                 <li className="flex items-center gap-3 flex-row-reverse md:flex-row">
-                                    Tuyển chọn thô nghiêm ngặt
+                                    Đấu giá từ thiện vì cộng đồng
                                     <span className="w-1.5 h-1.5 bg-white rounded-full" />
                                 </li>
                                 <li className="flex items-center gap-3 flex-row-reverse md:flex-row">
-                                    Chế tác thủ công tinh xảo
+                                    Giải thưởng UNESCO vinh danh
                                     <span className="w-1.5 h-1.5 bg-white rounded-full" />
                                 </li>
                                 <li className="flex items-center gap-3 flex-row-reverse md:flex-row">
-                                    Chứng nhận quốc tế uy tín
+                                    Đồng hành cùng di sản văn hóa
                                     <span className="w-1.5 h-1.5 bg-white rounded-full" />
                                 </li>
                             </ul>
@@ -152,8 +151,8 @@ export function BusinessResults() {
                             <div className="absolute bottom-4 right-4 w-full h-full border border-neon-green/30 z-0" />
                             <div className="relative w-full h-full z-10 overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2670&auto=format&fit=crop"
-                                    alt="Journey"
+                                    src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2658&auto=format&fit=crop"
+                                    alt="CSR"
                                     fill
                                     className="object-cover"
                                 />
@@ -163,7 +162,6 @@ export function BusinessResults() {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -171,7 +169,7 @@ export function BusinessResults() {
             <div className="max-w-7xl mx-auto pb-12 md:pb-24 pt-24 border-t border-white/5">
                 <div className="flex items-center justify-between mb-16">
                     <span className="text-white text-sm uppercase tracking-[0.3em] opacity-50">Impact 2025</span>
-                    <div className="h-[1px] flex-1 bg-white/10 mx-6" />
+                    <div className="h-px flex-1 bg-white/10 mx-6" />
                     <span className="text-neon-green font-bold text-lg">Key Figures</span>
                 </div>
 
@@ -188,7 +186,7 @@ export function BusinessResults() {
                             />
 
                             {/* Gradient Overlay for Readability */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/90 group-hover:to-black/80 transition-colors duration-500" />
+                            <div className="absolute inset-0 bg-linear-to-b from-black/20 via-black/60 to-black/90 group-hover:to-black/80 transition-colors duration-500" />
 
                             {/* Content */}
                             <div className="relative z-10 h-full flex flex-col justify-between p-8">

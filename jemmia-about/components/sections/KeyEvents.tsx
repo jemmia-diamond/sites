@@ -93,7 +93,7 @@ export function KeyEvents() {
     );
 
     return (
-        <section id="vision" ref={containerRef} className="py-24 px-4 md:px-10 text-white min-h-screen relative z-20">
+        <section id="key-events" ref={containerRef} className="py-24 px-4 md:px-10 text-white min-h-screen relative z-20">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 md:gap-24">
 
                 {/* Left Column: Sticky Title */}

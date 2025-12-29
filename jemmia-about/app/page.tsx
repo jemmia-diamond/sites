@@ -5,7 +5,6 @@ import { WebGLBackground } from "@/components/ui/WebGLBackground";
 import { DecorativeRing } from "@/components/ui/DecorativeRing";
 
 // New Pillar Sections
-import { KeyEvents } from "@/components/sections/KeyEvents";
 import { Collections } from "@/components/sections/Collections";
 import { BusinessResults } from "@/components/sections/BusinessResults";
 import { Culture } from "@/components/sections/Culture";
@@ -15,35 +14,43 @@ import { MaskedText } from "@/components/sections/MaskedText";
 import { About } from "@/components/sections/About";
 
 import { Timeline } from "@/components/sections/Timeline";
+import { DiamondScene } from "@/components/ui/DiamondScene";
 
 export default function Home() {
   return (
     <main className="relative w-full min-h-screen">
-      <LoadingScreen />
+      {/* <LoadingScreen /> */}
       <WebGLBackground />
-      <DecorativeRing />
+      <DiamondScene />
+
       <Hero />
-      {/* <DiamondJourney /> */}
+
 
       <Marquee
-        text="JEMMIA RECAP 2025 • HIGHLIGHTS • MASTERPIECE • SIGNATURE • LUXURY"
+        text="JEMMIA DIAMOND • THE STANDARD • TECHNOLOGY • LEGACY • TRUST"
         duration={25}
         className="z-10 relative bg-neon-green text-black border-y-0 py-4 font-black tracking-tighter text-xl md:text-3xl"
       />
-      {/* Pillar 1: Events */}
-      <KeyEvents />
-      <Timeline />
+
+      {/* Pillar 1: Philosophy */}
       <About />
-      {/* Pillar 2: Collections */}
+
+      {/* Pillar 2: Values */}
+      <Culture />
+
+      {/* Pillar 3: Journey */}
+      <Timeline />
+
+      {/* Pillar 4: Technology */}
       <Collections />
 
-      {/* Pillar 3: Trust & Results */}
-      <BusinessResults />
-      <ParallaxImage />
-
-      {/* Pillar 4: Culture */}
-      <Culture />
+      {/* Pillar 5: Story */}
       <MaskedText />
+
+      {/* Pillar 6: Achievements */}
+      <BusinessResults />
+
+      <ParallaxImage />
 
       {/* Closing */}
       <Conclusion />

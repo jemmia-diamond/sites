@@ -11,100 +11,51 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TIMELINE_DATA = [
     {
-        quarter: "Quý I",
-        year: "2025",
-        title: "Khởi Đầu & Đào Tạo",
+        quarter: "6 Steps",
+        year: "Process",
+        title: "Quy Trình Kiểm Soát",
         events: [
             {
-                month: "Early",
-                title: "Đào Tạo Diamond Grading",
-                desc: "Cử nhân sự đi Thái Lan tham gia khóa học chuyên sâu.",
-                tag: "Culture",
-                image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
-            }
-        ]
-    },
-    {
-        quarter: "Quý II",
-        year: "2025",
-        title: "Vươn Ra Biển Lớn",
-        events: [
-            {
-                month: "Q2",
-                title: "Khai Trương DMCC Dubai",
-                desc: "Trụ sở tại trung tâm giao dịch kim cương lớn nhất thế giới.",
-                tag: "Global",
+                month: "01",
+                title: "Hành trình Đạo đức",
+                desc: "Cam kết chỉ nhập khẩu kim cương từ các quốc gia tuân thủ các chuẩn mực về nhân quyền, an sinh xã hội và bảo vệ môi trường (Úc, Botswana, Canada, Nam Phi...).",
+                tag: "Ethical",
                 image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
             },
             {
-                month: "Q2",
-                title: "Chiến Dịch 'Nói Có Giấy'",
-                desc: "Minh bạch hóa quy trình kiểm định với máy móc chuẩn quốc tế.",
-                tag: "Trust",
-                image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
+                month: "02",
+                title: "Hành trình Pháp lý",
+                desc: "100% sản phẩm nhập khẩu chính ngạch, có đầy đủ hóa đơn, chứng từ và thực hiện nghĩa vụ thuế với nhà nước. Minh bạch tuyệt đối.",
+                tag: "Legal",
+                image: "https://images.unsplash.com/photo-1450101499121-87b483c00329?q=80&w=2074&auto=format&fit=crop"
             },
             {
-                month: "Q2",
-                title: "Chuỗi Workshop",
-                desc: "AI - Thông minh hơn ai? & Xây dựng thương hiệu cá nhân.",
-                tag: "Culture",
-                image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
-            }
-        ]
-    },
-    {
-        quarter: "Quý III",
-        year: "2025",
-        title: "Bùng Nổ & Lan Tỏa",
-        events: [
-            {
-                month: "Q3",
-                title: "Dạ Tiệc 'Tự Hào Non Nước'",
-                desc: "Concept Hoa Sen, thưởng trà & Personal Color.",
-                tag: "Event",
-                image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
+                month: "03",
+                title: "Hành trình Tiêu chuẩn cao",
+                desc: "Chỉ 2% kim cương trên thế giới lọt qua bộ lọc của Jemmia. Không BGM (nâu/xanh/sữa), không huỳnh quang, chỉ chọn nước D-F, độ sạch VS2+.",
+                tag: "Standard",
+                image: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=1887&auto=format&fit=crop"
             },
             {
-                month: "Q3",
-                title: "Siêu Livestream 80h",
-                desc: "80 Năm Tự Hào - Săn 80 viên kim cương.",
-                tag: "Sale",
-                image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2658&auto=format&fit=crop"
+                month: "04",
+                title: "Hành trình Kiểm định",
+                desc: "Sử dụng máy móc GIA (ID100, Match iD...) để tái kiểm định (double-check). Loại bỏ ngay những viên không đạt chuẩn dù đã có giấy tờ.",
+                tag: "GIA Check",
+                image: "https://images.unsplash.com/photo-1581093458791-9f302e6d8a6b?q=80&w=2070&auto=format&fit=crop"
             },
             {
-                month: "Q3",
-                title: "Art Shows",
-                desc: "VOW Legacy, SYMPHONY, OSAKA Event.",
-                tag: "Art",
-                image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1740&auto=format&fit=crop"
+                month: "05",
+                title: "Hành trình Thiết kế",
+                desc: "Kết hợp nghệ nhân tay nghề cao và đội ngũ thiết kế sáng tạo để tạo ra các tác phẩm độc bản, mang đậm dấu ấn cá nhân và văn hóa Việt.",
+                tag: "Design",
+                image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1887&auto=format&fit=crop"
             },
             {
-                month: "Q3",
-                title: "Hợp Tác RMIT",
-                desc: "Tham gia Hội đồng doanh nghiệp - Môn Global Business.",
-                tag: "Partner",
-                image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop"
-            },
-            {
-                month: "Q3",
-                title: "Team Trip 2025",
-                desc: "Format 'Team By Team' - As One We Win.",
-                tag: "Culture",
-                image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop"
-            },
-            {
-                month: "02/09",
-                title: "Cine Day 'Mưa Đỏ'",
-                desc: "Ôn lại lịch sử & khơi dậy lòng tự hào dân tộc.",
-                tag: "Culture",
-                image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2000&auto=format&fit=crop"
-            },
-            {
-                month: "20/09",
-                title: "Metamen 3D Day",
-                desc: "Tài trợ Vàng sự kiện công nghệ in 3D lớn nhất VN.",
-                tag: "Tech",
-                image: "https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?q=80&w=2662&auto=format&fit=crop"
+                month: "06",
+                title: "Hành trình Tặng phẩm",
+                desc: "Mỗi món trang sức là một gia bảo (Heiress), được chế tác để lưu truyền qua nhiều thế hệ, giữ vững giá trị theo thời gian.",
+                tag: "Legacy",
+                image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2075&auto=format&fit=crop"
             }
         ]
     }
@@ -156,10 +107,10 @@ export function Timeline() {
                 {/* Header */}
                 <div className="text-center mb-20 md:mb-32">
                     <span className="text-neon-green font-bold tracking-[0.3em] uppercase text-xs md:text-sm animate-pulse">
-                        Roadmap 2025
+                        The Standard
                     </span>
                     <h2 className="text-4xl md:text-6xl font-black uppercase text-white mt-4">
-                        Hành Trình <br /> <span className="text-white/50">Di Sản</span>
+                        Hành Trình <br /> <span className="text-white/50">Kim Cương</span>
                     </h2>
                 </div>
 

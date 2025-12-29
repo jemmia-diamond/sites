@@ -66,7 +66,7 @@ export function Hero() {
         <section
             ref={containerRef}
             id="hero-section"
-            className="relative h-screen w-full overflow-hidden flex items-center justify-center p-4"
+            className="relative h-screen w-full overflow-hidden flex items-center justify-center p-4 md:p-0"
         >
             {/* Background/Parallax Image */}
             <div
@@ -84,36 +84,43 @@ export function Hero() {
                 </div>
             </div>
 
-            {/* Large Typography */}
+            {/* Large Typography Container - Centered/Left Split */}
             <div
                 ref={textRef}
-                className="relative z-10 flex flex-col items-center justify-center w-full max-w-7xl mix-blend-difference px-4"
+                className="relative z-10 w-full max-w-7xl px-4 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
             >
-                <div className="w-full text-center mb-4 md:mb-6">
-                    <p className="text-neon-green uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-base font-bold animate-pulse">
-                        JEMMIA 2025 RECAP
-                    </p>
+                {/* Left Column: Content */}
+                <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                    <div className="w-full mb-4 md:mb-8">
+                        <p className="text-neon-green uppercase tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-base font-bold animate-pulse">
+                            JEMMIA DIAMOND
+                        </p>
+                    </div>
+
+                    <h1 className="text-[12vw] md:text-[6.5vw] leading-[0.9] md:leading-[1.3] font-black tracking-tighter text-white uppercase font-serif mb-6 md:mb-10 w-full">
+                        <div>
+                            <span className="hero-text-line block">THƯƠNG HIỆU</span>
+                        </div>
+                        <div>
+                            <span className="hero-text-line block text-neon-green">KIM CƯƠNG</span>
+                        </div>
+                        <div>
+                            <span className="hero-text-line block">BẢN SẮC VIỆT</span>
+                        </div>
+                    </h1>
+
+                    <div className="w-full">
+                        <p className="text-white/80 text-base md:text-xl font-light leading-relaxed max-w-lg">
+                            Định vị giá trị toàn cầu.
+                            <br />
+                            Hành trình mang <span className="text-neon-green font-bold">Văn hóa & Nghệ thuật Việt</span> vào chuẩn mực kim cương quốc tế.
+                        </p>
+                    </div>
                 </div>
 
-                <h1 className="text-[12vw] md:text-[8vw] leading-[1.1] md:leading-[1.2] font-black tracking-tighter text-white uppercase text-center w-full font-serif mb-6 md:mb-8">
-                    <div>
-                        <span className="hero-text-line block">DẤU ẤN</span>
-                    </div>
-                    <div>
-                        <span className="hero-text-line block text-neon-green">VƯƠN TẦM</span>
-                    </div>
-                    <div>
-                        <span className="hero-text-line block"> QUỐC TẾ</span>
-                    </div>
-                </h1>
-
-                <div className="w-full flex justify-center">
-                    <p className="text-white/80 max-w-lg md:max-w-2xl text-center text-base md:text-xl font-light leading-relaxed px-2">
-                        Tổng kết hành trình phát triển chiến lược Quý 2 & Quý 3 năm 2025.
-                        <br className="hidden md:block" />
-                        <span className="inline md:hidden"> </span>
-                        Khẳng định vị thế <span className="text-neon-green font-bold">Thương hiệu Việt</span> & Bản sắc riêng trên bản đồ kim cương thế giới.
-                    </p>
+                {/* Right Column: Empty (Reserved for Diamond) */}
+                <div className="hidden md:block pointer-events-none select-none">
+                    {/* Diamond sits here via 3D Canvas */}
                 </div>
             </div>
 

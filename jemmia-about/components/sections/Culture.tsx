@@ -11,33 +11,53 @@ gsap.registerPlugin(ScrollTrigger);
 
 const CARDS = [
     {
-        title: "Team Trip 2025",
-        subtitle: "Team By Team",
-        description: "Đổi mới hình thức Company Trip truyền thống. Trao quyền cho các team/phòng ban tự lên kế hoạch và lựa chọn địa điểm, giúp thấu hiểu và gắn kết sâu sắc hơn.",
+        title: "Tin Tưởng",
+        subtitle: "5 Giá Trị Cốt Lõi",
+        description: "Đảm bảo mọi giao dịch minh bạch, sản phẩm có nguồn gốc rõ ràng để khách hàng an tâm đầu tư lâu dài.",
         images: [
-            "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1504159506876-f8338247a14a?q=80&w=2070&auto=format&fit=crop"
+            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
         ]
     },
     {
-        title: "Hoạt Động Tinh Thần",
-        subtitle: "Cine Day & Team Up Run",
-        description: "Bao rạp xem phim lịch sử 'Mưa Đỏ' để ôn lại lịch sử và khơi dậy lòng tự hào dân tộc. Giải chạy 10X Team Up Run rèn luyện sức bền.",
-        images: [
-            "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2000&auto=format&fit=crop", // Gym/Sport
-            "https://images.unsplash.com/photo-1517649763732-e0c9e2b1660d?q=80&w=2070&auto=format&fit=crop", // Cinema/Community like
-            "https://images.unsplash.com/photo-1552674605-469523f54050?q=80&w=2070&auto=format&fit=crop"  // Sport
-        ]
-    },
-    {
-        title: "Đào Tạo Chuyên Sâu",
-        subtitle: "Expert Training",
-        description: "Cử nhân sự đi Thái Lan học Diamond Grading. Workshop 'AI - Thông minh hơn ai?', xây dựng thương hiệu cá nhân và nâng cao năng lực quản lý.",
+        title: "Tự Học",
+        subtitle: "5 Giá Trị Cốt Lõi",
+        description: "Không ngừng cập nhật công nghệ và kiến thức mới từ các tổ chức ngọc học uy tín nhất thế giới (như GIA).",
         images: [
             "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
+        ]
+    },
+    {
+        title: "Thách Thức",
+        subtitle: "5 Giá Trị Cốt Lõi",
+        description: "Sẵn sàng đổi mới, không ngại đối mặt với các khó khăn của thị trường để nâng tầm ngành kim cương Việt Nam trên bản đồ thế giới.",
+        images: [
+            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop"
+        ]
+    },
+    {
+        title: "Thấu Cảm",
+        subtitle: "5 Giá Trị Cốt Lõi",
+        description: "Cá nhân hóa trải nghiệm khách hàng, thấu hiểu nhu cầu riêng biệt của từng người và tích cực tham gia các hoạt động từ thiện cho cộng đồng.",
+        images: [
+            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop"
+        ]
+    },
+    {
+        title: "Tận Tâm",
+        subtitle: "5 Giá Trị Cốt Lõi",
+        description: "Phục vụ với sự tỉ mỉ từ khâu tư vấn đến dịch vụ hậu mãi, bảo hành, coi khách hàng như người thân.",
+        images: [
+            "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=2069&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop"
         ]
     },
 ];
@@ -53,17 +73,11 @@ export function Culture() {
             scrollTrigger: {
                 trigger: containerRef.current,
                 start: "top top",
-                end: `+=${CARDS.length * 250}%`, // Much longer scroll distance
+                end: `+=${CARDS.length * 150}%`, // Reduced from 250% to 150% for snappier feel
                 pin: true,
-                scrub: 1.5, // Momentum: animation "catches up" smoothly even on fast scroll
+                scrub: 1, // Reduced scrub for less floaty feel
                 anticipatePin: 1,
-                // Optional: Snap to closest card to ensure focus
-                snap: {
-                    snapTo: 1 / (CARDS.length - 1),
-                    duration: { min: 0.2, max: 1.0 }, // Allow some time to settle
-                    delay: 0.2,
-                    ease: "power1.inOut"
-                }
+                refreshPriority: 10, // High priority to handle pinning correctly
             }
         });
 
@@ -73,87 +87,67 @@ export function Culture() {
             const isLast = i === cards.length - 1;
             const isEven = i % 2 === 0;
 
-            // Get internal elements for "Explosion" effect
+            // Get internal elements
             const mainImg = card.querySelector(".culture-img-main");
             const floatImg = card.querySelector(".culture-img-float");
             const content = card.querySelector(".culture-content");
 
-            // --- ENTRY ANIMATION (Except first card which is already there) ---
+            // --- ENTRY ANIMATION ---
             if (!isFirst) {
-                // Card Slide Up & Fade In
-                tl.fromTo(card, {
+                // Combined timeline for simultaneous entry
+                const entryTl = gsap.timeline();
+
+                // Card Scale & Fade In
+                entryTl.fromTo(card, {
                     yPercent: 100,
                     opacity: 0,
-                    scale: 0.8
+                    scale: 0.9
                 }, {
                     yPercent: 0,
                     opacity: 1,
                     scale: 1,
                     duration: 1,
-                    ease: "power2.inOut"
-                }, ">-0.2"); // Overlap slightly with previous exit
+                    ease: "power2.out"
+                }, 0);
 
-                // LIVING IMAGES: DRAMATIC 3D EXPLOSION
+                // Content Entry
+                if (content) {
+                    entryTl.fromTo(content,
+                        { y: 50, opacity: 0 },
+                        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
+                        0.2
+                    );
+                }
+
+                // Images Entry (Simpler, cleaner animation)
                 if (mainImg) {
-                    tl.fromTo(mainImg,
-                        {
-                            scale: 0.5,
-                            rotationY: isEven ? 90 : -90, // 3D Flip
-                            xPercent: isEven ? -50 : 50,
-                            opacity: 0
-                        },
-                        {
-                            scale: 1,
-                            rotationY: 0,
-                            xPercent: 0,
-                            opacity: 1,
-                            duration: 1.5,
-                            ease: "elastic.out(1, 0.75)" // Bouncy
-                        },
-                        "<0.1"
+                    entryTl.fromTo(mainImg,
+                        { scale: 0.8, opacity: 0, y: 50 },
+                        { scale: 1, opacity: 1, y: 0, duration: 1, ease: "back.out(1.2)" },
+                        0.3
                     );
                 }
                 if (floatImg) {
-                    tl.fromTo(floatImg,
-                        {
-                            yPercent: 120, // Shoot up from bottom
-                            rotation: isEven ? -45 : 45,
-                            scale: 0.5,
-                            opacity: 0
-                        },
-                        {
-                            yPercent: 0,
-                            rotation: isEven ? 5 : -5,
-                            scale: 1.1,
-                            opacity: 1,
-                            duration: 1.6,
-                            ease: "elastic.out(1, 0.6)" // Bouncy
-                        },
-                        "<0.1"
+                    entryTl.fromTo(floatImg,
+                        { scale: 0.8, opacity: 0, y: 100 },
+                        { scale: 1, opacity: 1, y: 0, duration: 1, ease: "back.out(1.5)" },
+                        0.4
                     );
                 }
-                if (content) {
-                    tl.fromTo(content,
-                        { x: isEven ? -50 : 50, opacity: 0, filter: "blur(10px)" },
-                        { x: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power2.out" },
-                        "<0.2"
-                    );
-                }
-            } else {
-                // First Card Initial State: Just ensure it's visible. 
-                // Could add a small 'pop' if we wanted but static is safer for 'pinned start'.
+
+                tl.add(entryTl, ">-0.5"); // Overlap significantly with previous card's hold/exit
             }
 
-            // --- EXIT ANIMATION (Except last card which stays) ---
+            // --- HOLD / EXIT ANIMATION ---
             if (!isLast) {
-                // Card Fade Out & Scale Down & Blur
+                // Clean exit
                 tl.to(card, {
-                    scale: 0.8,
+                    scale: 0.95,
                     opacity: 0,
-                    filter: "blur(10px)",
+                    filter: "blur(5px)",
                     duration: 0.8,
                     ease: "power2.in"
-                }, "+=0.5"); // Initial hold time
+                }, "+=1"); // Hold for 1 second of scrub time
             }
         });
 
@@ -167,7 +161,7 @@ export function Culture() {
                     Pillar 04
                 </span>
                 <h2 className="text-3xl md:text-5xl font-black uppercase text-white leading-none drop-shadow-2xl">
-                    Văn Hóa <span className="text-white/50">& Con Người</span>
+                    5 Giá Trị <span className="text-white/50">Cốt Lõi</span>
                 </h2>
             </div>
 
@@ -184,7 +178,6 @@ export function Culture() {
                             className={`culture-card absolute inset-0 w-full h-full rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#050505]/90 shadow-2xl flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} will-change-transform`}
                             style={{
                                 zIndex: i + 1,
-                                // First card visible by default, others hidden handled by GSAP
                                 opacity: i === 0 ? 1 : 0
                             }}
                         >

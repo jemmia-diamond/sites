@@ -54,7 +54,7 @@ export function Conclusion() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neon-green/10 via-black to-black pointer-events-none" />
 
             {/* Content Container */}
-            <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center space-y-12">
+            <div className="relative z-10 mx-auto flex flex-col items-center space-y-12">
 
                 {/* DIAMOND VISUAL */}
                 <div className="conclusion-element relative w-40 h-40 md:w-56 md:h-56 mb-8">
@@ -84,16 +84,18 @@ export function Conclusion() {
 
                 <div className="space-y-4">
                     <TextReveal className="text-4xl md:text-6xl font-serif font-medium text-white leading-tight">
-                        Cảm ơn bạn đã đồng hành
+                        Kiến tạo di sản
                     </TextReveal>
                     <TextReveal className="text-4xl md:text-6xl font-serif font-medium text-white/50 leading-tight" delay={0.2}>
-                        cùng chúng tôi
+                        vĩnh cửu
                     </TextReveal>
                 </div>
 
-                <div className="conclusion-element max-w-xl mx-auto">
+                <div className="conclusion-element mx-auto">
                     <p className="text-white/60 text-lg md:text-xl font-light leading-relaxed">
-                        Hẹn gặp lại ở những cột mốc rực rỡ tiếp theo trên hành trình chinh phục vẻ đẹp vĩnh cửu.
+                        Cảm ơn bạn đã đồng hành cùng Jemmia trong hành trình 2025 rực rỡ.
+                        <br className="hidden md:block" />
+                        Hẹn gặp lại ở những cột mốc tiếp theo.
                     </p>
                 </div>
 
