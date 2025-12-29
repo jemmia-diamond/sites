@@ -1,6 +1,5 @@
 {
     "name": "jemmia-about",
-    "compatibility_date": "2024-09-23",
     "assets": {
         "directory": "./out",
         "binding": "ASSETS"
