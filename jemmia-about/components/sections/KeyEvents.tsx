@@ -106,7 +106,7 @@ export function KeyEvents() {
                             <TextReveal tag="h2" className="text-4xl md:text-6xl font-black uppercase text-white leading-none mb-2" stagger={0.05}>
                                 Tầm Nhìn &
                             </TextReveal>
-                            <TextReveal tag="span" className="text-4xl md:text-6xl font-black uppercase text-white/50 leading-none" delay={0.3} stagger={0.05}>
+                            <TextReveal tag="h2" className="text-4xl md:text-6xl font-black uppercase text-white/50 leading-none" delay={0.3} stagger={0.05}>
                                 Sự Kiện Trọng Điểm
                             </TextReveal>
                         </div>
