@@ -1,0 +1,392 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        1.0,
+        0.6169670224189758,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.6169670224189758,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 6192,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.9177589416503906,
+        1.0,
+        0.9177589416503906
+      ],
+      "min": [
+        -0.9177584052085876,
+        -0.7451508641242981,
+        -0.9177589416503906
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 4128,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 8256,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 12384,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 16512,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 20640,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 24768,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 28896,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 33024,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 37152,
+      "componentType": 5126,
+      "count": 516,
+      "max": [
+        0.7326930165290833,
+        0.9914109706878662
+      ],
+      "min": [
+        0.08453349769115448,
+        0.06021120026707649
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 714,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Karolina Renkiewicz (https://sketchfab.com/KarolinaRenkiewicz)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/diamond-1ab1e8de5a604b4081c15326eaa5682b",
+      "title": "Diamond"
+    },
+    "generator": "Sketchfab-12.65.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2856,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 41280,
+      "byteOffset": 2856,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 12384,
+      "byteOffset": 44136,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 56520,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/DiamondOutside_baseColor.png"
+    },
+    {
+      "uri": "textures/DiamondOutside_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/DiamondOutside_emissive.png"
+    }
+  ],
+  "materials": [
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "emissiveFactor": [
+        0.5643160717217226,
+        0.5643160717217226,
+        0.5643160717217226
+      ],
+      "emissiveTexture": {
+        "index": 2
+      },
+      "name": "DiamondOutside",
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "pCone1_DiamondOutside_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2,
+            "TEXCOORD_1": 3,
+            "TEXCOORD_2": 4,
+            "TEXCOORD_3": 5,
+            "TEXCOORD_4": 6,
+            "TEXCOORD_5": 7,
+            "TEXCOORD_6": 8,
+            "TEXCOORD_7": 9,
+            "TEXCOORD_8": 10,
+            "TEXCOORD_9": 11
+          },
+          "indices": 12,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "430b3e12055441db8d8466fc3e5ab66d.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "name": "pCone1"
+    },
+    {
+      "mesh": 0,
+      "name": "pCone1_DiamondOutside_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}
