@@ -107,7 +107,7 @@ export function Collections() {
                     Technology
                 </span>
                 <h2 className="text-4xl font-black uppercase text-white">
-                    Công Nghệ <br /> & Con Người
+                    Công Nghệ
                 </h2>
             </div>
 

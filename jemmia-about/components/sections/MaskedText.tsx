@@ -30,7 +30,7 @@ export function MaskedText() {
     );
 
     return (
-        <section ref={containerRef} className="py-32 relative overflow-hidden flex items-center justify-center bg-white text-black">
+        <section id="story" ref={containerRef} className="py-32 relative overflow-hidden flex items-center justify-center bg-white text-black">
             {/* 
                 The concept: Large text that acts as a mask, 
                 or just very bold black text on white for contrast against the dark site. 

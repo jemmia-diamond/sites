@@ -66,7 +66,7 @@ export function Hero() {
         <section
             ref={containerRef}
             id="hero-section"
-            className="relative h-[100dvh] w-full overflow-hidden flex items-center justify-center p-4 md:p-0"
+            className="relative h-dvh w-full overflow-hidden flex items-center justify-center p-4 md:p-0"
         >
             {/* Background/Parallax Image */}
             <div
