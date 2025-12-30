@@ -51,7 +51,7 @@ export function About() {
                 </div>
 
                 {/* Right: Content */}
-                <div className="w-full md:w-1/2 space-y-8 pr-14">
+                <div className="w-full md:w-1/2 space-y-8 md:pr-14">
                     <h2 className="about-text text-4xl md:text-6xl font-sans font-black uppercase tracking-tight leading-none">
                         Triết Lý & <span className="text-neon-green">Định Vị</span>
                     </h2>

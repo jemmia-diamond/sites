@@ -66,7 +66,7 @@ export function Hero() {
         <section
             ref={containerRef}
             id="hero-section"
-            className="relative h-screen w-full overflow-hidden flex items-center justify-center p-4 md:p-0"
+            className="relative h-[100dvh] w-full overflow-hidden flex items-center justify-center p-4 md:p-0"
         >
             {/* Background/Parallax Image */}
             <div
@@ -87,7 +87,7 @@ export function Hero() {
             {/* Large Typography Container - Centered/Left Split */}
             <div
                 ref={textRef}
-                className="pt-16 md:pt-0 relative z-10 w-full max-w-7xl px-4 md:px-12 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
+                className="pt-24 md:pt-0 relative z-10 w-full max-w-7xl px-4 md:px-12 grid grid-cols-1 md:grid-cols-1 gap-12 items-center"
             >
                 {/* Left Column: Content */}
                 <div className="flex flex-col items-center md:items-start text-center md:text-left">

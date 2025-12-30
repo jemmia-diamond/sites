@@ -102,7 +102,7 @@ export function Collections() {
     return (
         <section id="collections" ref={sectionRef} className="relative overflow-hidden z-30 bg-[#002422]">
             {/* Intro Text Overlay */}
-            <div className="absolute top-10 left-10 z-20 pointer-events-none mix-blend-difference">
+            <div className="relative px-6 pt-10 md:absolute md:top-10 md:left-10 md:p-0 z-20 pointer-events-none mix-blend-difference">
                 <span className="text-neon-green font-bold tracking-[0.2em] uppercase text-sm block mb-2">
                     Technology
                 </span>
@@ -118,7 +118,7 @@ export function Collections() {
                     <div className="w-full md:w-screen h-[50vh] md:h-full flex items-center justify-center shrink-0 border-b md:border-b-0 md:border-r border-white/10 bg-black relative">
                         <div className="absolute inset-0 opacity-30">
                             <Image
-                                src="https://images.unsplash.com/photo-1617038224558-28ad3fb558a7?q=80&w=2000&auto=format&fit=crop" // Diamond Workshop
+                                src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=2000" // Diamond Workshop
                                 alt="Craftsmanship"
                                 fill
                                 className="object-cover grayscale"

@@ -17,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Jemmia Recap 2025",
+  title: "Giới thiệu Jemmia",
   description: "Dấu ấn vươn tầm quốc tế & Bản sắc Việt",
 };
 
@@ -35,7 +35,11 @@ export default function RootLayout({
         <WebGLBackground />
         <MenuProvider>
           <Navigation />
-          <LenisProvider>{children}</LenisProvider>
+          <LenisProvider>
+            <div className="relative w-full overflow-x-hidden">
+              {children}
+            </div>
+          </LenisProvider>
         </MenuProvider>
       </body>
     </html>
