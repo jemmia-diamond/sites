@@ -49,15 +49,13 @@ export function Conclusion() {
     };
 
     return (
-        <section id="conclusion" ref={containerRef} className="relative min-h-screen px-4 pb-24 flex flex-col items-center justify-center text-center overflow-hidden z-20">
-            {/* Background Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neon-green/10 via-black to-black pointer-events-none" />
+        <section id="conclusion" ref={containerRef} className="relative h-screen flex flex-col items-center justify-center text-center z-20">
 
             {/* Content Container */}
-            <div className="relative z-10 mx-auto flex flex-col items-center space-y-12">
+            <div className="relative z-10 px-2 pb-2 md:pb-10 mx-auto flex flex-col items-center">
 
                 {/* DIAMOND VISUAL */}
-                <div className="conclusion-element relative w-40 h-40 md:w-56 md:h-56 mb-8">
+                <div className="conclusion-element relative w-40 h-40 md:w-56 md:h-56">
                     {/* Rotating Shine/Rays */}
                     <div className="diamond-shine absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_20deg,var(--neon-green)_40deg,transparent_60deg)] opacity-20 blur-xl rounded-full mix-blend-screen" />
                     <div className="diamond-shine absolute inset-[-50%] bg-[conic-gradient(from_180deg,transparent_0deg,transparent_20deg,var(--neon-green)_40deg,transparent_60deg)] opacity-20 blur-xl rounded-full mix-blend-screen animation-delay-1000" />
@@ -78,31 +76,31 @@ export function Conclusion() {
                 <div className="conclusion-element">
                     <span className="w-16 h-px bg-linear-to-r from-transparent via-neon-green to-transparent block mx-auto mb-8" />
                     <p className="text-neon-green font-bold tracking-[0.3em] uppercase text-xs md:text-sm animate-pulse">
-                        Jemmia Recap 2025
+                        The Expert of Diamond Standard
                     </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="mt-3">
                     <TextReveal className="text-4xl md:text-6xl font-serif font-medium text-white leading-tight">
-                        Kiến tạo di sản
+                        Chuyên gia
                     </TextReveal>
                     <TextReveal className="text-4xl md:text-6xl font-serif font-medium text-white/50 leading-tight" delay={0.2}>
-                        vĩnh cửu
+                        Kim cương chuẩn
                     </TextReveal>
                 </div>
 
-                <div className="conclusion-element mx-auto">
-                    <p className="text-white/60 text-lg md:text-xl font-light leading-relaxed">
-                        Cảm ơn bạn đã đồng hành cùng Jemmia trong hành trình 2025 rực rỡ.
+                <div className="conclusion-element mx-auto mt-3">
+                    <p className="text-white/60 text-lg md:text-xl font-light leading-relaxed max-w-2xl">
+                        Tiên phong chuẩn mực kim cương.
                         <br className="hidden md:block" />
-                        Hẹn gặp lại ở những cột mốc tiếp theo.
+                        Tôn vinh vị thế độc bản.
                     </p>
                 </div>
 
                 <div className="conclusion-element pt-12">
                     <button
                         onClick={scrollToTop}
-                        className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full transition-all duration-300 hover:bg-neon-green/10"
+                        className="group relative px-6 py-2 bg-transparent overflow-hidden rounded-full transition-all duration-300 hover:bg-neon-green/10"
                     >
                         <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-neon-green transition-colors duration-300" />
                         <span className="relative text-white/80 font-bold uppercase tracking-widest text-sm group-hover:text-neon-green transition-colors">

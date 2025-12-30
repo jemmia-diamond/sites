@@ -2,7 +2,6 @@ import { Hero } from "@/components/sections/Hero";
 import { Marquee } from "@/components/ui/marquee";
 import { Conclusion } from "@/components/sections/Conclusion";
 import { WebGLBackground } from "@/components/ui/WebGLBackground";
-import { DecorativeRing } from "@/components/ui/DecorativeRing";
 
 // New Pillar Sections
 import { Collections } from "@/components/sections/Collections";
@@ -19,7 +18,7 @@ import { DiamondScene } from "@/components/ui/DiamondScene";
 export default function Home() {
   return (
     <main className="relative w-full min-h-screen">
-      {/* <LoadingScreen /> */}
+      <LoadingScreen />
       <WebGLBackground />
       <DiamondScene />
 

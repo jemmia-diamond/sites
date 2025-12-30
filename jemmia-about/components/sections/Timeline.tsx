@@ -94,12 +94,23 @@ export function Timeline() {
                     start: "top 85%",
                 }
             });
+
+            // Mobile dot active state
+            const dot = item.querySelector(".mobile-dot");
+            if (dot) {
+                ScrollTrigger.create({
+                    trigger: item,
+                    start: "top 60%",
+                    end: "bottom 60%",
+                    toggleClass: { targets: dot, className: "!bg-neon-green" }
+                });
+            }
         });
 
     }, { scope: containerRef });
 
     return (
-        <section id="timeline" ref={containerRef} className="py-24 md:py-32 px-4 md:px-10 relative overflow-hidden">
+        <section ref={containerRef} className="py-24 md:py-32 px-4 md:px-10 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neutral-900/50 via-black to-black opacity-50" />
 
             <div className="max-w-4xl mx-auto relative z-10">
@@ -115,46 +126,33 @@ export function Timeline() {
                 </div>
 
                 {/* Timeline Container */}
-                <div className="relative">
+                <div id="timeline" className="relative">
 
-                    {/* --- CENTRAL LINE (Responsive: Left on Mobile, Center on Desktop) --- */}
-                    {/* The gray background line */}
-                    {/* Mobile: Left-4 (1rem), Desktop: Left-1/2 */}
                     <div className="absolute left-4 md:left-1/2 top-4 bottom-4 w-[2px] bg-white/10 -translate-x-1/2" />
 
-                    {/* The animated growing line */}
                     <div ref={lineRef} className="absolute left-4 md:left-1/2 top-4 w-[2px] bg-neon-green -translate-x-1/2 box-content shadow-[0_0_10px_#D4AF37] z-10" />
 
                     {TIMELINE_DATA.map((quarter, qIdx) => (
                         <div key={qIdx} className="mb-20 md:mb-32 relative">
 
-                            {/* Quarter Marker */}
-                            {/* Mobile: Aligned with left line. Desktop: Centered. */}
                             <div className="flex items-center mb-12 relative pl-8 md:pl-0 md:justify-center">
-                                {/* The Dot on the line */}
-                                {/* Mobile: left-4 to match line. Desktop: left-1/2 */}
                                 <div className="absolute left-4 md:left-1/2 -translate-x-1/2 w-4 h-4 bg-black border-2 border-neon-green rounded-full z-20 shadow-[0_0_15px_#D4AF37]" />
 
-                                {/* The Label */}
                                 <div className="ml-6 md:ml-0 bg-white/5 backdrop-blur px-6 py-2 rounded-full border border-white/10 text-neon-green font-bold uppercase tracking-widest text-sm md:text-base z-30 relative md:mt-2">
                                     {quarter.quarter} • {quarter.year}
                                 </div>
                             </div>
 
-                            {/* Events List */}
                             <div className="space-y-16">
                                 {quarter.events.map((event, eIdx) => {
                                     const isEven = eIdx % 2 === 0;
                                     return (
                                         <div key={eIdx} className={`timeline-item flex flex-col md:flex-row items-start md:items-center ${isEven ? 'md:flex-row-reverse' : ''} justify-between gap-6 md:gap-12 group pl-8 md:pl-0 relative`}>
 
-                                            {/* Mobile Dot (On the left line) */}
-                                            <div className="absolute left-4 top-8 -translate-x-1/2 w-3 h-3 bg-white/20 rounded-full md:hidden group-hover:bg-neon-green transition-colors z-20" />
+                                            <div className="absolute left-4 top-8 -translate-x-1/2 w-3 h-3 bg-white/20 rounded-full md:hidden group-hover:bg-neon-green transition-colors z-20 mobile-dot" />
 
-                                            {/* Content Block */}
                                             <div className={`w-full md:w-[45%] ${isEven ? 'md:text-left' : 'md:text-right'}`}>
 
-                                                {/* Image Block */}
                                                 <div className={`relative w-full h-48 md:h-56 rounded-xl overflow-hidden mb-6 border border-white/10 group-hover:border-neon-green/50 transition-colors shadow-2xl`}>
                                                     <Image
                                                         src={event.image!}
@@ -180,10 +178,8 @@ export function Timeline() {
                                                 </div>
                                             </div>
 
-                                            {/* Center Dot (Desktop Only) */}
                                             <div className="hidden md:block w-3 h-3 bg-white/20 rounded-full group-hover:bg-neon-green group-hover:scale-150 transition-all duration-300 absolute left-1/2 -translate-x-1/2" />
 
-                                            {/* Empty Side (Desktop Only) */}
                                             <div className="hidden md:block w-[45%]" />
                                         </div>
                                     );

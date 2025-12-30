@@ -40,17 +40,18 @@ export function About() {
 
     return (
         <section id="vision" ref={containerRef} className="py-32 px-4 md:px-10 text-white overflow-hidden">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
                 {/* Left: Image Placeholder */}
                 <div className="about-image relative w-full md:w-1/2 aspect-3/4 max-w-[500px] bg-neutral-800 rounded-lg overflow-hidden border border-white/10">
-                    {/* Placeholder for "Lando casual/helmet off" */}
-                    <div className="absolute inset-0 flex items-center justify-center text-white/20 font-bold uppercase tracking-widest text-2xl">
-                        Jemmia Store
-                    </div>
+                    <img
+                        src="https://w.ladicdn.com/s700x550/664c47fd56f9a000124a324e/image-26-20241030042958-k3rti.jpg"
+                        alt="Jemmia Store"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
                 </div>
 
                 {/* Right: Content */}
-                <div className="w-full md:w-1/2 space-y-8">
+                <div className="w-full md:w-1/2 space-y-8 pr-14">
                     <h2 className="about-text text-4xl md:text-6xl font-sans font-black uppercase tracking-tight leading-none">
                         Triết Lý & <span className="text-neon-green">Định Vị</span>
                     </h2>
@@ -58,22 +59,21 @@ export function About() {
                         <div className="space-y-2">
                             <h3 className="text-white font-bold uppercase tracking-wider text-xl">Sứ Mệnh</h3>
                             <p>
-                                Giúp khách hàng tích lũy kim cương an toàn và bền vững.
-                                Jemmia không chỉ cung cấp trang sức mà còn kiến tạo kênh lưu giữ tài sản giá trị vượt thời gian.
+                                Giúp khách hàng tích lũy kim cương một cách an toàn bền vững và không ngừng hoàn thiện để mang đến sản phẩm giá trị xứng tầm với khách hàng.
+                            </p>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-white font-bold uppercase tracking-wider text-xl">Tầm nhìn</h3>
+                            <p>
+                                Trở thành công ty chuyên gia tại Việt Nam trong lĩnh vực kim cương, mang đến sản phẩm kim cương chất lượng cùng thiết kế trang sức sáng tạo tôn vinh vẻ đẹp, vươn tầm thế giới.
                             </p>
                         </div>
                         <div className="space-y-2">
                             <h3 className="text-white font-bold uppercase tracking-wider text-xl">Định Vị</h3>
                             <p>
-                                Thương hiệu mang tinh thần dân tộc, nỗ lực đưa văn hóa và nghệ thuật Việt Nam vào từng thiết kế,
-                                đồng thời tuân thủ các tiêu chuẩn kiểm định quốc tế nghiêm ngặt nhất.
+                                Jemmia mong muốn định vị mình là thương hiệu trang sức mang tinh thần dân tộc, tiếp biến tinh hoa văn hóa và nghệ thuật vào từng bộ sưu tập trang sức, đồng thời đáp ứng các tiêu chuẩn quốc tế để tạo nên những tác phẩm xứng tầm đẳng cấp toàn cầu.
                             </p>
                         </div>
-                    </div>
-                    <div className="about-text pt-4">
-                        <button className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest hover:bg-neon-green transition-colors">
-                            Tìm Hiểu Thêm
-                        </button>
                     </div>
                 </div>
             </div>

@@ -87,7 +87,7 @@ export function Hero() {
             {/* Large Typography Container - Centered/Left Split */}
             <div
                 ref={textRef}
-                className="relative z-10 w-full max-w-7xl px-4 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
+                className="pt-16 md:pt-0 relative z-10 w-full max-w-7xl px-4 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
             >
                 {/* Left Column: Content */}
                 <div className="flex flex-col items-center md:items-start text-center md:text-left">
@@ -97,7 +97,7 @@ export function Hero() {
                         </p>
                     </div>
 
-                    <h1 className="text-[12vw] md:text-[6.5vw] leading-[0.9] md:leading-[1.3] font-black tracking-tighter text-white uppercase font-serif mb-6 md:mb-10 w-full">
+                    <h1 className="text-[12vw] md:text-[6.5vw] leading-[0.9] md:leading-[1.3] font-black tracking-tighter text-white uppercase font-serif mb-6 md:mb-10 w-full space-y-3">
                         <div>
                             <span className="hero-text-line block">THƯƠNG HIỆU</span>
                         </div>

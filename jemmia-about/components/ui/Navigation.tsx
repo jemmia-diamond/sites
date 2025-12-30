@@ -74,7 +74,7 @@ export function Navigation() {
             {/* TOGGLE BUTTON (Fixed Top Right) */}
             <button
                 onClick={toggleMenu}
-                className="fixed top-8 right-8 z-50 group w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline-none mix-blend-difference"
+                className="fixed top-1 right-4 z-50 group w-12 h-12 flex flex-col justify-center items-end gap-1.5 focus:outline-none mix-blend-difference"
                 aria-label="Toggle Menu"
             >
                 <span className={cn(

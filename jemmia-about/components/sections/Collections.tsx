@@ -34,63 +34,67 @@ export function Collections() {
 
     useGSAP(
         () => {
-            if (!containerRef.current || !sectionRef.current) return;
+            const mm = gsap.matchMedia();
 
-            const scrollWidth = containerRef.current.scrollWidth;
-            const viewportWidth = window.innerWidth;
+            mm.add("(min-width: 800px)", () => {
+                const scrollWidth = containerRef.current!.scrollWidth;
+                const viewportWidth = window.innerWidth;
 
-            // Main Horizontal Scroll
-            const mainTween = gsap.to(containerRef.current, {
-                x: -(scrollWidth - viewportWidth),
-                ease: "none",
-                scrollTrigger: {
-                    trigger: sectionRef.current,
-                    start: "top top",
-                    end: `+=${scrollWidth - viewportWidth + 500}`, // Added buffer for slower scroll
-                    pin: true,
-                    anticipatePin: 1,
-                    scrub: 1,
-                    invalidateOnRefresh: true,
-                    fastScrollEnd: false, // Easier to control
-                    refreshPriority: 1, // Calculated after Culture (10)
-                },
-            });
-
-            // Internal Parallax for Images (Premium Feel)
-            gsap.utils.toArray<HTMLElement>(".col-image").forEach((img) => {
-                gsap.fromTo(
-                    img,
-                    { xPercent: -15, scale: 1.2 },
-                    {
-                        xPercent: 15,
-                        scale: 1.2,
-                        ease: "none",
-                        scrollTrigger: {
-                            trigger: img.parentElement, // The container of the image
-                            containerAnimation: mainTween, // Link to horizontal scroll
-                            start: "left right",
-                            end: "right left",
-                            scrub: true,
-                        }
-                    }
-                );
-            });
-
-            // Text Reveal Animation
-            gsap.utils.toArray<HTMLElement>(".col-text").forEach((text) => {
-                gsap.from(text, {
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    ease: "power3.out",
+                // Main Horizontal Scroll
+                const mainTween = gsap.to(containerRef.current, {
+                    x: -(scrollWidth - viewportWidth),
+                    ease: "none",
                     scrollTrigger: {
-                        trigger: text.parentElement?.parentElement, // The main card
-                        containerAnimation: mainTween,
-                        start: "left center",
-                        toggleActions: "play none none reverse",
-                    }
+                        trigger: sectionRef.current,
+                        start: "top top",
+                        end: `+=${scrollWidth - viewportWidth + 500}`,
+                        pin: true,
+                        anticipatePin: 1,
+                        scrub: 1,
+                        invalidateOnRefresh: true,
+                        fastScrollEnd: false,
+                        refreshPriority: 1,
+                    },
+                });
+
+                // Internal Parallax for Images (Premium Feel)
+                gsap.utils.toArray<HTMLElement>(".col-image").forEach((img) => {
+                    gsap.fromTo(
+                        img,
+                        { xPercent: -15, scale: 1.2 },
+                        {
+                            xPercent: 15,
+                            scale: 1.2,
+                            ease: "none",
+                            scrollTrigger: {
+                                trigger: img.parentElement,
+                                containerAnimation: mainTween,
+                                start: "left right",
+                                end: "right left",
+                                scrub: true,
+                            }
+                        }
+                    );
+                });
+
+                // Text Reveal Animation
+                gsap.utils.toArray<HTMLElement>(".col-text").forEach((text) => {
+                    gsap.from(text, {
+                        y: 50,
+                        opacity: 0,
+                        duration: 1,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: text.parentElement?.parentElement,
+                            containerAnimation: mainTween,
+                            start: "left center",
+                            toggleActions: "play none none reverse",
+                        }
+                    });
                 });
             });
+
+            return () => mm.revert();
         },
         { scope: sectionRef }
     );
@@ -107,11 +111,11 @@ export function Collections() {
                 </h2>
             </div>
 
-            <div className="h-screen flex items-center">
-                <div ref={containerRef} className="flex h-full w-fit">
+            <div className="h-auto md:h-screen flex items-start md:items-center">
+                <div ref={containerRef} className="flex flex-col md:flex-row h-auto md:h-full w-full md:w-fit">
 
                     {/* Title Slide */}
-                    <div className="w-screen h-full flex items-center justify-center shrink-0 border-r border-white/10 bg-black relative">
+                    <div className="w-full md:w-screen h-[50vh] md:h-full flex items-center justify-center shrink-0 border-b md:border-b-0 md:border-r border-white/10 bg-black relative">
                         <div className="absolute inset-0 opacity-30">
                             <Image
                                 src="https://images.unsplash.com/photo-1617038224558-28ad3fb558a7?q=80&w=2000&auto=format&fit=crop" // Diamond Workshop
@@ -128,7 +132,7 @@ export function Collections() {
 
                     {/* Collection Items */}
                     {COLLECTIONS.map((col, i) => (
-                        <div key={i} className="w-[100vw] md:w-[60vw] h-full shrink-0 relative flex flex-col justify-end p-6 md:p-20 border-r border-white/10 overflow-hidden group">
+                        <div key={i} className="w-full md:w-[60vw] h-[80vh] md:h-full shrink-0 relative flex flex-col justify-end p-6 md:p-20 border-b md:border-b-0 md:border-r border-white/10 overflow-hidden group">
                             {/* BG Image */}
                             <div className="absolute inset-0 z-0 overflow-hidden">
                                 <div className="col-image w-full h-full relative">
@@ -146,7 +150,7 @@ export function Collections() {
                                 0{i + 1}
                             </div>
 
-                            <div className="col-text relative z-10 max-w-2xl translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                            <div className="col-text relative z-10 max-w-2xl md:translate-y-10 md:group-hover:translate-y-0 transition-transform duration-500">
                                 <div className="w-12 h-1 bg-neon-green mb-4 md:mb-6" />
                                 <h3 className="text-3xl md:text-6xl font-black uppercase text-white mb-4 md:mb-6 leading-tight drop-shadow-lg">
                                     {col.title}

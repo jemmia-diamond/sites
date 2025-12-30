@@ -5,7 +5,6 @@ import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { TextReveal } from "@/components/ui/TextReveal";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,217 +13,134 @@ const CARDS = [
         title: "Tin Tưởng",
         subtitle: "5 Giá Trị Cốt Lõi",
         description: "Đảm bảo mọi giao dịch minh bạch, sản phẩm có nguồn gốc rõ ràng để khách hàng an tâm đầu tư lâu dài.",
-        images: [
-            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
-        ]
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+        ),
+        image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop"
     },
     {
         title: "Tự Học",
-        subtitle: "5 Giá Trị Cốt Lõi",
+        subtitle: "KIẾN THỨC LÀ SỨC MẠNH",
         description: "Không ngừng cập nhật công nghệ và kiến thức mới từ các tổ chức ngọc học uy tín nhất thế giới (như GIA).",
-        images: [
-            "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
-        ]
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+        ),
+        image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
     },
     {
         title: "Thách Thức",
-        subtitle: "5 Giá Trị Cốt Lõi",
+        subtitle: "VƯƠN TẦM QUỐC TẾ",
         description: "Sẵn sàng đổi mới, không ngại đối mặt với các khó khăn của thị trường để nâng tầm ngành kim cương Việt Nam trên bản đồ thế giới.",
-        images: [
-            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop"
-        ]
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" x2="22" y1="12" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+        ),
+        image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop"
     },
     {
         title: "Thấu Cảm",
-        subtitle: "5 Giá Trị Cốt Lõi",
+        subtitle: "KHÁCH HÀNG LÀ TRỌNG TÂM",
         description: "Cá nhân hóa trải nghiệm khách hàng, thấu hiểu nhu cầu riêng biệt của từng người và tích cực tham gia các hoạt động từ thiện cho cộng đồng.",
-        images: [
-            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop"
-        ]
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+        ),
+        image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
     },
     {
         title: "Tận Tâm",
-        subtitle: "5 Giá Trị Cốt Lõi",
+        subtitle: "PHỤC VỤ TỪ TÂM",
         description: "Phục vụ với sự tỉ mỉ từ khâu tư vấn đến dịch vụ hậu mãi, bảo hành, coi khách hàng như người thân.",
-        images: [
-            "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=2069&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop"
-        ]
-    },
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        ),
+        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
+    }
 ];
 
 export function Culture() {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     useGSAP(() => {
-        const cards = gsap.utils.toArray<HTMLElement>(".culture-card");
+        const rows = gsap.utils.toArray<HTMLElement>(".culture-pill-row");
 
-        // Master Timeline for the pinned sequence
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: containerRef.current,
-                start: "top top",
-                end: `+=${CARDS.length * 150}%`, // Reduced from 250% to 150% for snappier feel
-                pin: true,
-                scrub: 1, // Reduced scrub for less floaty feel
-                anticipatePin: 1,
-                refreshPriority: 10, // High priority to handle pinning correctly
-            }
-        });
-
-        // Loop through cards to build sequential transitions
-        cards.forEach((card, i) => {
-            const isFirst = i === 0;
-            const isLast = i === cards.length - 1;
-            const isEven = i % 2 === 0;
-
-            // Get internal elements
-            const mainImg = card.querySelector(".culture-img-main");
-            const floatImg = card.querySelector(".culture-img-float");
-            const content = card.querySelector(".culture-content");
-
-            // --- ENTRY ANIMATION ---
-            if (!isFirst) {
-                // Combined timeline for simultaneous entry
-                const entryTl = gsap.timeline();
-
-                // Card Scale & Fade In
-                entryTl.fromTo(card, {
-                    yPercent: 100,
-                    opacity: 0,
-                    scale: 0.9
-                }, {
-                    yPercent: 0,
-                    opacity: 1,
-                    scale: 1,
-                    duration: 1,
-                    ease: "power2.out"
-                }, 0);
-
-                // Content Entry
-                if (content) {
-                    entryTl.fromTo(content,
-                        { y: 50, opacity: 0 },
-                        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
-                        0.2
-                    );
+        gsap.fromTo(rows,
+            { y: 50, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.1,
+                scrollTrigger: {
+                    trigger: sectionRef.current,
+                    start: "top 70%",
+                    toggleActions: "play none none reverse"
                 }
-
-                // Images Entry (Simpler, cleaner animation)
-                if (mainImg) {
-                    entryTl.fromTo(mainImg,
-                        { scale: 0.8, opacity: 0, y: 50 },
-                        { scale: 1, opacity: 1, y: 0, duration: 1, ease: "back.out(1.2)" },
-                        0.3
-                    );
-                }
-                if (floatImg) {
-                    entryTl.fromTo(floatImg,
-                        { scale: 0.8, opacity: 0, y: 100 },
-                        { scale: 1, opacity: 1, y: 0, duration: 1, ease: "back.out(1.5)" },
-                        0.4
-                    );
-                }
-
-                tl.add(entryTl, ">-0.5"); // Overlap significantly with previous card's hold/exit
             }
-
-            // --- HOLD / EXIT ANIMATION ---
-            if (!isLast) {
-                // Clean exit
-                tl.to(card, {
-                    scale: 0.95,
-                    opacity: 0,
-                    filter: "blur(5px)",
-                    duration: 0.8,
-                    ease: "power2.in"
-                }, "+=1"); // Hold for 1 second of scrub time
-            }
-        });
-
-    }, { scope: containerRef });
+        );
+    }, { scope: sectionRef });
 
     return (
-        <section id="culture" ref={containerRef} className="culture-pin-container relative h-screen w-full overflow-hidden  flex flex-col justify-center">
+        <section id="culture" ref={sectionRef} className="relative bg-[#050505] text-white py-24 md:py-40 overflow-hidden">
 
-            <div className="absolute top-6 md:top-10 w-full z-50 text-center pointer-events-none px-4">
-                <span className="text-neon-green font-bold tracking-[0.2em] uppercase text-xs md:text-sm block mb-2 animate-pulse">
-                    Pillar 04
-                </span>
-                <h2 className="text-3xl md:text-5xl font-black uppercase text-white leading-none drop-shadow-2xl">
-                    5 Giá Trị <span className="text-white/50">Cốt Lõi</span>
-                </h2>
-            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,163,0.05),transparent_70%)] pointer-events-none" />
 
-            <div className="absolute inset-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-neon-green/10 via-transparent to-transparent pointer-events-none" />
+            <div className="container mx-auto px-4 relative z-10">
+                <div className="text-center mb-16 md:mb-24">
+                    <span className="text-neon-green font-bold tracking-[0.3em] uppercase text-xs md:text-sm block mb-4 animate-pulse">
+                        Phát Triển Bền Vững
+                    </span>
+                    <h2 className="text-4xl md:text-7xl font-black uppercase text-transparent bg-clip-text bg-linear-to-b from-white to-white/50 leading-tight font-serif drop-shadow-2xl">
+                        5 GIÁ TRỊ CỐT LÕI
+                    </h2>
+                </div>
 
-
-            {/* Cards Container */}
-            <div className="relative w-full max-w-6xl mx-auto h-[550px] md:h-[70vh] flex items-center justify-center px-4">
-                {CARDS.map((card, i) => {
-                    const isEven = i % 2 === 0;
-                    return (
+                <div className="max-w-5xl mx-auto flex flex-col gap-6 md:gap-8">
+                    {CARDS.map((item, index) => (
                         <div
-                            key={i}
-                            className={`culture-card absolute inset-0 w-full h-full rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#050505]/90 shadow-2xl flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} will-change-transform`}
-                            style={{
-                                zIndex: i + 1,
-                                opacity: i === 0 ? 1 : 0
-                            }}
+                            key={index}
+                            className="culture-pill-row group relative w-full h-auto min-h-[120px] md:h-[140px] flex items-stretch rounded-[50px] bg-white/[0.03] border border-white/10 hover:border-neon-green/50 transition-all duration-500 overflow-hidden"
                         >
-                            <div className="absolute inset-0 opacity-[0.05] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+                            {/* Hover Background Image Reveal */}
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none">
+                                <Image src={item.image} alt={item.title} fill className="object-cover" />
+                            </div>
 
-                            {/* Content Side */}
-                            <div className="culture-content w-full md:w-5/12 p-6 md:p-14 flex flex-col justify-center relative z-10 order-2 md:order-none">
-                                <span className="w-12 h-1 bg-neon-green mb-4 md:mb-6" />
-                                <span className="text-neon-green font-bold uppercase tracking-widest text-xs md:text-sm mb-2 md:mb-3 block">
-                                    {card.subtitle}
-                                </span>
-                                <h3 className="text-2xl md:text-5xl font-black text-white uppercase leading-tight mb-4 md:mb-6">
-                                    {card.title}
-                                </h3>
-                                <p className="text-white/70 text-sm md:text-lg leading-relaxed mb-4 md:mb-8">
-                                    {card.description}
-                                </p>
-                                <div className={`text-6xl md:text-8xl font-black text-white/5 font-serif select-none absolute bottom-4 right-4 ${isEven ? 'md:left-4 md:right-auto' : 'md:right-4'}`}>
-                                    0{i + 1}
+                            {/* Left: Number & Shape */}
+                            <div className={`
+                                w-[100px] md:w-[140px] flex flex-col items-center justify-center shrink-0 relative
+                                bg-gradient-to-br from-white/10 to-transparent border-r border-white/10
+                                group-hover:bg-neon-green group-hover:text-black transition-colors duration-500
+                            `}>
+                                <span className="text-3xl md:text-5xl font-black font-serif leading-none tracking-tighter">0{index + 1}</span>
+                                <div className="mt-2 text-neon-green group-hover:text-black transition-colors duration-500">
+                                    {item.icon}
                                 </div>
                             </div>
 
-                            {/* Image Side */}
-                            <div className={`w-full md:w-7/12 relative h-1/2 md:h-full bg-white/5 overflow-hidden order-1 md:order-none
-                                ${isEven ? 'md:border-l' : 'md:border-r'} border-white/5
-                            `}>
-                                {/* Main Image */}
-                                <div className={`culture-image-item culture-img-main absolute top-6 md:top-10 w-[60%] h-[70%] md:h-[55%] rounded-xl overflow-hidden shadow-2xl z-20 border border-white/20
-                                    ${isEven ? 'right-6 md:right-10' : 'left-6 md:left-10'}
-                                `}>
-                                    <Image src={card.images[0]} alt="Collage 1" fill className="object-cover" />
+                            {/* Right: Content */}
+                            <div className="flex-1 flex flex-col justify-center px-6 md:px-10 py-4 md:py-0 relative z-10">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+                                    <div>
+                                        <span className="text-neon-green text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1 block opacity-80">
+                                            {item.subtitle}
+                                        </span>
+                                        <h3 className="text-xl md:text-3xl font-bold uppercase text-white group-hover:text-neon-green transition-colors duration-300">
+                                            {item.title}
+                                        </h3>
+                                    </div>
+                                    <p className="text-white/60 text-xs md:text-sm leading-relaxed max-w-md md:text-right group-hover:text-white transition-colors duration-300">
+                                        {item.description}
+                                    </p>
                                 </div>
-                                {/* Float Image */}
-                                <div className={`culture-image-item culture-img-float absolute bottom-6 md:bottom-10 w-[50%] h-[60%] md:h-[45%] rounded-xl overflow-hidden shadow-2xl z-30 border border-white/20
-                                    ${isEven ? 'left-6 md:left-10' : 'right-6 md:right-10'}
-                                `}>
-                                    <Image src={card.images[1]} alt="Collage 2" fill className="object-cover" />
-                                </div>
-                                {/* BG Filler */}
-                                <div className="culture-image-item absolute inset-0 opacity-20 scale-110">
-                                    <Image src={card.images[2]} alt="Background" fill className="object-cover grayscale" />
-                                </div>
+                            </div>
+
+                            {/* Action Arrow (Decoration) */}
+                            <div className="hidden md:flex w-20 items-center justify-center shrink-0 border-l border-white/5 opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-x-4 group-hover:translate-x-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neon-green transform -rotate-45"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                             </div>
 
                         </div>
-                    );
-                })}
+                    ))}
+                </div>
             </div>
         </section>
     );

@@ -3,62 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-
-/* 
-  Luxury Diamond SVG 
-  - Minimalist, geometric line art style
-  - White stroke, transparent fill 
-*/
-const DiamondIcon = ({ className }: { className?: string }) => (
-    <svg
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={className}
-        style={{ overflow: "visible" }}
-    >
-        {/* Outer shape */}
-        <path
-            d="M20 35 L50 10 L80 35 L50 95 Z"
-            stroke="url(#diamond-gradient)"
-            strokeWidth="2"
-            vectorEffect="non-scaling-stroke"
-            className="diamond-path"
-        />
-        {/* Inner Facets */}
-        <path
-            d="M20 35 L80 35"
-            stroke="url(#diamond-gradient)"
-            strokeWidth="1"
-            className="diamond-inner"
-        />
-        <path
-            d="M30 35 L50 95 L70 35"
-            stroke="url(#diamond-gradient)"
-            strokeWidth="1"
-            className="diamond-inner"
-        />
-        <path
-            d="M20 35 L50 50 L80 35"
-            stroke="url(#diamond-gradient)"
-            strokeWidth="1"
-            className="diamond-inner"
-        />
-        <path
-            d="M50 10 L50 50 L50 95"
-            stroke="url(#diamond-gradient)"
-            strokeWidth="1"
-            className="diamond-inner"
-        />
-        <defs>
-            <linearGradient id="diamond-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ffffff" />
-                <stop offset="50%" stopColor="#e2e8f0" />
-                <stop offset="100%" stopColor="#94a3b8" />
-            </linearGradient>
-        </defs>
-    </svg>
-);
+import Image from "next/image";
 
 export const LoadingScreen = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -98,27 +43,17 @@ export const LoadingScreen = () => {
 
         // 2. Diamond Reveal
         tl.to(diamondRef.current, {
-            duration: 1.5,
+            duration: 1,
             scale: 1,
             opacity: 1,
             ease: "power3.out",
-        })
-            .to(
-                ".diamond-path",
-                {
-                    duration: 2,
-                    strokeDasharray: "1000",
-                    strokeDashoffset: "0",
-                    ease: "power2.inOut",
-                },
-                "<"
-            );
+        });
 
         // 3. Counting Text Reveal
         tl.to(
             textRef.current,
             {
-                duration: 0.8,
+                duration: 0.5,
                 opacity: 1,
                 y: 0,
                 ease: "power2.out",
@@ -132,8 +67,8 @@ export const LoadingScreen = () => {
             counterObj,
             {
                 val: 100,
-                duration: 2,
-                ease: "expo.inOut",
+                duration: 1.5,
+                ease: "power2.out",
                 onUpdate: () => {
                     if (progressRef.current) {
                         progressRef.current.innerText = Math.round(counterObj.val).toString();
@@ -145,11 +80,10 @@ export const LoadingScreen = () => {
 
         // 5. Exit - Slide Up Curtain
         tl.to(containerRef.current, {
-            duration: 1.2,
+            duration: 0.5,
             yPercent: -100,
             ease: "power4.inOut",
-            delay: 0.2, // pause briefly at 100%
-        });
+        }, "-=0.4");
 
     }, { scope: containerRef });
 
@@ -158,10 +92,16 @@ export const LoadingScreen = () => {
     return (
         <div
             ref={containerRef}
-            className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-black text-white pointer-events-none"
+            className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white text-[#002422] pointer-events-none"
         >
-            <div ref={diamondRef} className="w-32 h-32 md:w-48 md:h-48 mb-8 relative">
-                <DiamondIcon className="w-full h-full drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+            <div ref={diamondRef} className="w-48 h-20 md:w-64 md:h-24 mb-8 relative">
+                <Image
+                    src="https://file.hstatic.net/200000355853/file/logo.svg"
+                    alt="Jemmia Logo"
+                    fill
+                    className="object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                    priority
+                />
             </div>
 
             <div ref={textRef} className="flex flex-col items-center gap-2">
@@ -169,9 +109,6 @@ export const LoadingScreen = () => {
                     <span ref={progressRef}>0</span>
                     <span className="text-2xl md:text-3xl align-top ml-1">%</span>
                 </div>
-                <p className="text-xs md:text-sm tracking-[0.3em] uppercase opacity-70">
-                    Loading Content
-                </p>
             </div>
         </div>
     );
