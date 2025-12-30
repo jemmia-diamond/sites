@@ -79,7 +79,7 @@ export function Culture() {
     }, { scope: sectionRef });
 
     return (
-        <section id="culture" ref={sectionRef} className="relative bg-[#050505] text-white py-24 md:py-40 overflow-hidden">
+        <section id="culture" ref={sectionRef} className="relative text-white py-24 md:py-40 overflow-hidden">
 
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,163,0.05),transparent_70%)] pointer-events-none" />
 
@@ -107,7 +107,7 @@ export function Culture() {
                             {/* Left: Number & Shape */}
                             <div className={`
                                 w-[100px] md:w-[140px] flex flex-col items-center justify-center shrink-0 relative
-                                bg-gradient-to-br from-white/10 to-transparent border-r border-white/10
+                                bg-linear-to-br from-white/10 to-transparent border-r border-white/10
                                 group-hover:bg-neon-green group-hover:text-black transition-colors duration-500
                             `}>
                                 <span className="text-3xl md:text-5xl font-black font-serif leading-none tracking-tighter">0{index + 1}</span>

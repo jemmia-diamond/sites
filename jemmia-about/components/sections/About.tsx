@@ -44,9 +44,9 @@ export function About() {
                 {/* Left: Image Placeholder */}
                 <div className="about-image relative w-full md:w-1/2 aspect-3/4 max-w-[500px] bg-neutral-800 rounded-lg overflow-hidden border border-white/10">
                     <img
-                        src="https://w.ladicdn.com/s700x550/664c47fd56f9a000124a324e/image-26-20241030042958-k3rti.jpg"
+                        src="https://w.ladicdn.com/s650x600/664c47fd56f9a000124a324e/20241029-154851-20241029084918-sjcvf.jpeg"
                         alt="Jemmia Store"
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="w-full h-full object-cover"
                     />
                 </div>
 

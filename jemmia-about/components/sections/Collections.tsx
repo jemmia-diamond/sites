@@ -9,7 +9,7 @@ const COLLECTIONS = [
     {
         title: "Máy GIA ID100",
         desc: "Thiết bị hiện đại nhất phân biệt tức thì kim cương tự nhiên với kim cương nuôi cấy (Lab-grown) & đá giả.",
-        image: "https://images.unsplash.com/photo-1581093458791-9f302e6d8a6b?q=80&w=2070&auto=format&fit=crop", // Lab/Tech
+        image: "	https://w.ladicdn.com/s850x700/664c47fd56f9a000124a324e/image-8-20241030081058--ailk.png", // Lab/Tech
     },
     {
         title: "GIA Match iD",

@@ -27,18 +27,12 @@ function DiamondModel() {
 
     const get3DPosition = (xPx: number, yPx: number, z: number) => {
         const perspectiveCamera = camera as THREE.PerspectiveCamera;
-        // Calculate visible height at the target Z depth
         const depth = Math.abs(perspectiveCamera.position.z - z);
         const vFOV = THREE.MathUtils.degToRad(perspectiveCamera.fov);
         const visibleHeight = 2 * Math.tan(vFOV / 2) * depth;
         const visibleWidth = visibleHeight * perspectiveCamera.aspect;
 
-        // Map pixel coordinates to 3D coordinates
-        // xPx is from left edge
         const x = -visibleWidth / 2 + (xPx / size.width) * visibleWidth;
-
-        // For y, if needed (currently not requested for specific pixel Y, but good to have)
-        // yPx from top edge
         const y = visibleHeight / 2 - (yPx / size.height) * visibleHeight;
 
         return { x, y, z };
@@ -64,16 +58,16 @@ function DiamondModel() {
 
             // 1. Vision (Left, closer)
             const stateVision = {
-                pos: isMobile ? new THREE.Vector3(0, -8.5, -18) : new THREE.Vector3(12.5, 1.5, -15),
+                pos: isMobile ? new THREE.Vector3(0, -8.5, -18) : new THREE.Vector3(17.5, 1.5, -22),
                 scale: isMobile ? new THREE.Vector3(0.35, 0.35, 0.35) : new THREE.Vector3(0.6, 0.6, 0.6),
                 rot: new THREE.Vector3(Math.PI / 2, Math.PI, 0)
             };
 
             // 2. Culture (Right, closer)
             const stateCulture = {
-                pos: isMobile ? new THREE.Vector3(0, 8.5, -17) : new THREE.Vector3(11.5, 1.5, -15),
+                pos: isMobile ? new THREE.Vector3(0, 8.5, -17) : new THREE.Vector3(17.5, 1.5, -22),
                 // Scale stays same as Vision (0.6 / 0.35)
-                rot: new THREE.Vector3(Math.PI * 2, Math.PI * 2, 0)
+                rot: new THREE.Vector3(Math.PI, Math.PI, 0)
             };
 
             // 3. Timeline (Left, closer)
@@ -97,13 +91,10 @@ function DiamondModel() {
             // 4. Collections (Right, closer)
             const stateCollections = {
                 pos: isMobile ? new THREE.Vector3(0, 3, -5) : new THREE.Vector3(12.5, -0.5, -18),
-                // Scale stays same
                 rot: new THREE.Vector3(0, Math.PI * 2.5, 0)
             };
 
             // 5. Results (Left, closer)
-            // User requested right-8, bottom-8 for BOTH mobile and desktop.
-            // Using safe margin of 60px for mobile, and 250px for desktop to prevent clipping.
             const marginX = isMobile ? 60 : 320;
             const marginY = isMobile ? 60 : 200;
             const targetZ = isMobile ? -25 : -40;

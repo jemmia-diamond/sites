@@ -27,21 +27,21 @@ const TIMELINE_DATA = [
                 title: "Hành trình Pháp lý",
                 desc: "100% sản phẩm nhập khẩu chính ngạch, có đầy đủ hóa đơn, chứng từ và thực hiện nghĩa vụ thuế với nhà nước. Minh bạch tuyệt đối.",
                 tag: "Legal",
-                image: "https://images.unsplash.com/photo-1450101499121-87b483c00329?q=80&w=2074&auto=format&fit=crop"
+                image: "https://w.ladicdn.com/s750x550/664c47fd56f9a000124a324e/20241025-152822-20241025082856-a8mfp.jpeg"
             },
             {
                 month: "03",
                 title: "Hành trình Tiêu chuẩn cao",
                 desc: "Chỉ 2% kim cương trên thế giới lọt qua bộ lọc của Jemmia. Không BGM (nâu/xanh/sữa), không huỳnh quang, chỉ chọn nước D-F, độ sạch VS2+.",
                 tag: "Standard",
-                image: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=1887&auto=format&fit=crop"
+                image: "https://w.ladicdn.com/s750x550/664c47fd56f9a000124a324e/20241025-152822-20241025082856-a8mfp.jpeg"
             },
             {
                 month: "04",
                 title: "Hành trình Kiểm định",
                 desc: "Sử dụng máy móc GIA (ID100, Match iD...) để tái kiểm định (double-check). Loại bỏ ngay những viên không đạt chuẩn dù đã có giấy tờ.",
                 tag: "GIA Check",
-                image: "https://images.unsplash.com/photo-1581093458791-9f302e6d8a6b?q=80&w=2070&auto=format&fit=crop"
+                image: "https://w.ladicdn.com/s750x550/664c47fd56f9a000124a324e/20241025-152822-20241025082856-a8mfp.jpeg"
             },
             {
                 month: "05",
@@ -130,7 +130,7 @@ export function Timeline() {
 
                     <div className="absolute left-4 md:left-1/2 top-4 bottom-4 w-[2px] bg-white/10 -translate-x-1/2" />
 
-                    <div ref={lineRef} className="absolute left-4 md:left-1/2 top-4 w-[2px] bg-neon-green -translate-x-1/2 box-content shadow-[0_0_10px_#D4AF37] z-10" />
+                    <div ref={lineRef} className="absolute left-4 md:left-1/2 top-4 w-[2px] bg-neon-green -translate-x-1/2 box-content shadow-[0_0_10px_#D4AF37]" />
 
                     {TIMELINE_DATA.map((quarter, qIdx) => (
                         <div key={qIdx} className="mb-20 md:mb-32 relative">

@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 
 export function ParallaxImage() {
     const containerRef = useRef<HTMLDivElement>(null);
-    const imageRef = useRef<HTMLDivElement>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
 
     useGSAP(
         () => {
@@ -51,15 +51,15 @@ export function ParallaxImage() {
                 ref={containerRef}
                 className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden"
             >
-                <div
+                <img
                     ref={imageRef}
-                    className="absolute inset-0 bg-neutral-800 flex items-center justify-center bg-[url('https://placehold.co/1920x1080/111/444')] bg-cover bg-center text-white/50"
-                >
-                    {/* Fallback label if image fails or for styling */}
-                    <h2 className="text-[20vw] md:text-[10rem] font-black opacity-20 uppercase mix-blend-overlay">
-                        Focus
-                    </h2>
-                </div>
+                    className="h-full w-full object-cover"
+                    src={"https://w.ladicdn.com/664c47fd56f9a000124a324e/dubai-diamond-week-6_2b8f24f0105f47daac5d184178de337d_grande-20241118041153-xd8cg.webp"}
+                />
+
+                {/* Overlay for readability */}
+                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
                 <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 z-10">
                     <p className="text-neon-green font-bold uppercase tracking-widest text-xs md:text-sm mb-2">
