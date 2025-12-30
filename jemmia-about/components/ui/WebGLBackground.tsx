@@ -209,7 +209,7 @@ declare global {
 function CrystalField({ mouse }: { mouse: React.MutableRefObject<[number, number]> }) {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const materialRef = useRef<THREE.ShaderMaterial>(null);
-    const count = 2000; // High count for "dust" effect
+    const count = 800; // Optimized count for performance
 
     const dummy = new THREE.Object3D();
 
@@ -303,7 +303,7 @@ export function WebGLBackground() {
             <Canvas
                 camera={{ position: [0, 0, 15], fov: 45 }} // Narrower FOV for more cinematic depth
                 gl={{ alpha: true, antialias: true }}
-                dpr={[1, 2]}
+                dpr={[1, 1.5]}
             >
                 <CrystalField mouse={mouse} />
             </Canvas>

@@ -291,7 +291,7 @@ function DiamondModel() {
                     <mesh geometry={(nodes.Diamond_Round as THREE.Mesh).geometry} frustumCulled={true} key={`mesh-node-${StringUtils.random(6)}`} castShadow receiveShadow>
                         <MeshRefractionMaterial
                             envMap={metalTexture}
-                            bounces={3}
+                            bounces={2}
                             aberrationStrength={0.003}
                             ior={2.418}
                             fresnel={1}
@@ -340,7 +340,7 @@ export function DiamondScene() {
                     powerPreference: "low-power",
                     precision: "lowp",
                 }}
-                dpr={[1, 1.5]}
+                dpr={[1, 1.25]}
                 shadows
             >
                 <PerspectiveCamera makeDefault position={[0, 0, 5]} />
