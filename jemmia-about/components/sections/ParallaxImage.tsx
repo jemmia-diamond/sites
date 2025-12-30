@@ -54,7 +54,7 @@ export function ParallaxImage() {
                 <img
                     ref={imageRef}
                     className="h-full w-full"
-                    src={"	https://w.ladicdn.com/s1150x600/664c47fd56f9a000124a324e/image-25-20241030042450-iqnww.jpg"}
+                    src={"https://w.ladicdn.com/s1150x600/664c47fd56f9a000124a324e/image-25-20241030042450-iqnww.jpg"}
                 />
 
                 {/* Overlay for readability */}
