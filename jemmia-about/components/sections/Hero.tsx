@@ -87,7 +87,7 @@ export function Hero() {
             {/* Large Typography Container - Centered/Left Split */}
             <div
                 ref={textRef}
-                className="pt-16 md:pt-0 relative z-10 w-full max-w-7xl px-12 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
+                className="pt-16 md:pt-0 relative z-10 w-full max-w-7xl px-4 md:px-12 grid grid-cols-1 md:grid-cols-1 gap-12 items-center mix-blend-difference"
             >
                 {/* Left Column: Content */}
                 <div className="flex flex-col items-center md:items-start text-center md:text-left">
