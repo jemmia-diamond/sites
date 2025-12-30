@@ -65,9 +65,9 @@ function DiamondModel() {
 
             // 2. Culture (Right, closer)
             const stateCulture = {
-                pos: isMobile ? new THREE.Vector3(0, 8.5, -17) : new THREE.Vector3(17.5, 1.5, -22),
+                pos: isMobile ? new THREE.Vector3(0, 12.5, -25) : new THREE.Vector3(17.5, 1.5, -22),
                 // Scale stays same as Vision (0.6 / 0.35)
-                rot: new THREE.Vector3(Math.PI, Math.PI, 0)
+                rot: new THREE.Vector3(Math.PI / 1.5, Math.PI, Math.PI / 2)
             };
 
             // 3. Timeline (Left, closer)

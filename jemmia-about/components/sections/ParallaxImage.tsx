@@ -53,8 +53,8 @@ export function ParallaxImage() {
             >
                 <img
                     ref={imageRef}
-                    className="h-full w-full object-cover"
-                    src={"https://w.ladicdn.com/664c47fd56f9a000124a324e/dubai-diamond-week-6_2b8f24f0105f47daac5d184178de337d_grande-20241118041153-xd8cg.webp"}
+                    className="h-full w-full"
+                    src={"	https://w.ladicdn.com/s1150x600/664c47fd56f9a000124a324e/image-25-20241030042450-iqnww.jpg"}
                 />
 
                 {/* Overlay for readability */}
