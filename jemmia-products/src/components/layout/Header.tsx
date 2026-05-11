@@ -39,6 +39,18 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   }, []);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const searchQuery = searchParams.get("searchQuery");
+    if (!searchQuery) {
+      setQuery("");
+      setResults(null);
+      setIsOpen(false);
+    } else {
+      setQuery(searchQuery);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     if (!query.trim()) {
       setResults(null);
       setIsOpen(false);
@@ -127,13 +139,22 @@ export function Header({ searchPlaceholder }: HeaderProps) {
                     <span className="text-[9px] font-bold text-primary-300 uppercase tracking-widest">
                       {(results.jewelries.meta.totalRows + results.diamonds.meta.totalRows)} kết quả
                     </span>
+                    <Link
+                      to={`${results.diamonds.meta.totalRows > results.jewelries.meta.totalRows ? "/diamonds" : "/jewelry"}?searchQuery=${encodeURIComponent(query)}`}
+                      onClick={() => setIsOpen(false)}
+                      className="text-[9px] font-black text-secondary-900 uppercase tracking-widest hover:underline flex items-center gap-2"
+                    >
+                      Xem tất cả <ArrowUpRight size={12} weight="bold" />
+                    </Link>
                   </div>
 
                   <div className="divide-y divide-primary-50">
                     {[...results.jewelries.data.map(i => ({ ...i, category: 'Jewelry' })), ...results.diamonds.data.map(i => ({ ...i, category: 'Diamond' }))].slice(0, 8).map((item, index) => (
                       <Link
                         key={`${item.category}-${item.id}-${index}`}
-                        to={item.category === 'Jewelry' ? `/jewelry?designCode=${item.attributes?.designCode}` : "/diamonds"}
+                        to={item.category === 'Jewelry' 
+                          ? `/jewelry?searchQuery=${encodeURIComponent(query)}` 
+                          : `/diamonds?searchQuery=${encodeURIComponent(query)}`}
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-6 px-4 py-4 hover:bg-gray-50/50 transition-all group relative"
                       >

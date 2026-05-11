@@ -71,6 +71,7 @@ export interface JewelryFilter {
   sortBySalePrice?: "ASC" | "DESC";
   designCode?: string;
   page?: number;
+  searchQuery?: string;
 }
 
 export interface JewelryVariant {
@@ -117,6 +118,7 @@ export interface DiamondFilter {
   sortBySalePrice?: "ASC" | "DESC";
   page?: number;
   limit?: number;
+  searchQuery?: string;
 }
 
 export interface DiamondAttribute {

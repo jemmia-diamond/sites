@@ -83,6 +83,10 @@ export const jewelryService = {
       params.designCode = filters.designCode;
     }
 
+    if (filters.searchQuery) {
+      params.searchQuery = filters.searchQuery;
+    }
+
     const response = await axios.get<PaginateResponse<ProductModel>>(`${API_BASE_URL}/products/jewelries`, {
       params,
       // Handle the multiple params with same key: ?warehouseIds=1&warehouseIds=2

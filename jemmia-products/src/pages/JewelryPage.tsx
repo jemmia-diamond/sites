@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { jewelryService } from "../services/jewelryService";
@@ -24,25 +24,35 @@ import { cn } from "@/lib/utils";
 import { ArrowDownWideNarrow, ArrowUpWideNarrow } from "lucide-react";
 
 export default function JewelryPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const designCodeParam = searchParams.get("designCode");
+  const searchQueryParam = searchParams.get("searchQuery");
 
   const [filters, setFilters] = useState<JewelryFilter>({
     page: 1,
     sortBySalePrice: "DESC",
     stockStatus: "all",
-    designCode: designCodeParam || undefined
+    designCode: designCodeParam || undefined,
+    searchQuery: searchQueryParam || undefined,
+    type: searchQueryParam ? undefined : (searchParams.get("type") || undefined)
   });
 
   const [debouncedFilters, setDebouncedFilters] = useState<JewelryFilter>(filters);
 
   useEffect(() => {
-    if (designCodeParam) {
-      const updated = { ...filters, designCode: designCodeParam, page: 1 };
-      setFilters(updated);
-      setDebouncedFilters(updated);
-    }
-  }, [designCodeParam]);
+    setFilters(prev => {
+      const next = { 
+        ...prev, 
+        designCode: designCodeParam || undefined, 
+        searchQuery: searchQueryParam || undefined,
+        type: searchQueryParam ? undefined : prev.type,
+        page: 1 
+      };
+      setDebouncedFilters(next);
+      return next;
+    });
+  }, [designCodeParam, searchQueryParam]);
 
   // Debounce logic for filters (excluding sort)
   const debouncedSetFilters = useMemo(
@@ -77,18 +87,30 @@ export default function JewelryPage() {
   const currentPage = debouncedFilters.page || 1;
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <JewelryFilterSidebar
-        onApply={handleApplyFilters}
-        currentFilters={filters}
-      />
+      {!searchQueryParam && (
+        <JewelryFilterSidebar
+          onApply={handleApplyFilters}
+          currentFilters={filters}
+        />
+      )}
 
       <main className="flex-1 bg-white overflow-y-auto px-4 pt-2 pb-6">
         <div className="mx-auto space-y-4">
           <PageHeader
-            title={`${debouncedFilters.type}`}
+            title={debouncedFilters.searchQuery ? `Tìm kiếm: ${debouncedFilters.searchQuery}` : `${debouncedFilters.type || "Tất cả trang sức"}`}
             description={`Hiển thị ${allJewelries.length} trên ${totalResults} kết quả`}
             actions={
-              <div className="flex flex-col gap-1.5 min-w-[150px]">
+              <div className="flex items-center gap-2">
+                {searchQueryParam && (
+                  <Button
+                    onClick={() => navigate(-1)}
+                    variant="outline"
+                    className="flex items-center gap-2 h-10 px-4 rounded-none border-primary-100 font-bold text-xs uppercase tracking-tight hover:bg-primary-50"
+                  >
+                    Quay về
+                  </Button>
+                )}
+                <div className="flex flex-col gap-1.5 min-w-[150px]">
                 <Button
                   onClick={toggleSort}
                   variant="outline"
@@ -103,6 +125,7 @@ export default function JewelryPage() {
                     <ArrowUpWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
                   )}
                 </Button>
+                </div>
               </div>
             }
           />

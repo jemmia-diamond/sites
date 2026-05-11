@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchDiamonds } from "../services/diamondService";
 import { DiamondFilter } from "../types";
@@ -14,12 +15,25 @@ import { ArrowDownWideNarrow, ArrowUpWideNarrow } from "lucide-react";
 import { PageHeader } from "../components/layout/PageHeader";
 
 export default function DiamondPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchQueryParam = searchParams.get("searchQuery");
+
   const [filters, setFilters] = useState<DiamondFilter>({
     page: 1,
     limit: 10,
     sortBySalePrice: "DESC",
-    stockStatus: "IN_STOCK"
+    stockStatus: "IN_STOCK",
+    searchQuery: searchQueryParam || undefined
   });
+
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      searchQuery: searchQueryParam || undefined,
+      page: 1
+    }));
+  }, [searchQueryParam]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["diamonds", filters],
@@ -42,15 +56,25 @@ export default function DiamondPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <DiamondFilterSidebar onApply={handleApplyFilters} />
+      {!searchQueryParam && <DiamondFilterSidebar onApply={handleApplyFilters} />}
       
       <main className="flex-1 bg-white overflow-y-auto p-10">
         <div className="mx-auto space-y-8">
           <PageHeader 
-            title="Quản Lý Danh Mục Kim Cương"
+            title={filters.searchQuery ? `Tìm kiếm kim cương: ${filters.searchQuery}` : "Quản Lý Danh Mục Kim Cương"}
             description={`Hiển thị ${data?.data.length || 0} trên ${totalItems} kết quả`}
             actions={
-              <div className="flex flex-col gap-1.5 min-w-[150px]">
+              <div className="flex items-center gap-2">
+                {searchQueryParam && (
+                  <Button
+                    onClick={() => navigate(-1)}
+                    variant="outline"
+                    className="flex items-center gap-2 h-10 px-4 rounded-none border-primary-100 font-bold text-xs uppercase tracking-tight hover:bg-primary-50"
+                  >
+                    Quay về
+                  </Button>
+                )}
+                <div className="flex flex-col gap-1.5 min-w-[150px]">
                 <Button
                   onClick={toggleSort}
                   variant="outline"
@@ -65,6 +89,7 @@ export default function DiamondPage() {
                     <ArrowUpWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
                   )}
                 </Button>
+                </div>
               </div>
             }
           />

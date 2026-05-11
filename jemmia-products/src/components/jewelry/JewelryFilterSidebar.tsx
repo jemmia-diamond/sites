@@ -41,6 +41,11 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
         salePriceFrom: prev.salePriceFrom !== undefined ? prev.salePriceFrom : currentFilters.salePriceFrom,
         salePriceTo: prev.salePriceTo !== undefined ? prev.salePriceTo : currentFilters.salePriceTo,
       }));
+      
+      // Reset auto-select flag if we are clearing search and have no type
+      if (!currentFilters.type && !currentFilters.searchQuery) {
+        hasAutoSelected.current = false;
+      }
     }
   }, [currentFilters]);
 
