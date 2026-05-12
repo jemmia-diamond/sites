@@ -46,14 +46,20 @@ export default function App() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const auth = sessionStorage.getItem("site_authenticated");
-    if (auth === "true") {
-      setIsAuthenticated(true);
-    }
-    setIsChecking(false);
+    const checkAuth = async () => {
+      try {
+        await axios.get("/auth/verify");
+        setIsAuthenticated(true);
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
 
     const handleLogout = () => {
-      sessionStorage.removeItem("site_authenticated");
       setIsAuthenticated(false);
     };
 
