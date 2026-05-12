@@ -22,16 +22,15 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
     setError(null);
 
     try {
-      const response = await axios.post("/auth/login", { password });
-
-      if (response.status >= 200 && response.status < 300) {
-        sessionStorage.setItem("site_authenticated", "true");
-        onSuccess();
-      } else {
+      await axios.post("/auth/login", { password });
+      sessionStorage.setItem("site_authenticated", "true");
+      onSuccess();
+    } catch (err: any) {
+      if (err.response?.status === 401) {
         setError("Mật khẩu không chính xác. Vui lòng thử lại.");
+      } else {
+        setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
       }
-    } catch (err) {
-      setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
