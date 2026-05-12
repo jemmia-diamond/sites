@@ -16,6 +16,6 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
     params.salePriceFrom = filters.salePriceFrom * 1000000;
   }
 
-  const response = await axios.get<PaginateResponse<DiamondModel>>("/site/products/diamonds", { params });
+  const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { params });
   return response.data;
 }

@@ -50,7 +50,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsLoading(true);
       setIsOpen(true);
       try {
-        const response = await axios.get(`/site/products/search-combine?query=${encodeURIComponent(query)}`);
+        const response = await axios.get(`/products/search-combine?query=${encodeURIComponent(query)}`);
         setResults(response.data);
       } catch (error) {
         console.error("Search error:", error);
