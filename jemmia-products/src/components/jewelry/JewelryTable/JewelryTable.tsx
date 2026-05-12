@@ -216,20 +216,20 @@ function MediaViewer({
     <div className="flex flex-col h-full bg-secondary-900">
       <div className="flex items-center justify-between px-8 py-4 bg-secondary-900/50 backdrop-blur-md sticky top-0 z-50">
         <Button variant="ghost" className="text-white hover:bg-white/10 font-bold" onClick={() => onSelectMedia(null)}>
-          <CaretLeft size={20} className="mr-2" />
+          <CaretLeft size={20} className="mr-0" />
           Quay lại thư viện
         </Button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <span className="text-white/60 text-[11px] font-bold tracking-widest">{currentIndex + 1} / {validPreviewList.length}</span>
-          <Button variant="secondary" size="sm" onClick={() => onDownloadSingle(selectedMedia)} className="bg-white/10 hover:bg-white/20 text-white border-none rounded-xl">
-            <DownloadSimple size={18} className="mr-2" />Tải về
+          <Button disabled variant="secondary" size="sm" onClick={() => onDownloadSingle(selectedMedia)} className="bg-white/15 hover:bg-white/20 text-white/20 border-none">
+            <DownloadSimple size={18} className="mr-0" />Tải về
           </Button>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10 rounded-xl">
             <X size={20} />
           </Button>
         </div>
       </div>
-      <div className="flex-1 relative flex items-center justify-center p-4 sm:p-12 bg-white overflow-hidden group/viewer">
+      <div className="h-[75vh] relative flex items-center justify-center p-4 sm:p-12 bg-white overflow-hidden group/viewer">
         {validPreviewList.length > 1 && (
           <>
             <Button variant="ghost" size="icon" className="absolute left-6 top-1/2 -translate-y-1/2 h-14 w-14 bg-black/10 hover:bg-black/20 text-secondary-900 rounded-full opacity-0 group-hover/viewer:opacity-100 transition-opacity z-30" onClick={handlePrev}>
@@ -277,7 +277,7 @@ function MediaGallery({
           <p className="text-xs text-primary-300 font-bold">Tổng cộng {validPreviewList.length} tệp tin</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all" onClick={() => onDownloadAll(validPreviewList)}>
+          <Button variant="outline" disabled size="sm" className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all" onClick={() => onDownloadAll(validPreviewList)}>
             <DownloadSimple size={16} className="mr-2" />Tải về tất cả
           </Button>
           <Button variant="ghost" size="icon" className="h-10 w-10 bg-primary-50 text-secondary-900 rounded-full hover:bg-red-50 hover:text-red-500" onClick={onClose}>

@@ -90,7 +90,7 @@ export function CompactGallery({
         )}
       </div>
 
-      {showUpload && (
+      {/* {showUpload && (
         <Button
         variant="ghost"
           size="icon"
@@ -110,7 +110,7 @@ export function CompactGallery({
             accept="image/*,video/*"
           />
         </Button>
-      )}
+      )} */}
     </div>
   );
 }
