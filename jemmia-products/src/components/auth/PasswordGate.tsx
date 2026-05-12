@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,27 +16,25 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Artificial delay to feel "secure" and show loading state as requested
-    setTimeout(() => {
-      const sitePassword = import.meta.env.VITE_SITE_PASSWORD;
-      
-      if (!sitePassword) {
-        console.warn("VITE_SITE_PASSWORD is not set in environment variables.");
-      }
+    try {
+      const response = await axios.post("/auth/login", { password });
 
-      if (password === sitePassword) {
-        localStorage.setItem("site_authenticated", "true");
+      if (response.status >= 200 && response.status < 300) {
+        sessionStorage.setItem("site_authenticated", "true");
         onSuccess();
       } else {
         setError("Mật khẩu không chính xác. Vui lòng thử lại.");
-        setLoading(false);
       }
-    }, 800);
+    } catch (err) {
+      setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

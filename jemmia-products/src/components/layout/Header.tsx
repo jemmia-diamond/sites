@@ -1,4 +1,4 @@
-
+import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import { MagnifyingGlass, Bell, Gear, X, CaretRight, ArrowUpRight } from "@phosphor-icons/react";
 import { Link, useLocation } from "react-router-dom";
@@ -61,9 +61,8 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsLoading(true);
       setIsOpen(true);
       try {
-        const response = await fetch(`https://api.salesaya.com/products/search-combine?query=${encodeURIComponent(query)}`);
-        const data = await response.json();
-        setResults(data);
+        const response = await axios.get(`/site/products/search-combine?query=${encodeURIComponent(query)}`);
+        setResults(response.data);
       } catch (error) {
         console.error("Search error:", error);
       } finally {

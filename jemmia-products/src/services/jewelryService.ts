@@ -1,11 +1,9 @@
 import axios from "axios";
 import { JewelryFilter, PaginateResponse, ProductModel, ProductType } from "../types";
 
-const API_BASE_URL = "https://api.salesaya.com";
-
 export const jewelryService = {
   getProductTypes: async (): Promise<ProductType[]> => {
-    const response = await axios.get<{ data: ProductType[] }>(`${API_BASE_URL}/product-types`);
+    const response = await axios.get<{ data: ProductType[] }>("/product-types");
     return response.data.data;
   },
 
@@ -87,7 +85,7 @@ export const jewelryService = {
       params.searchQuery = filters.searchQuery;
     }
 
-    const response = await axios.get<PaginateResponse<ProductModel>>(`${API_BASE_URL}/products/jewelries`, {
+    const response = await axios.get<PaginateResponse<ProductModel>>("/site/products/jewelries", {
       params,
       // Handle the multiple params with same key: ?warehouseIds=1&warehouseIds=2
       paramsSerializer: {

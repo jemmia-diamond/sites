@@ -13,8 +13,26 @@ export default defineConfig(({mode}) => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâ€”file watching is disabled to prevent flickering during agent edits.
+      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // Proxy API requests to backend so cookies work with SameSite=Lax
+      proxy: {
+        '/auth': {
+          target: 'https://api.salesaya.com',
+          changeOrigin: true,
+          secure: true,
+        },
+        '/site': {
+          target: 'https://api.salesaya.com',
+          changeOrigin: true,
+          secure: true,
+        },
+        '/product-types': {
+          target: 'https://api.salesaya.com',
+          changeOrigin: true,
+          secure: true,
+        },
+      },
     },
   };
 });
