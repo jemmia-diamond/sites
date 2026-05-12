@@ -2,10 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductModel } from "../../../types";
 import { cn } from "@/lib/utils";
-import { CaretDown } from "@phosphor-icons/react";
 import { ProductCodes } from "./ProductCodes";
 import { SideStoneTooltip } from "./SideStoneTooltip";
 import { CompactGallery } from "./CompactGallery";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { CaretDown } from "@phosphor-icons/react";
 
 interface JewelryTableRowProps {
   product: ProductModel;
@@ -21,7 +22,6 @@ interface JewelryTableRowProps {
 export function JewelryTableRow({
   product,
   isExpanded,
-  expandedId,
   brokenImages,
   onImageError,
   onPreview,
@@ -53,22 +53,22 @@ export function JewelryTableRow({
 
   return (
     <>
-      <tr
+      <TableRow
         className={cn(
           "divide-x transition-all cursor-pointer group h-14 relative",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-50 hover:bg-primary-50 divide-primary-200"
+            : "border-primary-50 hover:bg-primary-50/30 divide-primary-50"
         )}
         onClick={() => onToggleExpand(product.id)}
       >
-        <td className="px-3 py-2 text-center">
+        <TableCell className="px-3 py-2 text-center">
           <div className="flex justify-center">
             <ProductCodes product={product} isExpanded={isExpanded} />
           </div>
-        </td>
+        </TableCell>
 
-        <td className="px-2 py-2 text-center">
+        <TableCell className="px-2 py-2 text-center">
           {fourView && Array.isArray(fourView) && fourView.length > 0 ? (
             <div className="flex justify-center">
               <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
@@ -76,9 +76,9 @@ export function JewelryTableRow({
           ) : (
             <span className="text-primary-100 text-[10px] font-black italic">--</span>
           )}
-        </td>
+        </TableCell>
 
-        <td className="px-2 py-2">
+        <TableCell className="px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={webImages}
@@ -88,9 +88,9 @@ export function JewelryTableRow({
               onPreview={onPreview}
             />
           </div>
-        </td>
+        </TableCell>
 
-        <td className="px-2 py-2">
+        <TableCell className="px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={actualImages}
@@ -100,9 +100,9 @@ export function JewelryTableRow({
               onPreview={onPreview}
             />
           </div>
-        </td>
+        </TableCell>
 
-        <td className="px-2 py-2 text-center">
+        <TableCell className="px-2 py-2 text-center">
           <Badge
             className={cn(
               "rounded-full px-3 py-1 text-[10px] font-black tracking-widest border-none shadow-sm",
@@ -111,9 +111,9 @@ export function JewelryTableRow({
           >
             {hasStock ? "Có hàng" : "Hết hàng"}
           </Badge>
-        </td>
+        </TableCell>
 
-        <td className="px-2 text-center">
+        <TableCell className="px-2 text-center">
           <div className="flex justify-center">
             <Button
               size="icon"
@@ -131,12 +131,12 @@ export function JewelryTableRow({
               />
             </Button>
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
 
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <td colSpan={6} className="p-0 bg-primary-50">
+          <TableCell colSpan={6} className="p-0 bg-primary-50">
             <div className="px-0 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200">
               <ExpandedPanel
                 stockBySKU={stockBySKU}
@@ -145,7 +145,7 @@ export function JewelryTableRow({
                 onOpenSerialModal={onOpenSerialModal}
               />
             </div>
-          </td>
+          </TableCell>
         </tr>
       )}
     </>
@@ -218,7 +218,7 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
               </div>
 
               <div className="px-4 py-3.5 flex justify-center">
-                <Badge className="rounded-full bg-secondary-900 text-white text-[11px] font-black px-3 py-1 shadow-sm">
+                <Badge className="rounded-full bg-secondary-900 text-white text-[11px] font-black shadow-sm">
                   Tồn: {isEarring ? Math.floor(group.totalQuantity / 2) : group.totalQuantity}
                 </Badge>
               </div>
@@ -252,7 +252,8 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-colors rounded-none"
+                  disabled={group.totalQuantity === 0}
+                  className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-colors rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
                   onClick={() => onOpenSerialModal(group.variants, sku)}
                 >
                   Xem Serials

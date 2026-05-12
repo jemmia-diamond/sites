@@ -11,7 +11,7 @@ const buttonVariants = cva(
         filled: 
           "bg-primary-900 text-white hover:bg-primary-800 disabled:bg-primary-100 disabled:text-primary-300 shadow-sm",
         outline:
-          "border border-primary-800 text-black hover:bg-primary-900 hover:border-transparent hover:text-white disabled:border-primary-100 disabled:bg-primary-100 disabled:text-[#0000001A]",
+          "border border-primary-800 text-black hover:bg-primary-900 hover:border-transparent hover:text-white disabled:border-primary-100 disabled:bg-primary-100 disabled:text-primary-400",
         borderless:
           "text-primary-600 hover:bg-primary-50 active:bg-primary-100 disabled:text-primary-300",
         // Keep compatibility with shadcn defaults if needed

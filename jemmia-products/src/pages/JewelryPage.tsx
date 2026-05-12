@@ -21,7 +21,7 @@ import {
   PaginationPrevious
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { ArrowDownWideNarrow, ArrowUpWideNarrow } from "lucide-react";
+import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow } from "lucide-react";
 
 export default function JewelryPage() {
   const navigate = useNavigate();
@@ -42,17 +42,23 @@ export default function JewelryPage() {
 
   useEffect(() => {
     setFilters(prev => {
-      const next = { 
-        ...prev, 
-        designCode: designCodeParam || undefined, 
+      const next = {
+        page: 1,
+        sortBySalePrice: "DESC",
+        stockStatus: "all",
+        designCode: designCodeParam || undefined,
         searchQuery: searchQueryParam || undefined,
-        type: searchQueryParam ? undefined : prev.type,
-        page: 1 
+        type: searchQueryParam ? undefined : prev.type
       };
       setDebouncedFilters(next);
       return next;
     });
   }, [designCodeParam, searchQueryParam]);
+
+  const handleGoBack = () => {
+    window.dispatchEvent(new Event("search:clear"));
+    navigate("/jewelry");
+  };
 
   // Debounce logic for filters (excluding sort)
   const debouncedSetFilters = useMemo(
@@ -94,22 +100,30 @@ export default function JewelryPage() {
         />
       )}
 
-      <main className="flex-1 bg-white overflow-y-auto px-4 pt-2 pb-6">
-        <div className="mx-auto space-y-4">
+      <main className="flex-1 flex flex-col gap-4 bg-white px-6 pt-4 pb-6 overflow-hidden">
+        <div className="flex-shrink-0">
           <PageHeader
-            title={debouncedFilters.searchQuery ? `Tìm kiếm: ${debouncedFilters.searchQuery}` : `${debouncedFilters.type || "Tất cả trang sức"}`}
+            title={
+              debouncedFilters.designCode
+                ? `Mã: ${debouncedFilters.designCode}`
+                : debouncedFilters.searchQuery
+                  ? `Tìm kiếm: ${debouncedFilters.searchQuery}`
+                  : `${debouncedFilters.type || "Tất cả trang sức"}`
+            }
             description={`Hiển thị ${allJewelries.length} trên ${totalResults} kết quả`}
+            headerStart={
+              searchQueryParam ? (
+                <Button
+                  onClick={handleGoBack}
+                  className={'h-full'}
+                >
+                  <ArrowLeft size={16} />
+                  Quay về
+                </Button>
+              ) : null
+            }
             actions={
               <div className="flex items-center gap-2">
-                {searchQueryParam && (
-                  <Button
-                    onClick={() => navigate(-1)}
-                    variant="outline"
-                    className="flex items-center gap-2 h-10 px-4 rounded-none border-primary-100 font-bold text-xs uppercase tracking-tight hover:bg-primary-50"
-                  >
-                    Quay về
-                  </Button>
-                )}
                 <div className="flex flex-col gap-1.5 min-w-[150px]">
                 <Button
                   onClick={toggleSort}
@@ -129,91 +143,89 @@ export default function JewelryPage() {
               </div>
             }
           />
+        </div>
 
-          <div className="min-h-[400px]">
-            {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-20 w-full rounded-none" />
-                ))}
-              </div>
-            ) : isError ? (
-              <div className="py-20 text-center bg-white rounded-none border border-dashed border-red-200">
-                <p className="text-red-500 font-medium">Đã có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.</p>
-              </div>
-            ) : allJewelries.length === 0 ? (
-              <div className="py-20 text-center bg-white rounded-none border border-dashed border-primary-200">
-                <p className="text-primary-400 font-medium">Không tìm thấy thiết kế nào phù hợp với bộ lọc.</p>
-              </div>
-            ) : (
-              <JewelryTable jewelries={allJewelries} />
-            )}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pt-12 pb-24 flex flex-col items-center gap-6">
-              <div className="h-px w-24 bg-primary-100" />
-              <Pagination>
-                <PaginationContent className="gap-2">
-                  <PaginationItem>
-                    <PaginationPrevious
-                      text="TRƯỚC"
-                      onClick={() => {
-                        const newPage = Math.max(1, currentPage - 1);
-                        const updated = { ...filters, page: newPage };
-                        setFilters(updated);
-                        setDebouncedFilters(updated);
-                      }}
-                      className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest disabled:opacity-30"
-                    />
-                  </PaginationItem>
-
-                  <div className="flex items-center gap-1 mx-2">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
-                      <PaginationItem key={p}>
-                        <PaginationLink
-                          onClick={() => {
-                            const updated = { ...filters, page: p };
-                            setFilters(updated);
-                            setDebouncedFilters(updated);
-                          }}
-                          isActive={currentPage === p}
-                          className={cn(
-                            "rounded-none h-10 w-10 border transition-all cursor-pointer text-xs font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
-                            currentPage === p
-                              ? "bg-secondary-900 text-white border-secondary-900 shadow-xl shadow-secondary-900/10"
-                              : "border-primary-50 text-primary-300"
-                          )}
-                        >
-                          {p}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    {totalPages > 5 && (
-                      <PaginationItem>
-                        <PaginationEllipsis className="text-primary-100" />
-                      </PaginationItem>
-                    )}
-                  </div>
-
-                  <PaginationItem>
-                    <PaginationNext
-                      text="SAU"
-                      onClick={() => {
-                        const newPage = Math.min(totalPages, currentPage + 1);
-                        const updated = { ...filters, page: newPage };
-                        setFilters(updated);
-                        setDebouncedFilters(updated);
-                      }}
-                      className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest"
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+        <div className="flex-1 min-h-0">
+          {isLoading ? (
+            <div className="h-full overflow-y-auto">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-none" />
+              ))}
             </div>
+          ) : isError ? (
+            <div className="py-20 text-center bg-white rounded-none border border-dashed border-red-200">
+              <p className="text-red-500 font-medium">Đã có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.</p>
+            </div>
+          ) : allJewelries.length === 0 ? (
+            <div className="py-20 text-center bg-white rounded-none border border-dashed border-primary-200">
+              <p className="text-primary-400 font-medium">Không tìm thấy thiết kế nào phù hợp với bộ lọc.</p>
+            </div>
+          ) : (
+            <JewelryTable jewelries={allJewelries} />
           )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex-shrink-0 flex flex-col items-center gap-4">
+            <Pagination>
+              <PaginationContent className="gap-2">
+                <PaginationItem>
+                  <PaginationPrevious
+                    text="TRƯỚC"
+                    onClick={() => {
+                      const newPage = Math.max(1, currentPage - 1);
+                      const updated = { ...filters, page: newPage };
+                      setFilters(updated);
+                      setDebouncedFilters(updated);
+                    }}
+                    className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest disabled:opacity-30"
+                  />
+                </PaginationItem>
+
+                <div className="flex items-center gap-1 mx-2">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        onClick={() => {
+                          const updated = { ...filters, page: p };
+                          setFilters(updated);
+                          setDebouncedFilters(updated);
+                        }}
+                        isActive={currentPage === p}
+                        className={cn(
+                          "rounded-none h-10 w-10 border transition-all cursor-pointer text-xs font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
+                          currentPage === p
+                            ? "bg-secondary-900 text-white border-secondary-900 shadow-xl shadow-secondary-900/10"
+                            : "border-primary-50 text-primary-300"
+                        )}
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  {totalPages > 5 && (
+                    <PaginationItem>
+                      <PaginationEllipsis className="text-primary-100" />
+                    </PaginationItem>
+                  )}
+                </div>
+
+                <PaginationItem>
+                  <PaginationNext
+                    text="SAU"
+                    onClick={() => {
+                      const newPage = Math.min(totalPages, currentPage + 1);
+                      const updated = { ...filters, page: newPage };
+                      setFilters(updated);
+                      setDebouncedFilters(updated);
+                    }}
+                    className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest"
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </main>
     </LayoutShell>
   );

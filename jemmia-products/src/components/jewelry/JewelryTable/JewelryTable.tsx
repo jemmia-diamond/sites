@@ -1,22 +1,18 @@
 import React, { useState } from "react";
 import { ProductModel } from "../../../types";
 import { Table, TableBody } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
-  CaretDown,
   CaretLeft,
   CaretRight,
   DownloadSimple,
   Eye,
   X,
 } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
@@ -78,24 +74,30 @@ export function JewelryTable({ jewelries }: JewelryTableProps) {
 
   return (
     <>
-      <Table className="bg-white rounded-none border border-primary-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-        <JewelryTableHeader />
+      <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
+        <div className="h-full overflow-auto">
+          <table className="w-full border-collapse">
+            <JewelryTableHeader />
 
-        <TableBody>
-          {jewelries.map((product) => (
-            <JewelryTableRow
-              product={product}
-              isExpanded={expandedId === product.id}
-              expandedId={expandedId}
-              brokenImages={brokenImages}
-              onImageError={handleImageError}
-              onPreview={handlePreview}
-              onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
-              onOpenSerialModal={handleOpenSerialModal}
-            />
-          ))}
-        </TableBody>
-      </Table>
+            <TableBody>
+              {jewelries.map((product) => (
+                <JewelryTableRow
+                  product={product}
+                  isExpanded={expandedId === product.id}
+                  expandedId={expandedId}
+                  brokenImages={brokenImages}
+                  onImageError={handleImageError}
+                  onPreview={handlePreview}
+                  onToggleExpand={(id) =>
+                    setExpandedId(expandedId === id ? null : id)
+                  }
+                  onOpenSerialModal={handleOpenSerialModal}
+                />
+              ))}
+            </TableBody>
+          </table>
+        </div>
+      </div>
 
       <SerialListModal
         variants={serialModal?.variants || []}

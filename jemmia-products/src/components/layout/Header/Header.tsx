@@ -29,6 +29,17 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const handleClearSearch = () => {
+      setQuery("");
+      setResults(null);
+      setIsOpen(false);
+    };
+
+    window.addEventListener("search:clear", handleClearSearch);
+    return () => window.removeEventListener("search:clear", handleClearSearch);
+  }, []);
+
+  useEffect(() => {
     if (!query.trim()) {
       setResults(null);
       setIsOpen(false);

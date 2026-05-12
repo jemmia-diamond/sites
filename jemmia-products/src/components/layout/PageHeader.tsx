@@ -7,6 +7,7 @@ interface PageHeaderProps {
   title?: string;
   description: string | ReactNode;
   actions?: ReactNode;
+  headerStart?: ReactNode;
   sortOptions?: {
     value: string;
     label: string;
@@ -21,6 +22,7 @@ export function PageHeader({
   title, 
   description, 
   actions, 
+  headerStart,
   sortOptions, 
   onSortChange,
   defaultSort,
@@ -29,10 +31,13 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-4", className)}>
-      <div className="space-y-0">
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
-        <div className="text-sm text-gray-500 max-w-2xl leading-relaxed font-medium">
-          {description}
+      <div className="flex items-center gap-4">
+        {headerStart && <div>{headerStart}</div>}
+        <div className="space-y-0">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
+          <div className="text-sm text-gray-500 max-w-2xl leading-relaxed font-medium">
+            {description}
+          </div>
         </div>
       </div>
 
