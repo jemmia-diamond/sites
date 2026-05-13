@@ -42,7 +42,7 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
 
       <TableCell className="px-2 py-2 text-center">
         <p className="text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">
-          {diamond.attributes.edgeSize1}x{diamond.attributes.edgeSize2}
+          {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
         </p>
       </TableCell>
 
