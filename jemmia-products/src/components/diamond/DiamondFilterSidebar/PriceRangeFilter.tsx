@@ -7,12 +7,14 @@ interface PriceRangeFilterProps {
   filters: DiamondFilter;
   onMinPriceChange: (value: number | undefined) => void;
   onMaxPriceChange: (value: number | undefined) => void;
+  onApply: () => void;
 }
 
 export function PriceRangeFilter({
   filters,
   onMinPriceChange,
   onMaxPriceChange,
+  onApply,
 }: PriceRangeFilterProps) {
   return (
     <div className="flex items-center gap-2">
@@ -22,8 +24,8 @@ export function PriceRangeFilter({
           <Input
             type="number"
             placeholder="0"
-            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-12"
-            value={filters.salePriceFrom || ""}
+            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
+            value={filters.salePriceFrom ?? ""}
             onChange={(e) => onMinPriceChange(e.target.value ? Number(e.target.value) : undefined)}
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-200 font-bold uppercase">triệu</span>
@@ -37,13 +39,22 @@ export function PriceRangeFilter({
         <div className="relative">
           <Input
             type="number"
-            placeholder="100"
-            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-12"
-            value={filters.salePriceTo || ""}
+            placeholder="∞"
+            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
+            value={filters.salePriceTo ?? ""}
             onChange={(e) => onMaxPriceChange(e.target.value ? Number(e.target.value) : undefined)}
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-200 font-bold uppercase">triệu</span>
         </div>
+      </div>
+      <div className="pt-6">
+        <Button
+          variant="secondary"
+          className="w-full px-2 rounded-none font-bold tracking-[0.2em] shadow-lg shadow-secondary-900/10 cursor-pointer"
+          onClick={onApply}
+        >
+          <ChevronRight size={20} />
+        </Button>
       </div>
     </div>
   );

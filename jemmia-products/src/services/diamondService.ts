@@ -5,17 +5,48 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   const limit = filters.limit || 10;
   const offset = ((filters.page || 1) - 1) * limit;
 
-  const params: Record<string, any> = {
+  const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
+  const warehouseIdsToUse = filters.warehouseIds && filters.warehouseIds.length > 0 
+    ? filters.warehouseIds 
+    : defaultWarehouses;
+
+  const params: any = {
     limit,
     offset,
+    stockStatus: filters.stockStatus || "INCOMING",
+    warehouseIds: warehouseIdsToUse,
+    sortBySalePrice: filters.sortBySalePrice,
   };
 
   if (filters.searchQuery) {
     params.searchQuery = filters.searchQuery.toUpperCase().replace(/^GIA/, "");
-  } else if (filters.salePriceFrom !== undefined) {
-    params.salePriceFrom = filters.salePriceFrom * 1000000;
   }
 
-  const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { params });
+  if (filters.salePriceFrom !== undefined) {
+    params.salePriceFrom = filters.salePriceFrom * 1000000;
+  }
+  if (filters.salePriceTo !== undefined) {
+    params.salePriceTo = filters.salePriceTo * 1000000;
+  }
+
+  if (filters.edgeSizes && filters.edgeSizes.length > 0) {
+    params.edgeSizes = filters.edgeSizes;
+  }
+  if (filters.color && filters.color.length > 0) {
+    params.color = filters.color;
+  }
+  if (filters.clarity && filters.clarity.length > 0) {
+    params.clarity = filters.clarity;
+  }
+  if (filters.fluorescence && filters.fluorescence.length > 0) {
+    params.fluorescence = filters.fluorescence;
+  }
+
+  const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { 
+    params,
+    paramsSerializer: {
+      indexes: null // to produce warehouseIds=1&warehouseIds=2 instead of warehouseIds[0]=1&warehouseIds[1]=2
+    }
+  });
   return response.data;
 }

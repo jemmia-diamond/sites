@@ -31,7 +31,7 @@ export function MultiSelectButtonFilter({
           variant={selectedValues.includes(option) ? "default" : "outline"}
           onClick={() => onToggle(option)}
           className={cn(
-            "h-8 rounded-none text-[10px] font-bold border transition-all cursor-pointer uppercase tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
+            "h-8 rounded-none text-[10px] border transition-all cursor-pointer uppercase tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
             selectedValues.includes(option)
               ? "bg-secondary-900 text-white border-secondary-900 shadow-sm"
               : "bg-white text-primary-500 border-primary-100"

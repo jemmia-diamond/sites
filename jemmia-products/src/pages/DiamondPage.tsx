@@ -20,10 +20,11 @@ export default function DiamondPage() {
   const searchQueryParam = searchParams.get("searchQuery");
 
   const [filters, setFilters] = useState<DiamondFilter>({
-    page: 1,
-    limit: 10,
+    page: 2,
+    limit: 18,
     sortBySalePrice: "DESC",
-    stockStatus: "IN_STOCK",
+    stockStatus: "INCOMING",
+    warehouseIds: [],
     searchQuery: searchQueryParam || undefined
   });
 

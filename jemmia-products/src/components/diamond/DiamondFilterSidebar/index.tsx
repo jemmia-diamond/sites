@@ -3,5 +3,5 @@ export { FilterSection } from "./FilterSection";
 export { PriceRangeFilter } from "./PriceRangeFilter";
 export { SizeFilter } from "./SizeFilter";
 export { StockStatusFilter } from "./StockStatusFilter";
-export { AreaFilter } from "./AreaFilter";
+export { WarehouseFilter } from "./WarehouseFilter";
 export { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";

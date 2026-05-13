@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ProductModel } from "../../../types";
 import { Badge } from "@/components/ui/badge";
-import { CaretDown, Copy, Check } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useHoverPopover } from "./hooks/useHoverPopover";
 
@@ -12,6 +13,8 @@ interface ProductCodesProps {
 
 export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
   const { open, onEnter, onLeave } = useHoverPopover();
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const otherCodes = Array.from(
     new Set([
@@ -23,8 +26,22 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
 
   const hasOther = otherCodes.length > 0;
 
+  useEffect(() => {
+    if (open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left + rect.width / 2,
+        width: rect.width,
+      });
+    }
+  }, [open]);
+
+  const shouldShowAbove = coords ? (coords.bottom + 160 > window.innerHeight) : false;
+
   return (
-    <div className="relative inline-block" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+    <div className="relative inline-block" onMouseEnter={onEnter} onMouseLeave={onLeave} ref={triggerRef}>
       <Badge className="rounded-full bg-secondary-900 text-white px-2 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase whitespace-nowrap">
         {product.attributes?.designCode || "N/A"}
       </Badge>
@@ -49,9 +66,16 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
         </div>
       )}
 
-      {hasOther && open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-[80]">
-          <div className="bg-white border border-primary-100 shadow-xl p-1.5 flex flex-col gap-1 min-w-[160px] items-center">
+      {hasOther && open && coords && createPortal(
+        <div 
+          className="fixed z-[100] pointer-events-none"
+          style={{ 
+            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`, 
+            left: `${coords.left}px`,
+            transform: shouldShowAbove ? "translate(-50%, -100%)" : "translate(-50%, 0)"
+          }}
+        >
+          <div className="bg-white border border-primary-100 shadow-2xl p-1.5 flex flex-col gap-1 min-w-[160px] items-center animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
             {otherCodes.map((c, i) => (
               <Badge
                 key={i}
@@ -61,7 +85,8 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
               </Badge>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -51,7 +51,7 @@ export function ProductTypeFilter({
                 <Label
                   htmlFor={cat.id}
                   className={cn(
-                    "text-[11px] font-bold uppercase tracking-tight transition-colors",
+                    "text-xs tracking-tight transition-colors",
                     isDisabled
                       ? "text-primary-200 cursor-not-allowed"
                       : "text-primary-600 group-hover:text-secondary-900 cursor-pointer"

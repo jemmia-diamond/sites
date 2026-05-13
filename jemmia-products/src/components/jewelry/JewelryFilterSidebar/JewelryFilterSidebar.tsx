@@ -29,8 +29,9 @@ const WAREHOUSES_LIST = [
 
 const STOCK_LABELS: Record<string, string> = {
   all: "Tất cả",
-  IN_STOCK: "Hàng sẵn",
-  OUT_OF_STOCK: "Hàng đặt trước",
+  IN_STOCK: "Có hàng",
+  REAL_OUT_OF_STOCK: "Hết hàng",
+
 };
 
 export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterSidebarProps) {

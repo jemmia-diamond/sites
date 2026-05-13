@@ -21,30 +21,30 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   return (
-    <div className="bg-white rounded-none border border-primary-100 shadow-sm hover:shadow-xl transition-all duration-300 h-full overflow-hidden">
+    <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
       <div className="h-full overflow-auto">
         <table className="w-full min-w-[1200px] border-collapse">
-          <TableHeader className="bg-primary-50">
-            <TableRow className="border-primary-100 divide-x divide-primary-100">
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Định danh</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 text-center uppercase tracking-[0.2em]">Hình minh họa</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 text-center uppercase tracking-[0.2em]">Hình thực tế</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Kích thước</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Trọng lượng (carat)</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Hình dạng</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Nước màu</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Độ sạch</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Huỳnh quang</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 text-right uppercase tracking-[0.2em]">Giá (VND)</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Trạng thái</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Vị trí kho</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 text-center uppercase tracking-[0.2em]">Chứng nhận GIA</TableHead>
-              <TableHead className="text-[10px] font-black text-secondary-900 py-5 px-4 uppercase tracking-[0.2em]">Haravan</TableHead>
+          <TableHeader>
+            <TableRow className="border-b border-primary-100 hover:bg-transparent">
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Định danh</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Kích thước</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Trọng lượng</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Hình dạng</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Nước màu</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Độ sạch</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Huỳnh quang</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Giá (VND)</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Trạng thái</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Vị trí kho</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Chứng nhận GIA</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Haravan</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {diamonds.map((diamond) => (
               <DiamondTableRow
+                key={diamond.id}
                 diamond={diamond}
                 onGiaPdfClick={setPreviewUrl}
                 onImageClick={setImagePreviewUrl}

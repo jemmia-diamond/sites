@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CaretDown, Copy, Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useHoverPopover } from "./hooks/useHoverPopover";
@@ -16,16 +17,22 @@ interface SideStoneTooltipProps {
 
 export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps) {
   const { open, onEnter, onLeave } = useHoverPopover();
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
-  const handleCopy = (e: React.MouseEvent, text: string, idx: number) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedIdx(idx);
-      setTimeout(() => setCopiedIdx(null), 1500);
-    });
-  };
+  useEffect(() => {
+    if (open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left + rect.width / 2,
+        width: rect.width,
+      });
+    }
+  }, [open]);
 
   const handleCopyAll = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -38,12 +45,15 @@ export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps
     });
   };
 
+  const shouldShowAbove = coords ? (coords.bottom + 200 > window.innerHeight) : false;
+
   return (
     <div
       className="relative inline-block"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={(e) => e.stopPropagation()}
+      ref={triggerRef}
     >
       <div className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md hover:bg-primary-50 transition-colors">
         <span
@@ -68,9 +78,16 @@ export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps
         />
       </div>
 
-      {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-[80]">
-          <div className="bg-white border border-primary-100 shadow-xl overflow-hidden min-w-[140px]">
+      {open && coords && createPortal(
+        <div 
+          className="fixed z-[100] pointer-events-none"
+          style={{ 
+            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`, 
+            left: `${coords.left}px`,
+            transform: shouldShowAbove ? "translate(-50%, -100%)" : "translate(-50%, 0)"
+          }}
+        >
+          <div className="bg-white border border-primary-100 shadow-2xl overflow-hidden min-w-[140px] animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
             <div className="flex items-center justify-between px-3 py-2 bg-secondary-900/5 border-b border-primary-100">
               <div></div>
               <button
@@ -102,7 +119,8 @@ export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

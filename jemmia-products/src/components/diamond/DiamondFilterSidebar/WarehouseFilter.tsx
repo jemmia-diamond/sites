@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { JewelryFilter } from "../../../types";
+import { DiamondFilter } from "../../../types";
 
 interface Warehouse {
   id: string;
@@ -8,7 +8,7 @@ interface Warehouse {
 }
 
 interface WarehouseFilterProps {
-  filters: JewelryFilter;
+  filters: DiamondFilter;
   warehouses: Warehouse[];
   onWarehouseToggle: (warehouseId: string) => void;
 }
@@ -30,7 +30,7 @@ export function WarehouseFilter({
           />
           <Label
             htmlFor={wh.id}
-            className="text-xs text-primary-600 cursor-pointer group-hover:text-secondary-900 capitalize"
+            className="text-xs text-primary-600 cursor-pointer group-hover:text-secondary-900"
           >
             {wh.name}
           </Label>

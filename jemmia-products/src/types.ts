@@ -111,7 +111,7 @@ export interface DiamondFilter {
   salePriceTo?: number;
   edgeSizes?: number[];
   warehouseIds?: string[];
-  stockStatus?: "INCOMING" | "IN_STOCK" | "all";
+  stockStatus?: "INCOMING" | "IN_STOCK";
   color?: string[];
   clarity?: string[];
   fluorescence?: string[];

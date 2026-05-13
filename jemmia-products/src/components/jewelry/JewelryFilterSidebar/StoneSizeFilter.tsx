@@ -20,7 +20,7 @@ export function StoneSizeFilter({
           key={size}
           variant={filters.storageSize1?.includes(size) ? "default" : "outline"}
           className={cn(
-            "h-8 w-full px-0 rounded-none text-[10px] font-bold transition-all uppercase tracking-wider cursor-pointer hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
+            "h-8 w-full px-0 rounded-none text-xs transition-all tracking-wider cursor-pointer hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
             filters.storageSize1?.includes(size)
               ? "bg-secondary-900 text-white border-secondary-900 shadow-sm"
               : "bg-white text-primary-500 border-primary-100"

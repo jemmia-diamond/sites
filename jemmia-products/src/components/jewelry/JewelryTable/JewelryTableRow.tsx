@@ -7,6 +7,7 @@ import { SideStoneTooltip } from "./SideStoneTooltip";
 import { CompactGallery } from "./CompactGallery";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CaretDown } from "@phosphor-icons/react";
+import { formatPriceMillion } from "./utils/formatters";
 
 interface JewelryTableRowProps {
   product: ProductModel;
@@ -52,6 +53,16 @@ export function JewelryTableRow({
   const hasStock = totalStockCount > 0;
   const fourView = product.attributes?.["4view"];
 
+  const allPrices = variants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
+
+  const priceDisplay = minPrice === 0 
+    ? "Liên hệ" 
+    : minPrice === maxPrice 
+      ? formatPriceMillion(minPrice) 
+      : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
+
   return (
     <>
       <TableRow
@@ -70,13 +81,12 @@ export function JewelryTableRow({
         </TableCell>
 
         <TableCell className="px-2 py-2 text-center">
-          {fourView && Array.isArray(fourView) && fourView.length > 0 ? (
-            <div className="flex justify-center">
-              <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
-            </div>
-          ) : (
-            <span className="text-primary-100 text-[10px] font-black italic">--</span>
-          )}
+          <span className={cn(
+            "text-[11px] font-black tracking-tight",
+            isExpanded ? "text-white" : "text-secondary-900"
+          )}>
+            {priceDisplay}
+          </span>
         </TableCell>
 
         <TableCell className="px-2 py-2">
@@ -101,6 +111,16 @@ export function JewelryTableRow({
               onPreview={onPreview}
             />
           </div>
+        </TableCell>
+
+        <TableCell className="px-2 py-2 text-center">
+          {fourView && Array.isArray(fourView) && fourView.length > 0 ? (
+            <div className="flex justify-center">
+              <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
+            </div>
+          ) : (
+            <span className="text-primary-100 text-[10px] font-black italic">--</span>
+          )}
         </TableCell>
 
         <TableCell className="px-2 py-2 text-center">
@@ -137,7 +157,7 @@ export function JewelryTableRow({
 
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <TableCell colSpan={6} className="p-0 bg-primary-50">
+          <TableCell colSpan={7} className="p-0 bg-primary-50">
             <div className="px-0 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200">
               <ExpandedPanel
                 stockBySKU={stockBySKU}
