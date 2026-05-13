@@ -30,7 +30,17 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   }
 
   if (filters.edgeSizes && filters.edgeSizes.length > 0) {
-    params.edgeSizes = filters.edgeSizes;
+    const expandedSizes = filters.edgeSizes.flatMap(size => {
+      const results = [];
+      // If size is like 6.3, we want 6.3, 6.31, 6.32, ..., 6.39
+      // We generate 10 values starting from the selected size with 0.01 increments
+      for (let i = 0; i <= 9; i++) {
+        const val = size + (i * 0.01);
+        results.push(parseFloat(val.toFixed(2)));
+      }
+      return results;
+    });
+    params.edgeSizes = expandedSizes;
   }
   if (filters.color && filters.color.length > 0) {
     params.color = filters.color;
