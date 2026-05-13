@@ -43,20 +43,16 @@ export const jewelryService = {
     if (filters.salePriceFrom !== undefined) {
       params.salePriceFrom = (filters.salePriceFrom * priceMultiplier) / priceDivisor;
     }
-    
+
     if (filters.salePriceTo !== undefined) {
       params.salePriceTo = (filters.salePriceTo * priceMultiplier) / priceDivisor;
     }
 
     if (filters.stockStatus) {
       if (filters.stockStatus === "all") {
-        // If warehouses are selected while in "All" mode, switch to IN_STOCK logic
-        // Otherwise, use the default OUT_OF_STOCK logic for comprehensive view
-        if (filters.warehouseIds && filters.warehouseIds.length > 0) {
-          params.stockStatus = ["IN_STOCK"];
-        } else {
-          params.stockStatus = ["OUT_OF_STOCK"];
-        }
+        params.stockStatus = ["OUT_OF_STOCK"];
+      } else if (filters.stockStatus === "IN_STOCK") {
+        params.stockStatus = ["IN_STOCK"];
       } else if (filters.stockStatus === "OUT_OF_STOCK") {
         // Map UI "OUT_OF_STOCK" to backend "REAL_OUT_OF_STOCK"
         params.stockStatus = ["REAL_OUT_OF_STOCK"];
@@ -76,7 +72,7 @@ export const jewelryService = {
     if (filters.sortBySalePrice) {
       params.sortBySalePrice = filters.sortBySalePrice;
     }
-    
+
     if (filters.designCode) {
       params.designCode = filters.designCode;
     }
@@ -89,7 +85,7 @@ export const jewelryService = {
       params,
       // Handle the multiple params with same key: ?warehouseIds=1&warehouseIds=2
       paramsSerializer: {
-        indexes: null, 
+        indexes: null,
       }
     });
 

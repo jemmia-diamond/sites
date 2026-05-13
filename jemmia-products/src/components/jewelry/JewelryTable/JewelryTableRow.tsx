@@ -17,6 +17,7 @@ interface JewelryTableRowProps {
   onPreview: (images: string[], index: number) => void;
   onToggleExpand: (id: string) => void;
   onOpenSerialModal: (variants: any[], sku: string) => void;
+  key: string;
 }
 
 export function JewelryTableRow({

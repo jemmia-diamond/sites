@@ -88,8 +88,8 @@ export default function JewelryPage() {
   });
 
   const allJewelries = data?.data || [];
-  const totalResults = data?.meta.totalRows || 0;
-  const totalPages = data?.meta.totalPages || 1;
+  const totalResults = data?.meta?.totalRows || 0;
+  const totalPages = data?.meta?.totalPages || 1;
   const currentPage = debouncedFilters.page || 1;
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
@@ -134,9 +134,9 @@ export default function JewelryPage() {
                     {filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}
                   </span>
                   {filters.sortBySalePrice === "DESC" ? (
-                    <ArrowDownWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
+                    <ArrowDownWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
                   ) : (
-                    <ArrowUpWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
+                    <ArrowUpWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
                   )}
                 </Button>
                 </div>

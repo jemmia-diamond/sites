@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { JewelryFilter, StockStatusFilter } from "../../../types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { jewelryService } from "../../../services/jewelryService";
 import { FilterSection } from "./FilterSection";
@@ -9,6 +10,7 @@ import { StockStatusFilter as StockStatusFilterComponent } from "./StockStatusFi
 import { WarehouseFilter } from "./WarehouseFilter";
 import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
+import { X } from "lucide-react";
 
 interface JewelryFilterSidebarProps {
   onApply: (filters: JewelryFilter) => void;
@@ -25,7 +27,14 @@ const WAREHOUSES_LIST = [
   { id: "1593276", name: "Cần Thơ" },
 ];
 
+const STOCK_LABELS: Record<string, string> = {
+  all: "Tất cả",
+  IN_STOCK: "Hàng sẵn",
+  OUT_OF_STOCK: "Hàng đặt trước",
+};
+
 export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterSidebarProps) {
+  const [appliedChips, setAppliedChips] = useState<{ key: string; value: any; label: string }[]>([]);
   const initialFilters: JewelryFilter = {
     type: undefined,
     stockStatus: "all",
@@ -133,12 +142,75 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
     setFilters((prev) => ({ ...prev, salePriceTo: value }));
   };
 
+  const buildChips = useCallback(
+    (currentFilters: JewelryFilter): { key: string; value: any; label: string }[] => {
+      const chips: { key: string; value: any; label: string }[] = [];
+
+      if (currentFilters.stockStatus && currentFilters.stockStatus !== "all") {
+        chips.push({
+          key: "stockStatus",
+          value: currentFilters.stockStatus,
+          label: STOCK_LABELS[currentFilters.stockStatus] || currentFilters.stockStatus,
+        });
+      }
+      if (currentFilters.warehouseIds && currentFilters.warehouseIds.length > 0) {
+        chips.push({
+          key: "warehouseIds",
+          value: currentFilters.warehouseIds,
+          label: currentFilters.warehouseIds
+            .map((id: string) => WAREHOUSES_LIST.find((w) => w.id === id)?.name || id)
+            .join(", "),
+        });
+      }
+      if (currentFilters.storageSize1 && currentFilters.storageSize1.length > 0) {
+        chips.push({
+          key: "storageSize1",
+          value: currentFilters.storageSize1,
+          label: currentFilters.storageSize1.map((s: string) => `${s} ly`).join(", "),
+        });
+      }
+      if (currentFilters.salePriceFrom || currentFilters.salePriceTo) {
+        const from = currentFilters.salePriceFrom ? `${currentFilters.salePriceFrom.toLocaleString()} triệu` : "";
+        const to = currentFilters.salePriceTo ? `${currentFilters.salePriceTo.toLocaleString()} triệu` : "";
+        chips.push({
+          key: "salePrice",
+          value: { from: currentFilters.salePriceFrom, to: currentFilters.salePriceTo },
+          label: from && to ? `${from} - ${to}` : from || to,
+        });
+      }
+
+      return chips;
+    },
+    [productTypes]
+  );
+
+  useEffect(() => {
+    const chips = buildChips(filters);
+    setAppliedChips(chips);
+  }, [filters, buildChips]);
+
+  const removeChip = (key: string) => {
+    const getResetValue = (k: string): any => {
+      if (k === "salePrice") return undefined;
+      if (k === "stockStatus") return "all";
+      if (k === "warehouseIds" || k === "storageSize1") return [];
+      return undefined;
+    };
+
+    if (key === "salePrice") {
+      setFilters((prev) => ({ ...prev, salePriceFrom: undefined, salePriceTo: undefined }));
+      applyFilters({ ...filters, salePriceFrom: undefined, salePriceTo: undefined });
+    } else {
+      setFilters((prev) => ({ ...prev, [key]: getResetValue(key) }));
+      applyFilters({ ...filters, [key]: getResetValue(key) });
+    }
+  };
+
   return (
     <aside className="w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
       <div className="px-8 mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-bold tracking-widest text-secondary-900">BỘ LỌC NÂNG CAO</h2>
-          <p className="text-[10px] text-primary-400 mt-0.5 font-bold uppercase">Quản lý kho & Thiết kế</p>
+          <h2 className="text-sm font-bold tracking-widest text-secondary-900">BỘ LỌC</h2>
         </div>
         <Button
           variant="ghost"
@@ -149,6 +221,26 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
           Xóa bộ lọc
         </Button>
       </div>
+
+      {appliedChips.length > 0 && (
+        <div className="px-8 mb-4 flex flex-wrap gap-2">
+          {appliedChips.map((chip) => (
+            <Badge
+              key={chip.key}
+              variant="default"
+              className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
+            >
+              <span className="text-xs font-medium">{chip.label}</span>
+              <button
+                onClick={() => removeChip(chip.key)}
+                className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 px-8 space-y-9 pb-20">
         <FilterSection label="Loại Trang Sức">

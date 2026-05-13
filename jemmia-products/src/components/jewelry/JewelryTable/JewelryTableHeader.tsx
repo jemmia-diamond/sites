@@ -18,7 +18,7 @@ const HEADERS = [
 export function JewelryTableHeader() {
   return (
     <TableHeader>
-      <TableRow className="divide-x divide-primary-100 border-b border-primary-100 hover:bg-transparent">
+      <TableRow className="border-b border-primary-100 hover:bg-transparent">
         {HEADERS.map((h, i) => (
           <TableHead
             key={i}

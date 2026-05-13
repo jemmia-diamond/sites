@@ -72,9 +72,7 @@ export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps
         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-[80]">
           <div className="bg-white border border-primary-100 shadow-xl overflow-hidden min-w-[140px]">
             <div className="flex items-center justify-between px-3 py-2 bg-secondary-900/5 border-b border-primary-100">
-              <span className="text-[10px] font-black text-secondary-900 tracking-wider">
-                Đá tấm
-              </span>
+              <div></div>
               <button
                 onClick={handleCopyAll}
                 className="flex items-center gap-1 text-[10px] font-bold text-primary-400 hover:text-secondary-900 transition-colors"

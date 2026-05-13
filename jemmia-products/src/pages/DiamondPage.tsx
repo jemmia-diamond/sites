@@ -90,9 +90,9 @@ export default function DiamondPage() {
                       {filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}
                     </span>
                     {filters.sortBySalePrice === "DESC" ? (
-                      <ArrowDownWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
+                      <ArrowDownWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
                     ) : (
-                      <ArrowUpWideNarrow className="h-4 w-4 text-primary-400 group-hover:text-secondary-900 transition-colors" />
+                      <ArrowUpWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
                     )}
                   </Button>
                 </div>

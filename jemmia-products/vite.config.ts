@@ -22,7 +22,7 @@ export default defineConfig(({mode}) => {
           changeOrigin: true,
           secure: true,
         },
-        '/site': {
+        '/products': {
           target: 'https://api.salesaya.com',
           changeOrigin: true,
           secure: true,

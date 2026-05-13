@@ -92,6 +92,7 @@ export function JewelryTable({ jewelries }: JewelryTableProps) {
                     setExpandedId(expandedId === id ? null : id)
                   }
                   onOpenSerialModal={handleOpenSerialModal}
+                  key={product.id}
                 />
               ))}
             </TableBody>
@@ -156,7 +157,7 @@ export function MediaPreviewDialog({
 
   return (
     <Dialog open={!!previewUrl} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[1200px]! w-full max-h-[90vh] bg-white rounded-3xl border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none">
+      <DialogContent className="w-[90%] sm:max-w-[1200px] max-h-[90vh] bg-white rounded-3xl border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none">
         {selectedMedia ? (
           <MediaViewer
             selectedMedia={selectedMedia}
@@ -285,7 +286,7 @@ function MediaGallery({
           </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-8 pt-4">
         <div className="grid grid-cols-3 gap-4">
           {validPreviewList.map((url, i) => {
             const isVid = isVideo(url);
