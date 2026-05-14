@@ -155,7 +155,7 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
       <TableCell className="px-2 py-2 text-center">
         <div className="flex justify-center">
           <a
-            href={`https://admin.haravan.com/admin/products/${diamond.attributes.productId}`}
+            href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center text-[9px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"

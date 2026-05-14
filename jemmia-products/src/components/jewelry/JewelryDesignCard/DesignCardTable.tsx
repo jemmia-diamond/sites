@@ -18,7 +18,7 @@ export function DesignCardTable({ stockBySKU, isEarring, product }: DesignCardTa
         <TableRow className="border-b border-primary-50 hover:bg-transparent">
           <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase pl-8 tracking-widest">Sản phẩm (SKU/Barcode)</TableHead>
           <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase tracking-widest">Cấu hình (Vàng/Màu/Ni)</TableHead>
-          <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase tracking-widest text-center">Tồn kho</TableHead>
+          <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase tracking-widest text-center">Khả dụng</TableHead>
           <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase tracking-widest text-right pr-8">Giá bán</TableHead>
           <TableHead className="text-[9px] font-black text-primary-300 py-2.5 uppercase tracking-widest text-center">Thao tác</TableHead>
         </TableRow>

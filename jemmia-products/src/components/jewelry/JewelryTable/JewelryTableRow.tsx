@@ -240,7 +240,7 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
 
               <div className="px-4 py-3.5 flex justify-center">
                 <Badge className="rounded-full bg-secondary-900 text-white text-[11px] font-black shadow-sm">
-                  Tồn: {isEarring ? Math.floor(group.totalQuantity / 2) : group.totalQuantity}
+                  Khả dụng: {isEarring ? Math.floor(group.totalQuantity / 2) : group.totalQuantity}
                 </Badge>
               </div>
 
