@@ -28,6 +28,7 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
             <TableRow className="border-b border-primary-100 hover:bg-transparent">
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Định danh</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Hình minh họa</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Kích thước</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Trọng lượng</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-black tracking-[0.2em] text-secondary-900 whitespace-nowrap">Hình dạng</TableHead>

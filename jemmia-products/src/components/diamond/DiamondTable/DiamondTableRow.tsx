@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut, FilePdf } from "@phosphor-icons/react";
 import { DiamondModel } from "../../../types";
-import { cn } from "@/lib/utils";
+import { cn, getDiamondShapeImage } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 
@@ -14,7 +14,24 @@ interface DiamondTableRowProps {
 }
 
 export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: DiamondTableRowProps) {
-  const hasStock = !diamond.attributes.isInComing;
+  // Filter out intermediate warehouses (Kho trung gian)
+  const realWarehouses = diamond.warehouses.filter(wh => 
+    !wh.name.toLowerCase().includes("trung gian")
+  );
+
+  // Prioritize incoming status:
+  // 1. If explicitly has incoming quantity (even if qty_available > 0)
+  // 2. If it's only in intermediate warehouses
+  // 3. Fallback to isInComing flag or quantity 0
+  const isIncoming = 
+    (diamond.attributes.qty_incoming ?? 0) > 0 || 
+    realWarehouses.length === 0 ||
+    diamond.attributes.isInComing || 
+    diamond.quantity === 0;
+  
+  // Has stock if it's not considered incoming AND has real warehouses AND has quantity
+  const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
+  const hasStock = !isIncoming && realWarehouses.length > 0 && hasAvailableQty;
 
   return (
     <TableRow className="divide-x transition-all cursor-pointer group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50">
@@ -37,6 +54,17 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
           ) : (
             <div className="h-full w-full bg-primary-50 flex items-center justify-center text-[7px] text-primary-300 font-bold uppercase">N/A</div>
           )}
+        </div>
+      </TableCell>
+      <TableCell className="px-2 py-2 text-center">
+        <div className="h-10 w-10 mx-auto rounded-none overflow-hidden border border-primary-50 bg-white p-0.5">
+          <img
+            src={getDiamondShapeImage(diamond.attributes.shape)}
+            className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110 cursor-pointer"
+            alt="Illustration"
+            referrerPolicy="no-referrer"
+            onClick={() => onImageClick(getDiamondShapeImage(diamond.attributes.shape))}
+          />
         </div>
       </TableCell>
 
@@ -81,20 +109,26 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
         <Badge
           className={cn(
             "rounded-full px-3 py-1 text-[10px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
-            hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
+            hasStock 
+              ? "bg-emerald-50 text-emerald-600" 
+              : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
           )}
         >
-          {hasStock ? "Có hàng" : "Hết hàng"}
+          {isIncoming ? "Đang về" : (hasStock ? "Có hàng" : "Hết hàng")}
         </Badge>
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
         <div className="flex flex-wrap justify-center gap-1">
-          {diamond.warehouses.map((wh, idx) => (
-            <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
-              {wh.name}
-            </Badge>
-          ))}
+          {isIncoming || realWarehouses.length === 0 ? (
+            <span className="text-[9px] font-bold text-primary-300 italic">Chưa có kho</span>
+          ) : (
+            realWarehouses.map((wh, idx) => (
+              <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
+                {wh.name}
+              </Badge>
+            ))
+          )}
         </div>
       </TableCell>
 

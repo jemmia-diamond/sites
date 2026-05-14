@@ -23,7 +23,7 @@ export default function DiamondPage() {
     page: 2,
     limit: 18,
     sortBySalePrice: "DESC",
-    stockStatus: "INCOMING",
+    stockStatus: "IN_STOCK",
     warehouseIds: [],
     searchQuery: searchQueryParam || undefined
   });

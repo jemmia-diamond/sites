@@ -13,10 +13,13 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   const params: any = {
     limit,
     offset,
-    stockStatus: filters.stockStatus || "INCOMING",
-    warehouseIds: warehouseIdsToUse,
+    stockStatus: filters.stockStatus || "IN_STOCK",
     sortBySalePrice: filters.sortBySalePrice,
   };
+
+  if (filters.stockStatus !== "REAL_INCOMING") {
+    params.warehouseIds = warehouseIdsToUse;
+  }
 
   if (filters.searchQuery) {
     params.searchQuery = filters.searchQuery.toUpperCase().replace(/^GIA/, "");

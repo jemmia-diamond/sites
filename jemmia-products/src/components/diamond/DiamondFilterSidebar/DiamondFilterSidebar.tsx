@@ -39,9 +39,8 @@ const WAREHOUSES_LIST = [
 ];
 
 const STOCK_LABELS: Record<string, string> = {
-  INCOMING: "Tất cả",
+  REAL_INCOMING: "Đang về",
   IN_STOCK: "Có hàng",
-  REAL_OUT_OF_STOCK: "Hết hàng",
 };
 
 export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterSidebarProps) {
@@ -51,7 +50,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
     salePriceTo: undefined,
     edgeSizes: [],
     warehouseIds: [],
-    stockStatus: "INCOMING",
+    stockStatus: "IN_STOCK",
     color: [],
     clarity: [],
     fluorescence: [],
@@ -127,15 +126,19 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
     setFilters((prev) => ({ ...prev, salePriceTo: value }));
   };
 
-  const handleStockStatusChange = (status: "INCOMING" | "IN_STOCK") => {
-    handleFastFilterChange((prev) => ({ ...prev, stockStatus: status }));
+  const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK") => {
+    handleFastFilterChange((prev) => ({
+      ...prev,
+      stockStatus: status,
+      warehouseIds: status === "REAL_INCOMING" ? [] : prev.warehouseIds,
+    }));
   };
 
   const buildChips = useCallback(
     (currentFilters: DiamondFilter): { key: string; value: any; label: string }[] => {
       const chips: { key: string; value: any; label: string }[] = [];
 
-      if (currentFilters.stockStatus && currentFilters.stockStatus !== "INCOMING" && currentFilters.stockStatus !== "all") {
+      if (currentFilters.stockStatus && currentFilters.stockStatus !== "IN_STOCK") {
         chips.push({
           key: "stockStatus",
           value: currentFilters.stockStatus,
@@ -216,7 +219,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
       applyFilters(next);
     } else {
       const getResetValue = (k: string): any => {
-        if (k === "stockStatus") return "INCOMING";
+        if (k === "stockStatus") return "IN_STOCK";
         if (["edgeSizes", "color", "clarity", "fluorescence", "warehouseIds"].includes(k)) return [];
         return undefined;
       };
@@ -292,6 +295,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
             filters={filters}
             warehouses={WAREHOUSES_LIST}
             onWarehouseToggle={handleWarehouseToggle}
+            disabled={filters.stockStatus === "REAL_INCOMING"}
           />
         </FilterSection>
 

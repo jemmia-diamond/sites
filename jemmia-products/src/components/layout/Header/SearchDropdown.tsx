@@ -4,6 +4,7 @@ import { MagnifyingGlass, X, CaretRight, ArrowUpRight } from "@phosphor-icons/re
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { ProductModel, PaginateResponse } from "../../../types";
+import { getDiamondShapeImage } from "@/lib/utils";
 
 interface SearchDropdownProps {
   query: string;
@@ -144,7 +145,11 @@ function SearchResults({ results, query, onClose }: SearchResultsProps) {
             >
               <div className="h-20 w-20 flex-shrink-0 bg-white border border-primary-50 p-2 overflow-hidden">
                 <img
-                  src={item.category === 'Jewelry' ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url) : "https://cdn.hstatic.net/files/200000355853/file/salesaya_image_131__1_.png"}
+                  src={
+                    item.category === 'Jewelry' 
+                      ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url) 
+                      : getDiamondShapeImage(item.attributes?.shape)
+                  }
                   alt={item.title}
                   className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-1000 ease-out"
                   referrerPolicy="no-referrer"

@@ -11,26 +11,29 @@ interface WarehouseFilterProps {
   filters: DiamondFilter;
   warehouses: Warehouse[];
   onWarehouseToggle: (warehouseId: string) => void;
+  disabled?: boolean;
 }
 
 export function WarehouseFilter({
   filters,
   warehouses,
   onWarehouseToggle,
+  disabled,
 }: WarehouseFilterProps) {
   return (
-    <div className="space-y-3">
+    <div className={`space-y-3 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
       {warehouses.map((wh) => (
         <div key={wh.id} className="flex items-center space-x-3 group">
           <Checkbox
             id={wh.id}
             checked={filters.warehouseIds?.includes(wh.id)}
             onCheckedChange={() => onWarehouseToggle(wh.id)}
+            disabled={disabled}
             className="h-4 w-4 rounded-none border-primary-300 data-[state=checked]:bg-secondary-900"
           />
           <Label
             htmlFor={wh.id}
-            className="text-xs text-primary-600 cursor-pointer group-hover:text-secondary-900"
+            className={`text-xs text-primary-600 ${disabled ? "cursor-not-allowed" : "cursor-pointer group-hover:text-secondary-900"}`}
           >
             {wh.name}
           </Label>

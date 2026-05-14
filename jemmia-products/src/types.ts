@@ -111,7 +111,7 @@ export interface DiamondFilter {
   salePriceTo?: number;
   edgeSizes?: number[];
   warehouseIds?: string[];
-  stockStatus?: "INCOMING" | "IN_STOCK";
+  stockStatus?: "REAL_INCOMING" | "IN_STOCK";
   color?: string[];
   clarity?: string[];
   fluorescence?: string[];
@@ -137,6 +137,8 @@ export interface DiamondAttribute {
   variantId: string;
   giaImageUrl: string | null;
   isInComing: boolean | null;
+  qty_incoming?: number;
+  qty_available?: number;
 }
 
 export interface DiamondModel {

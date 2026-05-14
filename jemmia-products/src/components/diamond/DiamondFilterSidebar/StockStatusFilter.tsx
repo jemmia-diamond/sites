@@ -4,19 +4,18 @@ import { DiamondFilter } from "../../../types";
 
 interface StockStatusFilterProps {
   filters: DiamondFilter;
-  onStockStatusChange: (status: "INCOMING" | "IN_STOCK" | "all") => void;
+  onStockStatusChange: (status: "REAL_INCOMING" | "IN_STOCK") => void;
 }
 
-const STOCK_OPTIONS: { label: string; value: "INCOMING" | "IN_STOCK" | "REAL_OUT_OF_STOCK" }[] = [
-  { label: "Tất cả", value: "INCOMING" },
+const STOCK_OPTIONS: { label: string; value: "IN_STOCK" | "REAL_INCOMING" }[] = [
   { label: "Có hàng", value: "IN_STOCK" },
-  { label: "Hết hàng", value: "REAL_OUT_OF_STOCK" },
+  { label: "Đang về", value: "REAL_INCOMING" },
 ];
 
 export function StockStatusFilter({ filters, onStockStatusChange }: StockStatusFilterProps) {
   return (
     <RadioGroup
-      value={filters.stockStatus || "INCOMING"}
+      value={filters.stockStatus || "IN_STOCK"}
       onValueChange={onStockStatusChange as any}
       className="flex flex-col gap-3"
     >
