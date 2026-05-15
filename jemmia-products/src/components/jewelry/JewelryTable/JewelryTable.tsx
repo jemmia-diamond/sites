@@ -224,9 +224,9 @@ function MediaViewer({
         </Button>
         <div className="flex items-center gap-2">
           <span className="text-white/60 text-[11px] font-bold tracking-widest">{currentIndex + 1} / {validPreviewList.length}</span>
-          <Button disabled variant="secondary" size="sm" onClick={() => onDownloadSingle(selectedMedia)} className="bg-white/15 hover:bg-white/20 text-white/20 border-none">
+          {/* <Button disabled variant="secondary" size="sm" onClick={() => onDownloadSingle(selectedMedia)} className="bg-white/15 hover:bg-white/20 text-white/20 border-none">
             <DownloadSimple size={18} className="mr-0" />Tải về
-          </Button>
+          </Button> */}
           <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10 rounded-xl">
             <X size={20} />
           </Button>
@@ -280,9 +280,9 @@ function MediaGallery({
           <p className="text-xs text-primary-300 font-bold">Tổng cộng {validPreviewList.length} tệp tin</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" disabled size="sm" className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all" onClick={() => onDownloadAll(validPreviewList)}>
+          {/* <Button variant="outline" disabled size="sm" className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all" onClick={() => onDownloadAll(validPreviewList)}>
             <DownloadSimple size={16} className="mr-2" />Tải về tất cả
-          </Button>
+          </Button> */}
           <Button variant="ghost" size="icon" className="h-10 w-10 bg-primary-50 text-secondary-900 rounded-full hover:bg-red-50 hover:text-red-500" onClick={onClose}>
             <X size={20} />
           </Button>

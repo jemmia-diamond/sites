@@ -59,8 +59,6 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
                 </p>
                 <div className="absolute top-[calc(100%+8px)] left-0 w-[340px] opacity-0 group-hover/warning:opacity-100 pointer-events-none transition-opacity bg-secondary-900 text-white p-4 rounded-md shadow-2xl z-50">
                   <p className="text-[11px] font-medium leading-relaxed">
-                    <strong className="text-pending-600">Nguyên nhân:</strong> Chưa gán serial cho đơn hàng, chưa quét kho hoặc dữ liệu serial chưa đồng bộ.
-                    <br /><br />
                     Vui lòng liên hệ trực tiếp cửa hàng để xác nhận chính xác serial nào hiện còn trong kho.
                   </p>
                   <div className="absolute -top-1.5 left-6 w-3 h-3 bg-secondary-900 rotate-45"></div>
