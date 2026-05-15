@@ -34,7 +34,7 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
   const hasStock = !isIncoming && realWarehouses.length > 0 && hasAvailableQty;
 
   return (
-    <TableRow className="divide-x transition-all cursor-pointer group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50">
+    <TableRow className="divide-x transition-all group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50">
       <TableCell className="px-3 py-2">
         <div className="flex flex-col items-start">
           <p className="text-[11px] font-black text-secondary-900 tracking-tight uppercase">GIA{diamond.attributes.giaId}</p>
@@ -60,10 +60,9 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
         <div className="h-10 w-10 mx-auto rounded-none overflow-hidden border border-primary-50 bg-white p-0.5">
           <img
             src={getDiamondShapeImage(diamond.attributes.shape)}
-            className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110 cursor-pointer"
+            className="h-full w-full object-contain"
             alt="Illustration"
             referrerPolicy="no-referrer"
-            onClick={() => onImageClick(getDiamondShapeImage(diamond.attributes.shape))}
           />
         </div>
       </TableCell>
@@ -75,23 +74,23 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
-        <span className="text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} CT</span>
+        <span className="text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} carat</span>
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
-        <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
+        <span className="text-[11px] font-bold text-primary-400 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
-        <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.color}</span>
+        <span className="text-[11px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.color}</span>
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
-        <span className="text-[10px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.clarity}</span>
+        <span className="text-[11px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.clarity}</span>
       </TableCell>
 
       <TableCell className="px-2 py-2 text-center">
-        <p className="text-[9px] font-bold text-primary-300 uppercase tracking-tight">
+        <p className="text-[11px] font-bold text-primary-400 tracking-tight">
           {diamond.attributes.fluorescence || "NONE"}
         </p>
       </TableCell>

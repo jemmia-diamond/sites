@@ -9,7 +9,7 @@ import { DiamondTable } from "../components/diamond/DiamondTable";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getPaginationRange } from "@/lib/utils";
 import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow } from "lucide-react";
 
 import { PageHeader } from "../components/layout/PageHeader";
@@ -131,27 +131,26 @@ export default function DiamondPage() {
                 </PaginationItem>
 
                 <div className="flex items-center gap-1 mx-2">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
-                    <PaginationItem key={p}>
-                      <PaginationLink
-                        onClick={() => setFilters(prev => ({ ...prev, page: p }))}
-                        isActive={currentPage === p}
-                        className={cn(
-                          "rounded-none h-10 w-10 border transition-all cursor-pointer text-xs font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
-                          currentPage === p
-                            ? "bg-secondary-900 text-white border-secondary-900 shadow-xl shadow-secondary-900/10"
-                            : "border-primary-50 text-primary-300"
-                        )}
-                      >
-                        {p}
-                      </PaginationLink>
+                  {getPaginationRange(currentPage, totalPages).map((p, idx) => (
+                    <PaginationItem key={idx}>
+                      {p === "..." ? (
+                        <PaginationEllipsis className="text-primary-100" />
+                      ) : (
+                        <PaginationLink
+                          onClick={() => setFilters(prev => ({ ...prev, page: p as number }))}
+                          isActive={currentPage === p}
+                          className={cn(
+                            "rounded-none h-10 w-10 border transition-all cursor-pointer text-xs font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
+                            currentPage === p
+                              ? "bg-secondary-900 text-white border-secondary-900 shadow-xl shadow-secondary-900/10"
+                              : "border-primary-50 text-primary-300"
+                          )}
+                        >
+                          {p}
+                        </PaginationLink>
+                      )}
                     </PaginationItem>
                   ))}
-                  {totalPages > 5 && (
-                    <PaginationItem>
-                      <PaginationEllipsis className="text-primary-100" />
-                    </PaginationItem>
-                  )}
                 </div>
 
                 <PaginationItem>

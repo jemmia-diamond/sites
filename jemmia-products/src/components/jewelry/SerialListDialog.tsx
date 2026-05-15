@@ -1,4 +1,4 @@
-import { Tag } from "@phosphor-icons/react";
+import { Tag, Info } from "@phosphor-icons/react";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +64,13 @@ export function SerialListDialog() {
         <DialogHeader className="p-8 pb-6 border-b border-primary-100 bg-primary-50">
           <DialogTitle className="text-2xl font-bold tracking-tight text-secondary-900 uppercase">Số Serial</DialogTitle>
         </DialogHeader>
+
+        <div className="px-8 py-3 bg-amber-50/50 border-b border-amber-100 flex items-center gap-3">
+          <Info size={18} className="text-amber-600 flex-shrink-0" weight="fill" />
+          <p className="text-[11px] font-black text-amber-800 uppercase tracking-tight leading-tight">
+            Lưu ý: Danh sách serial mang tính chất tham khảo, cần kiểm tra thực tế tại kho.
+          </p>
+        </div>
         
         <div className="p-2 space-y-1">
           {MOCK_SERIALS.map((serial, index) => {

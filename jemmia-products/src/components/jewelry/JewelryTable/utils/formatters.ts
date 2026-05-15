@@ -16,3 +16,19 @@ export function formatLySize(round: string): string {
   const size = parseFloat(parts[0].trim());
   return isNaN(size) ? round : `${size} ly`;
 }
+
+export function formatDateTime(dateString: string | undefined): string {
+  if (!dateString) return "--";
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  } catch (e) {
+    return "--";
+  }
+}

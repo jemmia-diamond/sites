@@ -33,17 +33,40 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   }
 
   if (filters.edgeSizes && filters.edgeSizes.length > 0) {
-    const expandedSizes = filters.edgeSizes.flatMap(size => {
+    let hasCaratFrom = false;
+    let hasCaratTo = false;
+
+    const expandedSizes = filters.edgeSizes.flatMap(sizeItem => {
+      let sizeVal: number;
+      if (typeof sizeItem === "string") {
+        if (sizeItem === "6.3_<1C") {
+          sizeVal = 6.3;
+          if (!hasCaratTo && filters.caratTo === undefined) params.caratTo = 0.99;
+          if (!hasCaratFrom && filters.caratFrom === undefined) params.caratFrom = 0;
+          hasCaratTo = true;
+          hasCaratFrom = true;
+        } else if (sizeItem === "6.3_>=1C") {
+          sizeVal = 6.3;
+          if (!hasCaratFrom && filters.caratFrom === undefined) params.caratFrom = 1;
+          if (!hasCaratTo && filters.caratTo === undefined) params.caratTo = 2;
+          hasCaratFrom = true;
+          hasCaratTo = true;
+        } else {
+          sizeVal = parseFloat(sizeItem);
+        }
+      } else {
+        sizeVal = sizeItem;
+      }
+
       const results = [];
-      // If size is like 6.3, we want 6.3, 6.31, 6.32, ..., 6.39
-      // We generate 10 values starting from the selected size with 0.01 increments
       for (let i = 0; i <= 9; i++) {
-        const val = size + (i * 0.01);
+        const val = sizeVal + (i * 0.01);
         results.push(parseFloat(val.toFixed(2)));
       }
       return results;
     });
-    params.edgeSizes = expandedSizes;
+    // Remove duplicates if both 6.3 options were selected
+    params.edgeSizes = Array.from(new Set(expandedSizes));
   }
   if (filters.color && filters.color.length > 0) {
     params.color = filters.color;
@@ -53,6 +76,15 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   }
   if (filters.fluorescence && filters.fluorescence.length > 0) {
     params.fluorescence = filters.fluorescence;
+  }
+  if (filters.shapes && filters.shapes.length > 0) {
+    params.shape = filters.shapes;
+  }
+  if (filters.caratFrom !== undefined) {
+    params.caratFrom = filters.caratFrom;
+  }
+  if (filters.caratTo !== undefined) {
+    params.caratTo = filters.caratTo;
   }
 
   const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { 

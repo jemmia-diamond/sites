@@ -6,8 +6,8 @@ import { ProductCodes } from "./ProductCodes";
 import { SideStoneTooltip } from "./SideStoneTooltip";
 import { CompactGallery } from "./CompactGallery";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { CaretDown } from "@phosphor-icons/react";
-import { formatPriceMillion } from "./utils/formatters";
+import { CaretDown, ArrowSquareOut } from "@phosphor-icons/react";
+import { formatPriceMillion, formatDateTime } from "./utils/formatters";
 
 interface JewelryTableRowProps {
   product: ProductModel;
@@ -17,7 +17,7 @@ interface JewelryTableRowProps {
   onImageError: (url: string) => void;
   onPreview: (images: string[], index: number) => void;
   onToggleExpand: (id: string) => void;
-  onOpenSerialModal: (variants: any[], sku: string) => void;
+  onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
   key: string;
 }
 
@@ -39,17 +39,28 @@ export function JewelryTableRow({
     ...(product.images?.map((img) => img.url) || []),
     ...(product.videos?.map((v) => v.url) || []),
   ];
+
   const variants = (product.variants || []) as any[];
 
-  const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; firstVariant: any }> = {};
+  const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
   variants.forEach((v) => {
+    const hv = product.haravanVariants?.find(hv => String(hv.variant_id) === String(v.id));
+    const vWithHv = { ...v, haravanVariant: hv };
+
     const sku = v.attributes?.sku || v.sku || product.attributes?.sku || "N/A";
-    if (!stockBySKU[sku]) stockBySKU[sku] = { variants: [], totalQuantity: 0, firstVariant: v };
-    stockBySKU[sku].variants.push(v);
+    if (!stockBySKU[sku]) {
+      stockBySKU[sku] = {
+        variants: [],
+        totalQuantity: 0,
+        totalHaravanQuantity: hv?.qty_available || 0,
+        firstVariant: vWithHv
+      };
+    }
+    stockBySKU[sku].variants.push(vWithHv);
     stockBySKU[sku].totalQuantity += v.quantity || 0;
   });
 
-  const totalStockCount = Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalQuantity, 0);
+  const totalStockCount = Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
   const hasStock = totalStockCount > 0;
   const fourView = product.attributes?.["4view"];
 
@@ -57,10 +68,10 @@ export function JewelryTableRow({
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
-  const priceDisplay = minPrice === 0 
-    ? "Liên hệ" 
-    : minPrice === maxPrice 
-      ? formatPriceMillion(minPrice) 
+  const priceDisplay = minPrice === 0
+    ? "Liên hệ"
+    : minPrice === maxPrice
+      ? formatPriceMillion(minPrice)
       : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
 
   return (
@@ -133,7 +144,6 @@ export function JewelryTableRow({
             {hasStock ? "Có hàng" : "Hết hàng"}
           </Badge>
         </TableCell>
-
         <TableCell className="px-2 text-center">
           <div className="flex justify-center">
             <Button
@@ -157,7 +167,7 @@ export function JewelryTableRow({
 
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <TableCell colSpan={7} className="p-0 bg-primary-50">
+          <TableCell colSpan={9} className="p-0 bg-primary-50">
             <div className="px-0 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200">
               <ExpandedPanel
                 stockBySKU={stockBySKU}
@@ -174,10 +184,10 @@ export function JewelryTableRow({
 }
 
 interface ExpandedPanelProps {
-  stockBySKU: Record<string, { variants: any[]; totalQuantity: number; firstVariant: any }>;
+  stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }>;
   isEarring: boolean;
   product: ProductModel;
-  onOpenSerialModal: (variants: any[], sku: string) => void;
+  onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
 }
 
 function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: ExpandedPanelProps) {
@@ -192,12 +202,13 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
           const variant = group.firstVariant;
           const hasSale = variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
+          const haravanLink = `https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`;
 
           return (
             <div
               key={sku}
               className={cn(
-                "grid grid-cols-[1.5fr_2fr_1fr_1.5fr_1fr] items-center transition-colors",
+                "grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center transition-colors",
                 idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
                 "hover:bg-primary-50/50"
               )}
@@ -238,10 +249,20 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 )}
               </div>
 
-              <div className="px-4 py-3.5 flex justify-center">
-                <Badge className="rounded-full bg-secondary-900 text-white text-[11px] font-black shadow-sm">
-                  Khả dụng: {isEarring ? Math.floor(group.totalQuantity / 2) : group.totalQuantity}
+              <div className="px-4 py-3.5 flex items-center gap-5">
+                <Badge className="rounded-full bg-secondary-800 text-white text-[11px] font-black shadow-sm">
+                  Khả dụng Haravan: {group.totalHaravanQuantity}
                 </Badge>
+                {/* <div className="flex justify-center hover:underline mt-px">
+                  <a
+                    href={haravanLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors group tracking-tight"
+                  >
+                    Haravan <ArrowSquareOut size={12} className="ml-1 -mt-px" />
+                  </a>
+                </div> */}
               </div>
 
               <div className="px-4 py-3.5 text-right">
@@ -275,7 +296,7 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                   size="sm"
                   disabled={group.totalQuantity === 0}
                   className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-colors rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={() => onOpenSerialModal(group.variants, sku)}
+                  onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
                 >
                   Xem Serials
                 </Button>

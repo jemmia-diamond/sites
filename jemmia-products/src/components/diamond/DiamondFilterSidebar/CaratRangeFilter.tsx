@@ -3,42 +3,45 @@ import { Input } from "@/components/ui/input";
 import { DiamondFilter } from "../../../types";
 import { ChevronRight } from "lucide-react";
 
-interface PriceRangeFilterProps {
+interface CaratRangeFilterProps {
   filters: DiamondFilter;
-  onMinPriceChange: (value: number | undefined) => void;
-  onMaxPriceChange: (value: number | undefined) => void;
+  onMinCaratChange: (value: number | undefined) => void;
+  onMaxCaratChange: (value: number | undefined) => void;
   onApply: () => void;
 }
 
-export function PriceRangeFilter({
+export function CaratRangeFilter({
   filters,
-  onMinPriceChange,
-  onMaxPriceChange,
+  onMinCaratChange,
+  onMaxCaratChange,
   onApply,
-}: PriceRangeFilterProps) {
+}: CaratRangeFilterProps) {
   const handleMinChange = (val: string) => {
     if (val === "") {
-      onMinPriceChange(undefined);
+      onMinCaratChange(undefined);
       return;
     }
-    const num = Number(val);
+    const num = parseFloat(val);
     if (num < 0) return;
-    onMinPriceChange(num);
+    onMinCaratChange(num);
   };
 
   const handleMaxChange = (val: string) => {
     if (val === "") {
-      onMaxPriceChange(undefined);
+      onMaxCaratChange(undefined);
       return;
     }
-    const num = Number(val);
+    const num = parseFloat(val);
     if (num < 0) return;
-    onMaxPriceChange(num);
+    onMaxCaratChange(num);
   };
 
   const handleApply = () => {
-    if (filters.salePriceFrom !== undefined && filters.salePriceTo !== undefined && filters.salePriceTo < filters.salePriceFrom) {
-      onMaxPriceChange(filters.salePriceFrom);
+    if (filters.caratFrom !== undefined && filters.caratTo !== undefined && filters.caratTo < filters.caratFrom) {
+      // If max is less than min, we can either swap them or just not apply and show something.
+      // But the requirement says "tối đa bắt buộc phải >= tối thiểu".
+      // We will set max to min if it's less.
+      onMaxCaratChange(filters.caratFrom);
     }
     onApply();
   };
@@ -50,13 +53,14 @@ export function PriceRangeFilter({
         <div className="relative">
           <Input
             type="number"
+            step="0.01"
             min="0"
             placeholder="0"
             className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
-            value={filters.salePriceFrom ?? ""}
+            value={filters.caratFrom ?? ""}
             onChange={(e) => handleMinChange(e.target.value)}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-400 font-bold uppercase">triệu</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-400 font-bold">Carat</span>
         </div>
       </div>
 
@@ -67,13 +71,14 @@ export function PriceRangeFilter({
         <div className="relative">
           <Input
             type="number"
+            step="0.01"
             min="0"
             placeholder="∞"
             className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
-            value={filters.salePriceTo ?? ""}
+            value={filters.caratTo ?? ""}
             onChange={(e) => handleMaxChange(e.target.value)}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-400 font-bold uppercase">triệu</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-400 font-bold">Carat</span>
         </div>
       </div>
       <div className="pt-6">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ProductModel } from "../../../types";
-import { Table, TableBody } from "@/components/ui/table";
+import { TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +23,7 @@ interface JewelryTableProps {
 
 export function JewelryTable({ jewelries }: JewelryTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string } | null>(null);
+  const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewList, setPreviewList] = useState<string[]>([]);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -68,8 +68,8 @@ export function JewelryTable({ jewelries }: JewelryTableProps) {
   const isVideo = (url: string) =>
     !!url.match(/\.(mp4|webm|ogg|mov)$|^blob:|^data:video/i);
 
-  const handleOpenSerialModal = (variants: any[], sku: string) => {
-    setSerialModal({ variants, sku });
+  const handleOpenSerialModal = (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => {
+    setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
   };
 
   return (
@@ -103,6 +103,8 @@ export function JewelryTable({ jewelries }: JewelryTableProps) {
       <SerialListModal
         variants={serialModal?.variants || []}
         sku={serialModal?.sku || ""}
+        totalQuantity={serialModal?.totalQuantity}
+        totalHaravanQuantity={serialModal?.totalHaravanQuantity}
         open={!!serialModal}
         onClose={() => setSerialModal(null)}
       />

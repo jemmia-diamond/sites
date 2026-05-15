@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FilterSection } from "./FilterSection";
 import { PriceRangeFilter } from "./PriceRangeFilter";
+import { CaratRangeFilter } from "./CaratRangeFilter";
 import { SizeFilter } from "./SizeFilter";
 import { StockStatusFilter } from "./StockStatusFilter";
 import { WarehouseFilter } from "./WarehouseFilter";
@@ -22,12 +23,14 @@ const SIZES = [
   { label: "5 ly", value: 5 },
   { label: "5.4 ly", value: 5.4 },
   { label: "6 ly", value: 6 },
-  { label: "6.3 ly", value: 6.3 },
+  { label: "6.3 ly < 1C", value: "6.3_<1C" },
+  { label: "6.3 ly >= 1C", value: "6.3_>=1C" },
   { label: "7 ly", value: 7 },
   { label: "7.2 ly", value: 7.2 },
   { label: "8.1 ly", value: 8.1 },
 ];
 
+const SHAPES = ["Round", "Heart", "Oval", "Pear", "Radiant", "Emerald"];
 const COLORS = ["D", "E", "F", "G", "H", "I"];
 const CLARITIES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2"];
 const FLUORESCENCE = ["None", "Faint", "Medium", "Strong", "Very Strong"];
@@ -48,9 +51,12 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
   const initialFilters: DiamondFilter = {
     salePriceFrom: undefined,
     salePriceTo: undefined,
+    caratFrom: undefined,
+    caratTo: undefined,
     edgeSizes: [],
     warehouseIds: [],
     stockStatus: "IN_STOCK",
+    shapes: [],
     color: [],
     clarity: [],
     fluorescence: [],
@@ -65,6 +71,8 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         ...currentFilters,
         salePriceFrom: prev.salePriceFrom !== undefined ? prev.salePriceFrom : currentFilters.salePriceFrom,
         salePriceTo: prev.salePriceTo !== undefined ? prev.salePriceTo : currentFilters.salePriceTo,
+        caratFrom: prev.caratFrom !== undefined ? prev.caratFrom : currentFilters.caratFrom,
+        caratTo: prev.caratTo !== undefined ? prev.caratTo : currentFilters.caratTo,
       }));
     }
   }, [currentFilters]);
@@ -126,6 +134,14 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
     setFilters((prev) => ({ ...prev, salePriceTo: value }));
   };
 
+  const handleMinCaratChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, caratFrom: value }));
+  };
+
+  const handleMaxCaratChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, caratTo: value }));
+  };
+
   const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK") => {
     handleFastFilterChange((prev) => ({
       ...prev,
@@ -164,7 +180,19 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         chips.push({
           key: "edgeSizes",
           value: currentFilters.edgeSizes,
-          label: currentFilters.edgeSizes.map((s) => `${s} ly`).join(", "),
+          label: currentFilters.edgeSizes.map((s) => {
+            if (s === "6.3_<1C") return "6.3 ly < 1C";
+            if (s === "6.3_>=1C") return "6.3 ly >= 1C";
+            return `${s} ly`;
+          }).join(", "),
+        });
+      }
+
+      if (currentFilters.shapes && currentFilters.shapes.length > 0) {
+        chips.push({
+          key: "shapes",
+          value: currentFilters.shapes,
+          label: `${currentFilters.shapes.join(", ")}`,
         });
       }
 
@@ -172,7 +200,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         chips.push({
           key: "color",
           value: currentFilters.color,
-          label: `Màu: ${currentFilters.color.join(", ")}`,
+          label: `${currentFilters.color.join(", ")}`,
         });
       }
 
@@ -180,7 +208,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         chips.push({
           key: "clarity",
           value: currentFilters.clarity,
-          label: `Độ sạch: ${currentFilters.clarity.join(", ")}`,
+          label: `${currentFilters.clarity.join(", ")}`,
         });
       }
 
@@ -188,7 +216,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         chips.push({
           key: "fluorescence",
           value: currentFilters.fluorescence,
-          label: `Huỳnh quang: ${currentFilters.fluorescence.join(", ")}`,
+          label: `${currentFilters.fluorescence.join(", ")}`,
         });
       }
 
@@ -198,6 +226,16 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         chips.push({
           key: "salePrice",
           value: { from: currentFilters.salePriceFrom, to: currentFilters.salePriceTo },
+          label: from && to ? `${from} - ${to}` : from || to,
+        });
+      }
+
+      if (currentFilters.caratFrom || currentFilters.caratTo) {
+        const from = currentFilters.caratFrom ? `${currentFilters.caratFrom} carat` : "";
+        const to = currentFilters.caratTo ? `${currentFilters.caratTo} carat` : "";
+        chips.push({
+          key: "carat",
+          value: { from: currentFilters.caratFrom, to: currentFilters.caratTo },
           label: from && to ? `${from} - ${to}` : from || to,
         });
       }
@@ -217,10 +255,14 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
       const next = { ...filters, salePriceFrom: undefined, salePriceTo: undefined };
       setFilters(next);
       applyFilters(next);
+    } else if (key === "carat") {
+      const next = { ...filters, caratFrom: undefined, caratTo: undefined };
+      setFilters(next);
+      applyFilters(next);
     } else {
       const getResetValue = (k: string): any => {
         if (k === "stockStatus") return "IN_STOCK";
-        if (["edgeSizes", "color", "clarity", "fluorescence", "warehouseIds"].includes(k)) return [];
+        if (["edgeSizes", "shapes", "color", "clarity", "fluorescence", "warehouseIds"].includes(k)) return [];
         return undefined;
       };
       const next = { ...filters, [key]: getResetValue(key) };
@@ -266,16 +308,54 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
       )}
 
       <div className="flex-1 px-8 space-y-9 pb-20">
-        <FilterSection label="KHOẢNG GIÁ">
-          <PriceRangeFilter
+        <FilterSection label="Hình dạng">
+          <MultiSelectButtonFilter
+            label="Shape"
+            options={SHAPES}
             filters={filters}
-            onMinPriceChange={handleMinPriceChange}
-            onMaxPriceChange={handleMaxPriceChange}
-            onApply={() => applyFilters(filters)}
+            filterKey="shapes"
+            onToggle={(value) => toggleMultiSelect("shapes", value)}
+            variant="grid"
+            cols={3}
           />
         </FilterSection>
 
-        <FilterSection label="Kích thước (Ly)">
+        <FilterSection label="Nước màu">
+          <MultiSelectButtonFilter
+            label="Color"
+            options={COLORS}
+            filters={filters}
+            filterKey="color"
+            onToggle={(value) => toggleMultiSelect("color", value)}
+            variant="grid"
+          />
+        </FilterSection>
+
+        <FilterSection label="Độ sạch">
+          <MultiSelectButtonFilter
+            label="Clarity"
+            options={CLARITIES}
+            filters={filters}
+            filterKey="clarity"
+            onToggle={(value) => toggleMultiSelect("clarity", value)}
+            variant="grid"
+            cols={3}
+          />
+        </FilterSection>
+
+        <FilterSection label="Huỳnh quang">
+          <MultiSelectButtonFilter
+            label="Fluorescence"
+            options={FLUORESCENCE}
+            filters={filters}
+            filterKey="fluorescence"
+            onToggle={(value) => toggleMultiSelect("fluorescence", value)}
+            variant="grid"
+            cols={3}
+          />
+        </FilterSection>
+
+        <FilterSection label="Kích thước">
           <SizeFilter
             filters={filters}
             sizes={SIZES}
@@ -299,38 +379,21 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
           />
         </FilterSection>
 
-        <FilterSection label="Nước màu (Color)">
-          <MultiSelectButtonFilter
-            label="Color"
-            options={COLORS}
+        <FilterSection label="TRỌNG LƯỢNG (CARAT)">
+          <CaratRangeFilter
             filters={filters}
-            filterKey="color"
-            onToggle={(value) => toggleMultiSelect("color", value)}
-            variant="flex"
+            onMinCaratChange={handleMinCaratChange}
+            onMaxCaratChange={handleMaxCaratChange}
+            onApply={() => applyFilters(filters)}
           />
         </FilterSection>
 
-        <FilterSection label="Độ sạch (Clarity)">
-          <MultiSelectButtonFilter
-            label="Clarity"
-            options={CLARITIES}
+        <FilterSection label="KHOẢNG GIÁ">
+          <PriceRangeFilter
             filters={filters}
-            filterKey="clarity"
-            onToggle={(value) => toggleMultiSelect("clarity", value)}
-            variant="grid"
-            cols={3}
-          />
-        </FilterSection>
-
-        <FilterSection label="Huỳnh quang">
-          <MultiSelectButtonFilter
-            label="Fluorescence"
-            options={FLUORESCENCE}
-            filters={filters}
-            filterKey="fluorescence"
-            onToggle={(value) => toggleMultiSelect("fluorescence", value)}
-            variant="grid"
-            cols={3}
+            onMinPriceChange={handleMinPriceChange}
+            onMaxPriceChange={handleMaxPriceChange}
+            onApply={() => applyFilters(filters)}
           />
         </FilterSection>
       </div>

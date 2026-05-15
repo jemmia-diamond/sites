@@ -4,6 +4,14 @@ export interface Bookmark {
   createdAt: string;
 }
 
+export interface HaravanVariant {
+  variant_id: number;
+  qty_available: number;
+  qty_onhand: number;
+  qty_incoming: number;
+  qty_comitted: number;
+}
+
 export interface ProductModel {
   id: string;
   title: string;
@@ -27,7 +35,9 @@ export interface ProductModel {
   bookmark: Bookmark | null;
   barcode?: string;
   showOnWebsite?: boolean;
+  lastRfidScanTime?: string;
   variants?: ProductModel[];
+  haravanVariants?: HaravanVariant[];
 }
 
 export interface PaginateMeta {
@@ -109,12 +119,15 @@ export interface JewelryDesign {
 export interface DiamondFilter {
   salePriceFrom?: number;
   salePriceTo?: number;
-  edgeSizes?: number[];
+  edgeSizes?: (number | string)[];
   warehouseIds?: string[];
   stockStatus?: "REAL_INCOMING" | "IN_STOCK";
   color?: string[];
   clarity?: string[];
   fluorescence?: string[];
+  shapes?: string[];
+  caratFrom?: number;
+  caratTo?: number;
   sortBySalePrice?: "ASC" | "DESC";
   page?: number;
   limit?: number;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MagnifyingGlass, X, CaretRight, ArrowUpRight } from "@phosphor-icons/react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";

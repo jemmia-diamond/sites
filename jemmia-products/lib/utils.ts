@@ -16,7 +16,41 @@ export function getDiamondShapeImage(shape?: string): string {
       return "https://cdn.hstatic.net/products/200000355853/radiant-diamond_a0d3c03bedf5486d9f151ce9aa92af86_large.png";
     case "PEAR":
       return "https://cdn.hstatic.net/products/200000355853/pear-diamond_480779adb258446b99397fa337641506_large.png";
+    case "OVAL": 
+      return "https://cdn.hstatic.net/products/200000355853/oval-diamond_c746e137363a443daed440b3b6b95c70_large.png";
     default:
       return "https://cdn.hstatic.net/files/200000355853/file/salesaya_image_131__1_.png";
   }
+}
+
+export function getPaginationRange(currentPage: number, totalPages: number) {
+  // Thay đổi delta từ 2 xuống 1 để tiết kiệm diện tích (chỉ hiện 1 trang kề bên)
+  const delta = 1;
+  const range = [];
+  const rangeWithDots: (number | string)[] = [];
+  let l: number | undefined;
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - delta && i <= currentPage + delta)
+    ) {
+      range.push(i);
+    }
+  }
+
+  for (const i of range) {
+    if (l !== undefined) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push("...");
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
 }
