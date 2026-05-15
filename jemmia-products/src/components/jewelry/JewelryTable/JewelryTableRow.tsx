@@ -91,15 +91,6 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-2 py-2 text-center">
-          <span className={cn(
-            "text-[11px] font-black tracking-tight",
-            isExpanded ? "text-white" : "text-secondary-900"
-          )}>
-            {priceDisplay}
-          </span>
-        </TableCell>
-
         <TableCell className="px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
@@ -132,6 +123,15 @@ export function JewelryTableRow({
           ) : (
             <span className="text-primary-100 text-[10px] font-black italic">--</span>
           )}
+        </TableCell>
+
+        <TableCell className="px-2 py-2 text-center">
+          <span className={cn(
+            "text-[11px] font-black tracking-tight",
+            isExpanded ? "text-white" : "text-secondary-900"
+          )}>
+            {priceDisplay}
+          </span>
         </TableCell>
 
         <TableCell className="px-2 py-2 text-center">

@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 
 const HEADERS = [
   "Mã sản phẩm",
-  "Giá",
   "Ảnh website",
   "Ảnh thực tế",
   "Viên tấm",
+  "Giá",
   "Trạng thái",
   "",
 ];
