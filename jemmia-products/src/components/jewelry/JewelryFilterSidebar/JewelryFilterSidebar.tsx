@@ -22,16 +22,15 @@ const ALL_WAREHOUSE_IDS = ["1592770", "1582708", "1110168", "1592778", "1593276"
 const STONE_SIZES = ["3.6", "4.0", "4.5", "5.0", "5.4", "6.0", "6.3", "7.0", "7.2", "8.1"];
 
 const WAREHOUSES_LIST = [
-  { id: "1582708", name: "Hồ Chí Minh" },
-  { id: "1592778", name: "Hà Nội" },
-  { id: "1593276", name: "Cần Thơ" },
+  { id: "1582708", name: "Hồ Chí Minh", ids: ["1592770", "1582708", "1110168"] },
+  { id: "1592778", name: "Hà Nội", ids: ["1592778"] },
+  { id: "1593276", name: "Cần Thơ", ids: ["1593276"] },
 ];
 
 const STOCK_LABELS: Record<string, string> = {
   all: "Tất cả",
   IN_STOCK: "Có hàng",
-  REAL_OUT_OF_STOCK: "Hết hàng",
-
+  OUT_OF_STOCK: "Hết hàng",
 };
 
 export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterSidebarProps) {
@@ -116,15 +115,22 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
     handleFastFilterChange((prev) => ({ ...prev, stockStatus: status }));
   };
 
-  const handleWarehouseToggle = (warehouseId: string) => {
+  const handleWarehouseToggle = (areaId: string) => {
+    const area = WAREHOUSES_LIST.find((a) => a.id === areaId);
+    if (!area) return;
+
     handleFastFilterChange((prev) => {
-      const isCurrentlySelected = prev.warehouseIds?.includes(warehouseId);
-      return {
-        ...prev,
-        warehouseIds: isCurrentlySelected
-          ? prev.warehouseIds?.filter((i) => i !== warehouseId)
-          : [...(prev.warehouseIds || []), warehouseId],
-      };
+      const currentIds = prev.warehouseIds || [];
+      const hasAll = area.ids.every((id) => currentIds.includes(id));
+
+      let nextIds;
+      if (hasAll) {
+        nextIds = currentIds.filter((id) => !area.ids.includes(id));
+      } else {
+        const idsToAdd = area.ids.filter((id) => !currentIds.includes(id));
+        nextIds = [...currentIds, ...idsToAdd];
+      }
+      return { ...prev, warehouseIds: nextIds };
     });
   };
 
@@ -155,13 +161,17 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
         });
       }
       if (currentFilters.warehouseIds && currentFilters.warehouseIds.length > 0) {
-        chips.push({
-          key: "warehouseIds",
-          value: currentFilters.warehouseIds,
-          label: currentFilters.warehouseIds
-            .map((id: string) => WAREHOUSES_LIST.find((w) => w.id === id)?.name || id)
-            .join(", "),
-        });
+        const selectedAreaNames = WAREHOUSES_LIST.filter((area) =>
+          area.ids.some((id) => currentFilters.warehouseIds?.includes(id))
+        ).map((area) => area.name);
+
+        if (selectedAreaNames.length > 0) {
+          chips.push({
+            key: "warehouseIds",
+            value: currentFilters.warehouseIds,
+            label: selectedAreaNames.join(", "),
+          });
+        }
       }
       if (currentFilters.storageSize1 && currentFilters.storageSize1.length > 0) {
         chips.push({
