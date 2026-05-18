@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
-import { MagnifyingGlass, X, CaretRight, ArrowUpRight } from "@phosphor-icons/react";
+import { MagnifyingGlass, X, CaretRight, ArrowUpRight, Camera } from "@phosphor-icons/react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { ProductModel, PaginateResponse } from "../../../types";
@@ -134,6 +134,10 @@ function SearchResults({ results, query, onClose }: SearchResultsProps) {
       <div className="divide-y divide-primary-50">
         {[...results.jewelries.data.map(i => ({ ...i, category: 'Jewelry' as const })), ...results.diamonds.data.map(i => ({ ...i, category: 'Diamond' as const }))].slice(0, 8).map((item, index) => {
           const designCode = item.category === 'Jewelry' ? item.attributes?.designCode : ("GIA" + item.attributes?.giaId);
+          const imageUrl = item.category === 'Jewelry' 
+            ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url) 
+            : getDiamondShapeImage(item.attributes?.shape);
+
           return (
             <Link
               key={`${item.category}-${item.id}-${index}`}
@@ -143,17 +147,19 @@ function SearchResults({ results, query, onClose }: SearchResultsProps) {
               onClick={onClose}
               className="flex items-center gap-6 px-4 py-4 hover:bg-gray-50/50 transition-all group relative"
             >
-              <div className="h-20 w-20 flex-shrink-0 bg-white border border-primary-50 p-2 overflow-hidden">
-                <img
-                  src={
-                    item.category === 'Jewelry' 
-                      ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url) 
-                      : getDiamondShapeImage(item.attributes?.shape)
-                  }
-                  alt={item.title}
-                  className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-1000 ease-out"
-                  referrerPolicy="no-referrer"
-                />
+              <div className="h-20 w-20 flex-shrink-0 bg-white border border-primary-50 p-2 overflow-hidden flex items-center justify-center">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={item.title}
+                    className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-1000 ease-out"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <Camera size={20} className="text-primary-100" />
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
