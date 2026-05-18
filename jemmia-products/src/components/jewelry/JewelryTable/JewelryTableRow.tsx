@@ -19,6 +19,7 @@ interface JewelryTableRowProps {
   onPreview: (images: string[], index: number) => void;
   onToggleExpand: (id: string) => void;
   onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
+  onUploadSuccess?: () => void;
   key: string;
 }
 
@@ -39,6 +40,7 @@ export function JewelryTableRow({
   onPreview,
   onToggleExpand,
   onOpenSerialModal,
+  onUploadSuccess,
 }: JewelryTableRowProps) {
   const isEarring =
     product.type?.toLowerCase().includes("bông tai") ||
@@ -49,6 +51,8 @@ export function JewelryTableRow({
     ...(product.images?.map((img) => img.url) || []),
     ...(product.videos?.map((v) => v.url) || []),
   ];
+
+  const designCode = product.attributes?.designCode;
 
   let variants = (product.variants || []) as any[];
   const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
@@ -140,6 +144,7 @@ export function JewelryTableRow({
               brokenImages={brokenImages}
               onImageError={onImageError}
               onPreview={onPreview}
+              designCode={designCode}
             />
           </div>
         </TableCell>
@@ -152,6 +157,8 @@ export function JewelryTableRow({
               brokenImages={brokenImages}
               onImageError={onImageError}
               onPreview={onPreview}
+              designCode={designCode}
+              onUploadSuccess={onUploadSuccess}
             />
           </div>
         </TableCell>

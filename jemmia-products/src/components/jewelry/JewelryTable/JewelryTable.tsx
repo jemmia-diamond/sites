@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ProductModel } from "../../../types";
 import { TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ interface JewelryTableProps {
 }
 
 export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
+  const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -73,6 +75,10 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
     setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
   };
 
+  const handleUploadSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["jewelry-designs"] });
+  };
+
   return (
     <>
       <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
@@ -94,6 +100,7 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
                     setExpandedId(expandedId === id ? null : id)
                   }
                   onOpenSerialModal={handleOpenSerialModal}
+                  onUploadSuccess={handleUploadSuccess}
                   key={product.id}
                 />
               ))}
