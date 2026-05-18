@@ -32,6 +32,11 @@ export default defineConfig(({mode}) => {
           changeOrigin: true,
           secure: true,
         },
+        '/files': {
+          target: 'https://api.salesaya.com',
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
   };
