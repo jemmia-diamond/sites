@@ -51,28 +51,24 @@ export function JewelryTableRow({
   ];
 
   let variants = (product.variants || []) as any[];
+  const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
 
-  // Filter variants by warehouse if warehouseIds are provided, 
-  // or use default warehouses to match backend behavior
-  const effectiveWarehouseIds = (warehouseIds && warehouseIds.length > 0)
-    ? warehouseIds
-    : ["1592770", "1582708", "1110168", "1592778", "1593276"];
-
-  const selectedWarehouseNames = effectiveWarehouseIds.map(id => WAREHOUSE_ID_TO_NAME[id]).filter(Boolean);
-  if (selectedWarehouseNames.length > 0) {
-    const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
-    variants = variants.filter(v => {
-      if (!v.stockAt) return false;
-      const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
-      // Use includes to be more forgiving if the backend returns slightly different formatted strings 
-      // e.g. " [HCM] Cửa Hàng HCM " vs "[HCM] Cửa Hàng HCM"
-      return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
-    });
+  if (hasWarehouseFilter) {
+    const selectedWarehouseNames = warehouseIds.map(id => WAREHOUSE_ID_TO_NAME[id]).filter(Boolean);
+    if (selectedWarehouseNames.length > 0) {
+      const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
+      variants = variants.filter(v => {
+        if (!v.stockAt) return false;
+        const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
+        // Use includes to be more forgiving if the backend returns slightly different formatted strings 
+        return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
+      });
+    }
   }
 
   const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
   
-  // Aggregate only the variants that passed the warehouse filter
+  // Aggregate variants
   variants.forEach((v) => {
     const hv = product.haravanVariants?.find(hv => String(hv.variant_id) === String(v.id));
     const vWithHv = { ...v, haravanVariant: hv };
@@ -82,21 +78,23 @@ export function JewelryTableRow({
       stockBySKU[sku] = {
         variants: [],
         totalQuantity: 0,
-        totalHaravanQuantity: 0,
+        totalHaravanQuantity: hasWarehouseFilter ? 0 : (hv?.qty_available || 0),
         firstVariant: vWithHv
       };
     }
     
     stockBySKU[sku].variants.push(vWithHv);
     
-    // We sum up the internal quantity for the variants that passed the filter
+    // We sum up the internal quantity for the variants
     const vQuantity = v.quantity || 0;
     stockBySKU[sku].totalQuantity += vQuantity;
     
-    // Total Haravan Quantity is now purely calculated based on active serials 
-    // that belong to the filtered warehouses.
-    if (vQuantity > 0) {
-      stockBySKU[sku].totalHaravanQuantity += 1;
+    // If a filter is applied, Total Haravan Quantity is purely calculated based on active serials.
+    // If no filter is applied, it retains the hv?.qty_available logic from above.
+    if (hasWarehouseFilter) {
+      if (vQuantity > 0) {
+        stockBySKU[sku].totalHaravanQuantity += 1;
+      }
     }
   });
 
