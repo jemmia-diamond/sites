@@ -18,17 +18,17 @@ export default defineConfig(({mode}) => {
       // Proxy API requests to backend so cookies work with SameSite=Lax
       proxy: {
         '/auth': {
-          target: 'http://localhost:80',
+          target: 'https://api.salesaya.com',
           changeOrigin: true,
           secure: true,
         },
         '/products': {
-          target: 'http://localhost:80',
+          target: 'https://api.salesaya.com',
           changeOrigin: true,
           secure: true,
         },
         '/product-types': {
-          target: 'http://localhost:80',
+          target: 'https://api.salesaya.com',
           changeOrigin: true,
           secure: true,
         },
