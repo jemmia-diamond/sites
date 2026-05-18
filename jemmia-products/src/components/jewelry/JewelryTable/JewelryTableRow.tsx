@@ -16,7 +16,7 @@ interface JewelryTableRowProps {
   expandedId: string | null;
   brokenImages: Set<string>;
   onImageError: (url: string) => void;
-  onPreview: (images: string[], index: number) => void;
+  onPreview: (images: string[], index: number, config?: any) => void;
   onToggleExpand: (id: string) => void;
   onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
   onUploadSuccess?: () => void;
@@ -143,7 +143,7 @@ export function JewelryTableRow({
               showUpload={false}
               brokenImages={brokenImages}
               onImageError={onImageError}
-              onPreview={onPreview}
+              onPreview={(images, index, config) => onPreview(images, index, { ...config, productId: product.id })}
               designCode={designCode}
             />
           </div>
@@ -156,7 +156,7 @@ export function JewelryTableRow({
               showUpload={true}
               brokenImages={brokenImages}
               onImageError={onImageError}
-              onPreview={onPreview}
+              onPreview={(images, index, config) => onPreview(images, index, { ...config, productId: product.id })}
               designCode={designCode}
               onUploadSuccess={onUploadSuccess}
             />

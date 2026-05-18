@@ -5,15 +5,26 @@ import { DiamondModel } from "../../../types";
 import { cn, getDiamondShapeImage } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
   onGiaPdfClick: (url: string) => void;
-  onImageClick: (url: string) => void;
+  brokenImages: Set<string>;
+  onImageError: (url: string) => void;
+  onPreview: (images: string[], index: number, config?: any) => void;
+  onUploadSuccess?: () => void;
   key: string;
 }
 
-export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: DiamondTableRowProps) {
+export function DiamondTableRow({ 
+  diamond, 
+  onGiaPdfClick,
+  brokenImages,
+  onImageError,
+  onPreview,
+  onUploadSuccess
+}: DiamondTableRowProps) {
   // Filter out intermediate warehouses (Kho trung gian)
   const realWarehouses = diamond.warehouses.filter(wh => 
     !wh.name.toLowerCase().includes("trung gian")
@@ -33,6 +44,11 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
   const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
   const hasStock = !isIncoming && realWarehouses.length > 0 && hasAvailableQty;
 
+  const actualImages = [
+    ...(diamond.images?.map((img) => img.url) || []),
+    ...(diamond.videos?.map((v) => v.url) || []),
+  ];
+
   return (
     <TableRow className="divide-x transition-all group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50">
       <TableCell className="px-3 py-2">
@@ -42,18 +58,18 @@ export function DiamondTableRow({ diamond, onGiaPdfClick, onImageClick }: Diamon
         </div>
       </TableCell>
       <TableCell className="px-2 py-2 text-center">
-        <div className="h-10 w-10 mx-auto rounded-none overflow-hidden border border-primary-50 bg-white p-0.5">
-          {diamond.images?.[0] ? (
-            <img
-              src={diamond.images[0].url}
-              className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110 cursor-pointer"
-              alt="Real"
-              referrerPolicy="no-referrer"
-              onClick={() => onImageClick(diamond.images[0].url)}
-            />
-          ) : (
-            <div className="h-full w-full bg-primary-50 flex items-center justify-center text-[7px] text-primary-300 font-bold uppercase">N/A</div>
-          )}
+        <div className="flex justify-center">
+          <CompactGallery
+            images={actualImages}
+            showUpload={true}
+            brokenImages={brokenImages}
+            onImageError={onImageError}
+            onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
+            designCode={`GIA${diamond.attributes.giaId}`}
+            onUploadSuccess={onUploadSuccess}
+            uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
+            displayCount={3}
+          />
         </div>
       </TableCell>
       <TableCell className="px-2 py-2 text-center">

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const HEADERS = [
   "Mã sản phẩm",
   "Ảnh website",
-  "Ảnh thực tế",
+  "Ảnh/video thực tế",
   "Viên tấm",
   "Giá",
   "Trạng thái",
@@ -31,9 +31,8 @@ export function JewelryTableHeader() {
               px-2
               py-0
               text-center
-              text-[10px]
+              text-xs
               font-black
-              tracking-[0.2em]
               text-secondary-900
               whitespace-nowrap
             `,

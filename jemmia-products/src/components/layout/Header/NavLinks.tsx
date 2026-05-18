@@ -16,7 +16,7 @@ export function NavLinks({ items }: NavLinksProps) {
           key={item.path}
           to={item.path}
           className={cn(
-            "relative flex h-full items-center text-[11px] font-bold uppercase tracking-[0.2em] transition-all",
+            "relative flex h-full items-center text-[11px] font-bold uppercase tracking-[0.1em] transition-all",
             location.pathname === item.path
               ? "text-secondary-900"
               : "text-primary-300 hover:text-secondary-900"

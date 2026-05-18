@@ -15,9 +15,11 @@ interface CompactGalleryProps {
   showUpload?: boolean;
   brokenImages: Set<string>;
   onImageError: (url: string) => void;
-  onPreview: (images: string[], index: number) => void;
+  onPreview: (images: string[], index: number, config?: any) => void;
   designCode?: string;
   onUploadSuccess?: () => void;
+  uploadEndpoint?: string;
+  displayCount?: number;
 }
 
 export function CompactGallery({
@@ -28,6 +30,8 @@ export function CompactGallery({
   onPreview,
   designCode,
   onUploadSuccess,
+  uploadEndpoint,
+  displayCount = 4,
 }: CompactGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -37,7 +41,6 @@ export function CompactGallery({
 
   const validImages = images.filter((url) => !brokenImages.has(url));
 
-  const displayCount = 4;
   const items = validImages.slice(0, displayCount);
   const totalCount = validImages.length;
 
@@ -78,7 +81,8 @@ export function CompactGallery({
 
     try {
       setUploading(true);
-      await axios.post(`/files/upload-design-images-multiple?designCode=${designCode}`, formData, {
+      const endpoint = uploadEndpoint || `/files/upload-design-images-multiple?designCode=${designCode}`;
+      await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -98,13 +102,20 @@ export function CompactGallery({
       previewUrls.forEach(url => URL.revokeObjectURL(url));
     };
   }, [previewUrls]);
-
   return (
     <>
       <div className="flex items-center gap-2">
-        <div className="w-[172px]">
+        <div style={{ width: `${43 * displayCount}px` }}>
           {validImages.length === 0 ? (
-            <div className="h-10 w-full border border-dashed border-primary-100 flex items-center justify-center gap-2 bg-white">
+            <div 
+              className="h-10 w-full border border-dashed border-primary-100 flex items-center justify-center gap-2 bg-white cursor-pointer hover:bg-primary-50/50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (showUpload) {
+                  onPreview([], 0, { showUpload, designCode, uploadEndpoint });
+                }
+              }}
+            >
               <Camera size={14} className="text-primary-200" />
 
               <span className="text-[11px] text-primary-300 whitespace-nowrap">
@@ -122,7 +133,7 @@ export function CompactGallery({
                     className="relative h-10 w-10 overflow-hidden cursor-pointer bg-white border border-primary-50 shadow-sm hover:z-10 transition-all hover:scale-110 shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onPreview(validImages, idx);
+                      onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint });
                     }}
                   >
                     {isVid ? (
@@ -149,7 +160,13 @@ export function CompactGallery({
 
                     {idx === displayCount - 1 &&
                       totalCount > displayCount && (
-                        <div className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10">
+                        <div 
+                          className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint });
+                          }}
+                        >
                           <span className="text-[9px] text-white font-bold">
                             +{totalCount - displayCount}
                           </span>

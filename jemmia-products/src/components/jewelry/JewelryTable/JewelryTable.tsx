@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   CaretLeft,
@@ -13,10 +16,14 @@ import {
   DownloadSimple,
   Eye,
   X,
+  UploadSimple,
+  CircleNotch,
+  PlayCircle,
 } from "@phosphor-icons/react";
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
+import axios from "axios";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
@@ -32,20 +39,39 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; } | null>(null);
+
+  React.useEffect(() => {
+    if (!uploadConfig?.productId) return;
+    const activeProduct = jewelries.find((j) => j.id === uploadConfig.productId);
+    if (!activeProduct) return;
+
+    const isActual = uploadConfig.showUpload;
+    const newImages = isActual
+      ? [
+          ...(activeProduct.images?.map((img) => img.url) || []),
+          ...(activeProduct.videos?.map((v) => v.url) || []),
+        ]
+      : activeProduct.thumbnails?.map((t) => t.url) || [];
+
+    setPreviewList(newImages);
+  }, [jewelries, uploadConfig]);
 
   const handleImageError = (url: string) =>
     setBrokenImages((prev) => new Set(prev).add(url));
 
-  const handlePreview = (images: string[], index: number) => {
+  const handlePreview = (images: string[], index: number, config?: any) => {
     setPreviewList(images);
     setPreviewIndex(index);
     setPreviewUrl(images[index]);
     setSelectedMedia(null);
+    setUploadConfig(config || null);
   };
 
   const closeMediaDialog = () => {
     setPreviewUrl(null);
     setSelectedMedia(null);
+    setTimeout(() => setUploadConfig(null), 200);
   };
 
   const handleDownloadSingle = (url: string) => {
@@ -124,12 +150,14 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
         previewIndex={previewIndex}
         selectedMedia={selectedMedia}
         brokenImages={brokenImages}
+        uploadConfig={uploadConfig}
         onImageError={handleImageError}
         onClose={closeMediaDialog}
         onPreview={handlePreview}
         onSelectMedia={setSelectedMedia}
         onDownloadSingle={handleDownloadSingle}
         onDownloadAll={handleDownloadAll}
+        onUploadSuccess={handleUploadSuccess}
         isVideo={isVideo}
       />
     </>
@@ -142,12 +170,14 @@ interface MediaPreviewDialogProps {
   previewIndex: number;
   selectedMedia: string | null;
   brokenImages: Set<string>;
+  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; } | null;
   onImageError: (url: string) => void;
   onClose: () => void;
-  onPreview: (images: string[], index: number) => void;
+  onPreview: (images: string[], index: number, config?: any) => void;
   onSelectMedia: (url: string | null) => void;
   onDownloadSingle: (url: string) => void;
   onDownloadAll: (images: string[]) => void;
+  onUploadSuccess?: () => void;
   isVideo: (url: string) => boolean;
 }
 
@@ -157,18 +187,20 @@ export function MediaPreviewDialog({
   previewIndex,
   selectedMedia,
   brokenImages,
+  uploadConfig,
   onImageError,
   onClose,
   onSelectMedia,
   onDownloadSingle,
   onDownloadAll,
+  onUploadSuccess,
   isVideo,
 }: MediaPreviewDialogProps) {
   const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
 
   return (
-    <Dialog open={!!previewUrl} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[90%] sm:max-w-[1200px] max-h-[90vh] bg-white rounded-3xl border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none">
+    <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[90%] sm:max-w-[1200px] max-h-[90vh] bg-white rounded-3xl border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
         {selectedMedia ? (
           <MediaViewer
             selectedMedia={selectedMedia}
@@ -183,9 +215,11 @@ export function MediaPreviewDialog({
             validPreviewList={validPreviewList}
             previewIndex={previewIndex}
             onClose={onClose}
+            uploadConfig={uploadConfig}
             onSelectMedia={onSelectMedia}
             onDownloadAll={onDownloadAll}
             onImageError={onImageError}
+            onUploadSuccess={onUploadSuccess}
             isVideo={isVideo}
           />
         )}
@@ -265,30 +299,127 @@ function MediaViewer({
 interface MediaGalleryProps {
   validPreviewList: string[];
   previewIndex: number;
+  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; } | null;
   onClose: () => void;
   onSelectMedia: (url: string) => void;
   onDownloadAll: (images: string[]) => void;
   onImageError: (url: string) => void;
+  onUploadSuccess?: () => void;
   isVideo: (url: string) => boolean;
 }
 
 function MediaGallery({
   validPreviewList,
   previewIndex,
+  uploadConfig,
   onClose,
   onSelectMedia,
   onDownloadAll,
   onImageError,
+  onUploadSuccess,
   isVideo,
 }: MediaGalleryProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !uploadConfig?.designCode) return;
+
+    const fileArray = Array.from(files) as File[];
+    setSelectedFiles(fileArray);
+
+    const urls = fileArray.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    setIsDialogOpen(true);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCancelUpload = () => {
+    setIsDialogOpen(false);
+    setSelectedFiles([]);
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (selectedFiles.length === 0 || !uploadConfig?.designCode) return;
+
+    const formData = new FormData();
+    selectedFiles.forEach(file => {
+      formData.append("files", file);
+    });
+
+    try {
+      setUploading(true);
+      const endpoint = uploadConfig.uploadEndpoint || `/files/upload-design-images-multiple?designCode=${uploadConfig.designCode}`;
+      await axios.post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      onUploadSuccess?.();
+      handleCancelUpload();
+    } catch (error) {
+      console.error("Upload failed", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
   return (
     <>
       <div className="flex items-center justify-between px-8 py-6 border-b border-primary-50 bg-white sticky top-0 z-20">
         <div>
-          <h3 className="text-lg font-black text-secondary-900 uppercase tracking-tight">Thư viện hình ảnh/video</h3>
-          <p className="text-xs text-primary-300 font-bold">Tổng cộng {validPreviewList.length} tệp tin</p>
+          <h3 className="text-lg font-black text-secondary-900 uppercase tracking-tight flex items-center gap-2">
+            Thư viện
+            {uploadConfig?.designCode && (
+              <span className="bg-primary-50 text-secondary-900 text-[10px] px-2 py-1 rounded-full tracking-widest uppercase">
+                {uploadConfig.designCode}
+              </span>
+            )}
+          </h3>
+          <p className="text-xs text-primary-300 font-bold mt-1">Tổng cộng {validPreviewList.length} tệp tin</p>
         </div>
         <div className="flex items-center gap-3">
+          {uploadConfig?.showUpload && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={uploading}
+                className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all flex items-center gap-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? (
+                  <CircleNotch size={16} className="animate-spin" />
+                ) : (
+                  <UploadSimple size={16} />
+                )}
+                Tải lên
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                accept="image/*,video/*"
+                onChange={handleFileChange}
+              />
+            </>
+          )}
           {/* <Button variant="outline" disabled size="sm" className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all" onClick={() => onDownloadAll(validPreviewList)}>
             <DownloadSimple size={16} className="mr-2" />Tải về tất cả
           </Button> */}
@@ -298,9 +429,18 @@ function MediaGallery({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-8 pt-4">
-        <div className="grid grid-cols-3 gap-4">
-          {validPreviewList.map((url, i) => {
-            const isVid = isVideo(url);
+        {validPreviewList.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">
+            <UploadSimple size={48} weight="thin" />
+            <p className="text-sm font-bold">Chưa có tệp tin nào</p>
+            {uploadConfig?.showUpload && (
+              <p className="text-xs">Nhấn "Tải lên" để thêm tệp tin mới</p>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-4">
+            {validPreviewList.map((url, i) => {
+              const isVid = isVideo(url);
             return (
               <div key={i} className="group relative aspect-square overflow-hidden bg-primary-50 border border-primary-100 hover:border-secondary-900 transition-all duration-500 cursor-pointer" onClick={() => onSelectMedia(url)}>
                 {isVid ? (
@@ -329,8 +469,72 @@ function MediaGallery({
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && handleCancelUpload()}>
+        <DialogContent className="w-[90%] sm:max-w-2xl gap-0 bg-white border-none shadow-2xl p-0 rounded-2xl overflow-hidden" showCloseButton={false}>
+          <DialogHeader className="px-6 py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-secondary-900 font-black tracking-tight flex items-center justify-between">
+              Xác nhận tải lên
+              <span className="bg-secondary-900 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
+                {uploadConfig?.designCode}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4">
+            <p className="text-sm text-secondary-600 font-medium mb-4">
+              Bạn có chắc chắn muốn tải lên <span className="font-bold text-secondary-900">{selectedFiles.length} tệp</span> không?
+            </p>
+            <div className="grid grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2">
+              {previewUrls.map((url, idx) => {
+                const isVid = isVideo(selectedFiles[idx].name);
+                return (
+                  <div key={idx} className="relative aspect-square overflow-hidden border border-primary-100 shadow-sm rounded-lg bg-primary-50">
+                    {isVid ? (
+                      <div className="h-full w-full bg-secondary-900 flex items-center justify-center relative group">
+                        <video src={url} className="h-full w-full object-cover opacity-60" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <PlayCircle size={24} weight="fill" className="text-white/80" />
+                        </div>
+                      </div>
+                    ) : (
+                      <img src={url} className="h-full w-full object-cover" alt="Preview" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <DialogFooter className="px-6 py-4 m-0 bg-primary-50/30 border-t border-primary-50">
+            <div className="flex w-full justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCancelUpload}
+                disabled={uploading}
+                className="border-primary-100 font-bold text-xs rounded-full px-6"
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleConfirmUpload}
+                disabled={uploading}
+                className="bg-secondary-900 text-white hover:bg-secondary-800 font-bold text-xs rounded-full px-6"
+              >
+                {uploading ? (
+                  <>
+                    <CircleNotch size={14} className="animate-spin mr-2" weight="bold" />
+                    Đang tải...
+                  </>
+                ) : (
+                  "Xác nhận"
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
