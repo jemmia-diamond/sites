@@ -23,12 +23,12 @@ interface JewelryTableRowProps {
   key: string;
 }
 
-const WAREHOUSE_ID_TO_NAME: Record<string, string> = {
-  "1592770": "[HCM] Cửa Hàng HCM",
-  "1582708": "[HCM] Kế Toán",
-  "1110168": "[HCM] Admin",
-  "1592778": "[HN] Cửa Hàng HN",
-  "1593276": "[CT] Cửa Hàng CT",
+const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
+  "1592770": ["[HCM] Cửa Hàng HCM"],
+  "1582708": ["[HCM] Kế Toán", "[HCM] Kho Hàng Khách Đặt"],
+  "1110168": ["[HCM] Admin"],
+  "1592778": ["[HN] Cửa Hàng HN"],
+  "1593276": ["[CT] Cửa Hàng CT", "[CT] Cửa Hàng Cần Thơ"],
 };
 
 export function JewelryTableRow({
@@ -58,7 +58,7 @@ export function JewelryTableRow({
   const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
 
   if (hasWarehouseFilter) {
-    const selectedWarehouseNames = warehouseIds.map(id => WAREHOUSE_ID_TO_NAME[id]).filter(Boolean);
+    const selectedWarehouseNames = warehouseIds.flatMap(id => WAREHOUSE_ID_TO_NAMES[id] || []).filter(Boolean);
     if (selectedWarehouseNames.length > 0) {
       const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
       variants = variants.filter(v => {
