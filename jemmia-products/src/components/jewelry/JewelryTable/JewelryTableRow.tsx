@@ -11,6 +11,7 @@ import { formatPriceMillion, formatDateTime } from "./utils/formatters";
 
 interface JewelryTableRowProps {
   product: ProductModel;
+  warehouseIds?: string[];
   isExpanded: boolean;
   expandedId: string | null;
   brokenImages: Set<string>;
@@ -21,8 +22,17 @@ interface JewelryTableRowProps {
   key: string;
 }
 
+const WAREHOUSE_ID_TO_NAME: Record<string, string> = {
+  "1592770": "[HCM] Cửa Hàng HCM",
+  "1582708": "[HCM] Kế Toán",
+  "1110168": "[HCM] Admin",
+  "1592778": "[HN] Cửa Hàng HN",
+  "1593276": "[CT] Cửa Hàng CT",
+};
+
 export function JewelryTableRow({
   product,
+  warehouseIds,
   isExpanded,
   brokenImages,
   onImageError,
@@ -40,9 +50,29 @@ export function JewelryTableRow({
     ...(product.videos?.map((v) => v.url) || []),
   ];
 
-  const variants = (product.variants || []) as any[];
+  let variants = (product.variants || []) as any[];
+
+  // Filter variants by warehouse if warehouseIds are provided, 
+  // or use default warehouses to match backend behavior
+  const effectiveWarehouseIds = (warehouseIds && warehouseIds.length > 0)
+    ? warehouseIds
+    : ["1592770", "1582708", "1110168", "1592778", "1593276"];
+
+  const selectedWarehouseNames = effectiveWarehouseIds.map(id => WAREHOUSE_ID_TO_NAME[id]).filter(Boolean);
+  if (selectedWarehouseNames.length > 0) {
+    const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
+    variants = variants.filter(v => {
+      if (!v.stockAt) return false;
+      const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
+      // Use includes to be more forgiving if the backend returns slightly different formatted strings 
+      // e.g. " [HCM] Cửa Hàng HCM " vs "[HCM] Cửa Hàng HCM"
+      return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
+    });
+  }
 
   const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
+  
+  // Aggregate only the variants that passed the warehouse filter
   variants.forEach((v) => {
     const hv = product.haravanVariants?.find(hv => String(hv.variant_id) === String(v.id));
     const vWithHv = { ...v, haravanVariant: hv };
@@ -52,21 +82,34 @@ export function JewelryTableRow({
       stockBySKU[sku] = {
         variants: [],
         totalQuantity: 0,
-        totalHaravanQuantity: hv?.qty_available || 0,
+        totalHaravanQuantity: 0,
         firstVariant: vWithHv
       };
     }
+    
     stockBySKU[sku].variants.push(vWithHv);
-    stockBySKU[sku].totalQuantity += v.quantity || 0;
+    
+    // We sum up the internal quantity for the variants that passed the filter
+    const vQuantity = v.quantity || 0;
+    stockBySKU[sku].totalQuantity += vQuantity;
+    
+    // Total Haravan Quantity is now purely calculated based on active serials 
+    // that belong to the filtered warehouses.
+    if (vQuantity > 0) {
+      stockBySKU[sku].totalHaravanQuantity += 1;
+    }
   });
+
+  // Calculate totals and min/max prices based on all original variants to ensure 
+  // the row-level price range doesn't break if a specific warehouse is selected
+  const allVariants = (product.variants || []) as any[];
+  const allPrices = allVariants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
   const totalStockCount = Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
   const hasStock = totalStockCount > 0;
   const fourView = product.attributes?.["4view"];
-
-  const allPrices = variants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
-  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
   const priceDisplay = minPrice === 0
     ? "Liên hệ"

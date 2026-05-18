@@ -11,7 +11,7 @@ import { PasswordGate } from "./components/auth/PasswordGate";
 // In development, requests go through the Vite proxy (same-origin, cookies sent automatically).
 // In production, set the baseURL to the real API and enable withCredentials for cross-origin cookie support.
 if (import.meta.env.PROD) {
-  axios.defaults.baseURL = "https://api.salesaya.com";
+  axios.defaults.baseURL = "http://localhost:80";
   axios.defaults.withCredentials = true;
 }
 axiosRetry(axios, { 

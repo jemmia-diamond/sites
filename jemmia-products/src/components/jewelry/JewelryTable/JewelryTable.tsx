@@ -19,9 +19,10 @@ import { SerialListModal } from "./SerialListModal";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
+  warehouseIds?: string[];
 }
 
-export function JewelryTable({ jewelries }: JewelryTableProps) {
+export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -83,6 +84,7 @@ export function JewelryTable({ jewelries }: JewelryTableProps) {
               {jewelries.map((product) => (
                 <JewelryTableRow
                   product={product}
+                  warehouseIds={warehouseIds}
                   isExpanded={expandedId === product.id}
                   expandedId={expandedId}
                   brokenImages={brokenImages}

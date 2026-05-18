@@ -161,7 +161,10 @@ export default function JewelryPage() {
               <p className="text-primary-400 font-medium">Không tìm thấy thiết kế nào phù hợp với bộ lọc.</p>
             </div>
           ) : (
-            <JewelryTable jewelries={allJewelries} />
+            <JewelryTable 
+              jewelries={allJewelries} 
+              warehouseIds={debouncedFilters.warehouseIds}
+            />
           )}
         </div>
 
