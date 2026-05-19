@@ -39,22 +39,18 @@ export function ProductTypeFilter({
           className="space-y-2"
         >
           {sortedTypes?.map((cat) => {
-            const isDisabled = cat.name === "Nhẫn Cưới";
             return (
               <div key={cat.id} className="flex items-center space-x-3 group">
                 <RadioGroupItem
                   value={cat.id}
                   id={cat.id}
-                  disabled={isDisabled}
                   className="h-4 w-4 border-primary-300 text-secondary-900 disabled:opacity-30 disabled:cursor-not-allowed"
                 />
                 <Label
                   htmlFor={cat.id}
                   className={cn(
                     "text-xs tracking-tight transition-colors",
-                    isDisabled
-                      ? "text-primary-200 cursor-not-allowed"
-                      : "text-primary-600 group-hover:text-secondary-900 cursor-pointer"
+                    "text-primary-600 group-hover:text-secondary-900 cursor-pointer"
                   )}
                 >
                   {cat.name}

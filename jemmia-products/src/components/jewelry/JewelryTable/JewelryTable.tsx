@@ -19,11 +19,15 @@ import {
   UploadSimple,
   CircleNotch,
   PlayCircle,
+  GenderMale,
+  GenderFemale,
+  Camera,
 } from "@phosphor-icons/react";
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
 import axios from "axios";
+import { cn } from "@/lib/utils";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
@@ -39,7 +43,7 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
-  const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; } | null>(null);
+  const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; uploadOptions?: { label: string; designCode: string }[]; } | null>(null);
 
   React.useEffect(() => {
     if (!uploadConfig?.productId) return;
@@ -82,7 +86,7 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   const closeMediaDialog = () => {
     setPreviewUrl(null);
     setSelectedMedia(null);
-    setTimeout(() => setUploadConfig(null), 200);
+    setUploadConfig(null);
   };
 
   const handleDownloadSingle = (url: string) => {
@@ -112,8 +116,11 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
     setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
   };
 
-  const handleUploadSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["jewelry-designs"] });
+  const handleUploadSuccess = async (fromGallery?: boolean) => {
+    await queryClient.invalidateQueries({ queryKey: ["jewelry-designs"] });
+    if (!fromGallery) {
+      closeMediaDialog();
+    }
   };
 
   return (
@@ -168,7 +175,7 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
         onSelectMedia={setSelectedMedia}
         onDownloadSingle={handleDownloadSingle}
         onDownloadAll={handleDownloadAll}
-        onUploadSuccess={handleUploadSuccess}
+        onUploadSuccess={() => handleUploadSuccess(true)}
         isVideo={isVideo}
       />
     </>
@@ -181,14 +188,14 @@ interface MediaPreviewDialogProps {
   previewIndex: number;
   selectedMedia: string | null;
   brokenImages: Set<string>;
-  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; } | null;
+  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; uploadOptions?: { label: string; designCode: string }[]; } | null;
   onImageError: (url: string) => void;
   onClose: () => void;
   onPreview: (images: string[], index: number, config?: any) => void;
   onSelectMedia: (url: string | null) => void;
   onDownloadSingle: (url: string) => void;
   onDownloadAll: (images: string[]) => void;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
 }
 
@@ -310,12 +317,12 @@ function MediaViewer({
 interface MediaGalleryProps {
   validPreviewList: string[];
   previewIndex: number;
-  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; } | null;
+  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; uploadOptions?: { label: string; designCode: string }[]; } | null;
   onClose: () => void;
   onSelectMedia: (url: string) => void;
   onDownloadAll: (images: string[]) => void;
   onImageError: (url: string) => void;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
 }
 
@@ -335,10 +342,24 @@ function MediaGallery({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
+  const [activeDesignCode, setActiveDesignCode] = useState<string | null>(null);
+  const [activeLabel, setActiveLabel] = useState<string | null>(null);
   
+  const handleSelectOption = (option: { label: string; designCode: string }) => {
+    setActiveDesignCode(option.designCode);
+    setActiveLabel(option.label);
+    setIsSelectionDialogOpen(false);
+    
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0 || !uploadConfig?.designCode) return;
+    const targetDesignCode = activeDesignCode || uploadConfig?.designCode;
+    if (!files || files.length === 0 || !targetDesignCode) return;
 
     const fileArray = Array.from(files) as File[];
     setSelectedFiles(fileArray);
@@ -354,13 +375,17 @@ function MediaGallery({
 
   const handleCancelUpload = () => {
     setIsDialogOpen(false);
+    setIsSelectionDialogOpen(false);
     setSelectedFiles([]);
     previewUrls.forEach(url => URL.revokeObjectURL(url));
     setPreviewUrls([]);
+    setActiveDesignCode(null);
+    setActiveLabel(null);
   };
 
   const handleConfirmUpload = async () => {
-    if (selectedFiles.length === 0 || !uploadConfig?.designCode) return;
+    const targetDesignCode = activeDesignCode || uploadConfig?.designCode;
+    if (selectedFiles.length === 0 || !targetDesignCode) return;
 
     const formData = new FormData();
     selectedFiles.forEach(file => {
@@ -369,13 +394,13 @@ function MediaGallery({
 
     try {
       setUploading(true);
-      const endpoint = uploadConfig.uploadEndpoint || `/files/upload-design-images-multiple?designCode=${uploadConfig.designCode}`;
+      const endpoint = uploadConfig.uploadEndpoint || `/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
       await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      onUploadSuccess?.();
+      await onUploadSuccess?.();
       handleCancelUpload();
     } catch (error) {
       console.error("Upload failed", error);
@@ -412,7 +437,15 @@ function MediaGallery({
                 size="sm" 
                 disabled={uploading}
                 className="h-10 px-4 border-primary-100 font-bold text-xs uppercase tracking-widest hover:bg-secondary-900 hover:text-white transition-all flex items-center gap-2"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (uploadConfig.uploadOptions && uploadConfig.uploadOptions.length > 1) {
+                    setIsSelectionDialogOpen(true);
+                  } else {
+                    setActiveDesignCode(uploadConfig.designCode || null);
+                    setActiveLabel(null);
+                    fileInputRef.current?.click();
+                  }
+                }}
               >
                 {uploading ? (
                   <CircleNotch size={16} className="animate-spin" />
@@ -490,7 +523,7 @@ function MediaGallery({
             <DialogTitle className="text-secondary-900 font-black tracking-tight flex items-center justify-between">
               Xác nhận tải lên
               <span className="bg-secondary-900 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
-                {uploadConfig?.designCode}
+                {activeLabel ? `${activeLabel} - ${activeDesignCode}` : (activeDesignCode || uploadConfig?.designCode)}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -544,6 +577,30 @@ function MediaGallery({
               </Button>
             </div>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSelectionDialogOpen} onOpenChange={(open) => !open && setIsSelectionDialogOpen(false)}>
+        <DialogContent className="w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
+          <DialogHeader className="px-4 py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-secondary-900 font-black tracking-tight text-xs uppercase">
+              Chọn nhẫn cần tải lên tệp
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-4 pb-4 flex flex-col gap-2">
+            {uploadConfig?.uploadOptions?.map((option, idx) => (
+              <Button
+                key={idx}
+                onClick={() => handleSelectOption(option)}
+                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
+              >
+                <span>{option.label}</span>
+                <span className="text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
+                  {option.designCode}
+                </span>
+              </Button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
     </>

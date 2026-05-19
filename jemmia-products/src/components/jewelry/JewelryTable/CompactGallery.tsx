@@ -1,5 +1,5 @@
 import React from "react";
-import { Camera, Plus, CircleNotch, PlayCircle } from "@phosphor-icons/react";
+import { Camera, Plus, CircleNotch, PlayCircle, GenderMale, GenderFemale } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import axios from "axios";
+import { cn } from "@/lib/utils";
 
 interface CompactGalleryProps {
   images: string[];
@@ -17,9 +18,10 @@ interface CompactGalleryProps {
   onImageError: (url: string) => void;
   onPreview: (images: string[], index: number, config?: any) => void;
   designCode?: string;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: () => void | Promise<void>;
   uploadEndpoint?: string;
   displayCount?: number;
+  uploadOptions?: { label: string; designCode: string }[];
 }
 
 export function CompactGallery({
@@ -32,12 +34,16 @@ export function CompactGallery({
   onUploadSuccess,
   uploadEndpoint,
   displayCount = 4,
+  uploadOptions,
 }: CompactGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = React.useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
+  const [activeDesignCode, setActiveDesignCode] = React.useState<string | null>(null);
+  const [activeLabel, setActiveLabel] = React.useState<string | null>(null);
 
   const validImages = images.filter((url) => !brokenImages.has(url));
 
@@ -47,9 +53,20 @@ export function CompactGallery({
   const isVideo = (url: string) =>
     !!url.match(/\.(mp4|webm|ogg|mov)$|^blob:|^data:video/i);
 
+  const handleSelectOption = (option: { label: string; designCode: string }) => {
+    setActiveDesignCode(option.designCode);
+    setActiveLabel(option.label);
+    setIsSelectionDialogOpen(false);
+    
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0 || !designCode) return;
+    const targetDesignCode = activeDesignCode || designCode;
+    if (!files || files.length === 0 || !targetDesignCode) return;
 
     const fileArray = Array.from(files) as File[];
     setSelectedFiles(fileArray);
@@ -66,13 +83,17 @@ export function CompactGallery({
 
   const handleCancelUpload = () => {
     setIsDialogOpen(false);
+    setIsSelectionDialogOpen(false);
     setSelectedFiles([]);
     previewUrls.forEach(url => URL.revokeObjectURL(url));
     setPreviewUrls([]);
+    setActiveDesignCode(null);
+    setActiveLabel(null);
   };
 
   const handleConfirmUpload = async () => {
-    if (selectedFiles.length === 0 || !designCode) return;
+    const targetDesignCode = activeDesignCode || designCode;
+    if (selectedFiles.length === 0 || !targetDesignCode) return;
 
     const formData = new FormData();
     selectedFiles.forEach(file => {
@@ -81,13 +102,13 @@ export function CompactGallery({
 
     try {
       setUploading(true);
-      const endpoint = uploadEndpoint || `/files/upload-design-images-multiple?designCode=${designCode}`;
+      const endpoint = uploadEndpoint || `/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
       await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      onUploadSuccess?.();
+      await onUploadSuccess?.();
       handleCancelUpload(); // Close dialog and clean up on success
     } catch (error) {
       console.error("Upload failed", error);
@@ -112,7 +133,7 @@ export function CompactGallery({
               onClick={(e) => {
                 e.stopPropagation();
                 if (showUpload) {
-                  onPreview([], 0, { showUpload, designCode, uploadEndpoint });
+                  onPreview([], 0, { showUpload, designCode, uploadEndpoint, uploadOptions });
                 }
               }}
             >
@@ -133,7 +154,7 @@ export function CompactGallery({
                     className="relative h-10 w-10 overflow-hidden cursor-pointer bg-white border border-primary-50 shadow-sm hover:z-10 transition-all hover:scale-110 shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint });
+                      onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
                     }}
                   >
                     {isVid ? (
@@ -164,7 +185,7 @@ export function CompactGallery({
                           className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint });
+                            onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
                           }}
                         >
                           <span className="text-[9px] text-white font-bold">
@@ -187,7 +208,13 @@ export function CompactGallery({
             className="h-6 w-6 shrink-0 bg-slate-50 text-primary-300 hover:text-secondary-900 hover:bg-secondary-50 rounded-full"
             onClick={(e) => {
               e.stopPropagation();
-              fileInputRef.current?.click();
+              if (uploadOptions && uploadOptions.length > 1) {
+                setIsSelectionDialogOpen(true);
+              } else {
+                setActiveDesignCode(designCode || null);
+                setActiveLabel(null);
+                fileInputRef.current?.click();
+              }
             }}
           >
             {uploading ? (
@@ -214,7 +241,7 @@ export function CompactGallery({
             <DialogTitle className="text-secondary-900 font-black tracking-tight flex items-center justify-between">
               Xác nhận tải lên
               <span className="bg-secondary-900 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
-                {designCode}
+                {activeLabel ? `${activeLabel} - ${activeDesignCode}` : (activeDesignCode || designCode)}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -268,6 +295,30 @@ export function CompactGallery({
               </Button>
             </div>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSelectionDialogOpen} onOpenChange={(open) => !open && setIsSelectionDialogOpen(false)}>
+        <DialogContent className="w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
+          <DialogHeader className="px-4 py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-secondary-900 font-black tracking-tight text-xs uppercase">
+              Chọn nhẫn cần tải lên tệp
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-4 pb-4 flex flex-col gap-2">
+            {uploadOptions?.map((option, idx) => (
+              <Button
+                key={idx}
+                onClick={() => handleSelectOption(option)}
+                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
+              >
+                <span>{option.label}</span>
+                <span className="text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
+                  {option.designCode}
+                </span>
+              </Button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
     </>

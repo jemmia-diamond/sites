@@ -54,33 +54,33 @@ export function JewelryTableRow({
 
   const actualImages = isBundle
     ? product.products!.flatMap((p) => [
-        ...(p.images?.map((img) => img.url) || []),
-        ...(p.videos?.map((v) => v.url) || []),
-      ])
+      ...(p.images?.map((img) => img.url) || []),
+      ...(p.videos?.map((v) => v.url) || []),
+    ])
     : [
-        ...(product.images?.map((img) => img.url) || []),
-        ...(product.videos?.map((v) => v.url) || []),
-      ];
+      ...(product.images?.map((img) => img.url) || []),
+      ...(product.videos?.map((v) => v.url) || []),
+    ];
 
   const designCode = isBundle
     ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
     : product.attributes?.designCode;
-  
+
   const stockBySKU = !isBundle ? getGroupedStock(product, warehouseIds) : {};
 
   const totalStockCount = isBundle
     ? product.products!.reduce((acc, p) => {
-        const subProductStockBySKU = getGroupedStock(p, warehouseIds);
-        const subProductStockCount = Object.values(subProductStockBySKU).reduce((subAcc, curr) => subAcc + curr.totalHaravanQuantity, 0);
-        return acc + subProductStockCount;
-      }, 0)
+      const subProductStockBySKU = getGroupedStock(p, warehouseIds);
+      const subProductStockCount = Object.values(subProductStockBySKU).reduce((subAcc, curr) => subAcc + curr.totalHaravanQuantity, 0);
+      return acc + subProductStockCount;
+    }, 0)
     : Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
-    
+
   const allVariants = (product.variants || []) as any[];
   const allPrices = allVariants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
-  
+
   const hasStock = totalStockCount > 0;
   const fourView = !isBundle && product.attributes?.["4view"];
   const subProductNam = isBundle ? (product.products?.find(p => p.attributes?.gender === 'Nam') || product.products?.[0]) : null;
@@ -89,6 +89,11 @@ export function JewelryTableRow({
   const fourViewNu = subProductNu?.attributes?.["4view"];
   const hasSideStonesNam = fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
   const hasSideStonesNu = fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
+
+  const uploadOptions = isBundle ? [
+    ...(subProductNam?.attributes?.designCode ? [{ label: "Nhẫn Nam", designCode: subProductNam.attributes.designCode }] : []),
+    ...(subProductNu?.attributes?.designCode ? [{ label: "Nhẫn Nữ", designCode: subProductNu.attributes.designCode }] : []),
+  ] : undefined;
 
   const priceDisplay = isBundle
     ? product.salePrice && product.salePrice > 0
@@ -137,11 +142,12 @@ export function JewelryTableRow({
           <div className="flex justify-center">
             <CompactGallery
               images={actualImages}
-              showUpload={!isBundle}
+              showUpload={true}
+              uploadOptions={uploadOptions}
               brokenImages={brokenImages}
               onImageError={onImageError}
               onPreview={(images, index, config) => {
-                onPreview(images, index, { ...config, productId: product.id, isActual: true });
+                onPreview(images, index, { ...config, productId: product.id, isActual: true, uploadOptions });
               }}
               designCode={designCode || product.title}
               onUploadSuccess={onUploadSuccess}
@@ -224,10 +230,8 @@ export function JewelryTableRow({
                     return (
                       <div key={subProduct.id} className="p-4">
                         <div className="flex items-center gap-3 mb-3">
-                          <Badge className="bg-secondary-900 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-                            {genderTitle}: {subProduct.title}
-                          </Badge>
-                          <span className="text-[10px] font-bold text-primary-400">ID: {subProduct.id}</span>
+                          <span className="text-sm font-bold text-secondary-800">{genderTitle}</span>
+                          <ProductCodes product={subProduct} isExpanded={false} />
                         </div>
                         <ExpandedPanel
                           stockBySKU={getGroupedStock(subProduct, warehouseIds)}
@@ -273,7 +277,7 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
   }
 
   const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
-  
+
   // Step 1: Group variants by SKU and sum internal quantities.
   variants.forEach((v) => {
     const hv = product.haravanVariants?.find(h => String(h.variant_id) === String(v.id));
@@ -288,7 +292,7 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
         firstVariant: vWithHv
       };
     }
-    
+
     stockBySKU[sku].variants.push(vWithHv);
     stockBySKU[sku].totalQuantity += (v.quantity || 0);
   });
@@ -298,7 +302,7 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
     if (hasWarehouseFilter) {
       // Calculate the sum of physical internal stock (serials quantity)
       const sumOfSerials = stockBySKU[sku].variants.reduce((acc, v) => acc + (v.quantity || 0), 0);
-      
+
       if (sumOfSerials > 0) {
         // If sum of serials > 0, take sum of serials
         stockBySKU[sku].totalHaravanQuantity = sumOfSerials;
@@ -352,9 +356,10 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
             <div
               key={sku}
               className={cn(
-                "grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center transition-colors",
+                "grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center transition-all",
                 idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
-                "hover:bg-primary-50/50"
+                "hover:bg-primary-50/50",
+                group.totalHaravanQuantity === 0 && "opacity-50 hover:opacity-80"
               )}
             >
               <div className="px-5 py-3.5 flex flex-col gap-0.5">
@@ -393,20 +398,19 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 )}
               </div>
 
-              <div className="px-4 py-3.5 flex items-center gap-5">
+              <div className="px-4 py-3.5 flex items-center gap-2">
                 <Badge className="rounded-full bg-secondary-800 text-white text-[11px] font-black shadow-sm">
                   Khả dụng Haravan: {group.totalHaravanQuantity}
                 </Badge>
-                {/* <div className="flex justify-center hover:underline mt-px">
-                  <a
-                    href={haravanLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors group tracking-tight"
-                  >
-                    Haravan <ArrowSquareOut size={12} className="ml-1 -mt-px" />
-                  </a>
-                </div> */}
+                <a
+                  href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
+                >
+                  <span>Haravan</span>
+                  <ArrowSquareOut size={12} />
+                </a>
               </div>
 
               <div className="px-4 py-3.5 text-right">
@@ -439,10 +443,18 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                   variant="outline"
                   size="sm"
                   disabled={group.totalQuantity === 0}
-                  className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-colors rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
                   onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
                 >
-                  Xem Serials
+                  <span>Xem Serials</span>
+                  <span className={cn(
+                    "flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-black transition-all duration-300",
+                    group.totalQuantity === 0
+                      ? "bg-primary-50 text-primary-200"
+                      : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
+                  )}>
+                    {group.totalQuantity}
+                  </span>
                 </Button>
               </div>
             </div>

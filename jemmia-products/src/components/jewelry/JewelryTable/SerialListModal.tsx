@@ -10,6 +10,28 @@ import {
 } from "@/components/ui/dialog";
 import { formatDateTime } from "./utils/formatters";
 
+function formatGoldWeight(grams: number | null | undefined): string {
+  if (grams === undefined || grams === null || isNaN(grams) || grams <= 0) return "N/A";
+  
+  // 1 chỉ = 3.75g
+  const totalChi = grams / 3.75;
+  // Round to 2 decimal places (chỉ, phân, ly)
+  const roundedChi = Math.round(totalChi * 100) / 100;
+  
+  const chiPart = Math.floor(roundedChi);
+  const remainder = Math.round((roundedChi - chiPart) * 100);
+  const phanPart = Math.floor(remainder / 10);
+  const lyPart = remainder % 10;
+  
+  if (chiPart === 0) {
+    if (phanPart === 0 && lyPart === 0) return "0p";
+    return lyPart > 0 ? `${phanPart}p${lyPart}` : `${phanPart}p`;
+  } else {
+    if (phanPart === 0 && lyPart === 0) return `${chiPart}c`;
+    return lyPart > 0 ? `${chiPart}c${phanPart}${lyPart}` : `${chiPart}c${phanPart}`;
+  }
+}
+
 interface SerialListModalProps {
   variants: any[];
   sku: string;
@@ -75,7 +97,7 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
           <div className="flex items-center px-8 py-3 border-b border-gray-100 bg-gray-50/30">
             <span className="w-[120px] text-[10px] font-bold text-primary-300 uppercase tracking-wider">Serial</span>
             <span className="w-[160px] text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Vị trí kho</span>
-            <span className="w-[110px] text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Trọng lượng</span>
+            <span className="w-[130px] text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Trọng lượng vàng</span>
             <span className="w-[110px] text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Viên chủ</span>
             <span className="flex-1 text-center text-[10px] font-bold text-primary-300 uppercase tracking-wider">Chính sách</span>
             <span className="w-[120px] text-[10px] font-bold text-primary-300 uppercase tracking-wider text-right">Thời gian Quét kho</span>
@@ -97,9 +119,9 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
                       {v.stockAt || "Kho tổng"}
                     </Badge>
                   </div>
-                  <div className="w-[110px] text-center">
-                    <span className="text-xs font-semibold text-secondary-600 leading-none">
-                      {v.attributes?.goldWeight ? `${v.attributes.goldWeight}g` : "--"}
+                  <div className="w-[130px] text-center flex flex-col justify-center items-center">
+                    <span className="text-xs font-semibold text-secondary-600 leading-none block">
+                      {v.attributes?.goldWeight ? `${formatGoldWeight(v.attributes.goldWeight)}` : "--"}
                     </span>
                   </div>
                   <div className="w-[110px] text-center">
