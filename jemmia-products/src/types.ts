@@ -37,6 +37,7 @@ export interface ProductModel {
   showOnWebsite?: boolean;
   lastRfidScanTime?: string;
   variants?: ProductModel[];
+  products?: ProductModel[];
   haravanVariants?: HaravanVariant[];
 }
 

@@ -13,9 +13,10 @@ interface SideStone {
 interface SideStoneTooltipProps {
   fourView: SideStone[];
   isExpanded: boolean;
+  label?: string;
 }
 
-export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps) {
+export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneTooltipProps) {
   const { open, onEnter, onLeave } = useHoverPopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
@@ -64,7 +65,7 @@ export function SideStoneTooltip({ fourView, isExpanded }: SideStoneTooltipProps
               : open ? "text-secondary-900" : "text-primary-400"
           )}
         >
-          {fourView.length} loại
+          {label ? label : `${fourView.length} loại`}
         </span>
         <CaretDown
           size={10}

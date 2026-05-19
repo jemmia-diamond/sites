@@ -42,82 +42,63 @@ export function JewelryTableRow({
   onOpenSerialModal,
   onUploadSuccess,
 }: JewelryTableRowProps) {
+  const isBundle = product.products && product.products.length > 0;
+
   const isEarring =
     product.type?.toLowerCase().includes("bông tai") ||
     product.type?.toLowerCase().includes("earring");
 
-  const webImages = product.thumbnails?.map((t) => t.url) || [];
-  const actualImages = [
-    ...(product.images?.map((img) => img.url) || []),
-    ...(product.videos?.map((v) => v.url) || []),
-  ];
+  const webImages = isBundle
+    ? product.products?.[0]?.thumbnails?.map((t) => t.url) || []
+    : product.thumbnails?.map((t) => t.url) || [];
 
-  const designCode = product.attributes?.designCode;
+  const actualImages = isBundle
+    ? product.products!.flatMap((p) => [
+        ...(p.images?.map((img) => img.url) || []),
+        ...(p.videos?.map((v) => v.url) || []),
+      ])
+    : [
+        ...(product.images?.map((img) => img.url) || []),
+        ...(product.videos?.map((v) => v.url) || []),
+      ];
 
-  let variants = (product.variants || []) as any[];
-  const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
-
-  if (hasWarehouseFilter) {
-    const selectedWarehouseNames = warehouseIds.flatMap(id => WAREHOUSE_ID_TO_NAMES[id] || []).filter(Boolean);
-    if (selectedWarehouseNames.length > 0) {
-      const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
-      variants = variants.filter(v => {
-        if (!v.stockAt) return false;
-        const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
-        // Use includes to be more forgiving if the backend returns slightly different formatted strings 
-        return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
-      });
-    }
-  }
-
-  const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
+  const designCode = isBundle
+    ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
+    : product.attributes?.designCode;
   
-  // Aggregate variants
-  variants.forEach((v) => {
-    const hv = product.haravanVariants?.find(hv => String(hv.variant_id) === String(v.id));
-    const vWithHv = { ...v, haravanVariant: hv };
+  const stockBySKU = !isBundle ? getGroupedStock(product, warehouseIds) : {};
 
-    const sku = v.attributes?.sku || v.sku || product.attributes?.sku || "N/A";
-    if (!stockBySKU[sku]) {
-      stockBySKU[sku] = {
-        variants: [],
-        totalQuantity: 0,
-        totalHaravanQuantity: hasWarehouseFilter ? 0 : (hv?.qty_available || 0),
-        firstVariant: vWithHv
-      };
-    }
+  const totalStockCount = isBundle
+    ? product.products!.reduce((acc, p) => {
+        const subProductStockBySKU = getGroupedStock(p, warehouseIds);
+        const subProductStockCount = Object.values(subProductStockBySKU).reduce((subAcc, curr) => subAcc + curr.totalHaravanQuantity, 0);
+        return acc + subProductStockCount;
+      }, 0)
+    : Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
     
-    stockBySKU[sku].variants.push(vWithHv);
-    
-    // We sum up the internal quantity for the variants
-    const vQuantity = v.quantity || 0;
-    stockBySKU[sku].totalQuantity += vQuantity;
-    
-    // If a filter is applied, Total Haravan Quantity is purely calculated based on active serials.
-    // If no filter is applied, it retains the hv?.qty_available logic from above.
-    if (hasWarehouseFilter) {
-      if (vQuantity > 0) {
-        stockBySKU[sku].totalHaravanQuantity += 1;
-      }
-    }
-  });
-
-  // Calculate totals and min/max prices based on all original variants to ensure 
-  // the row-level price range doesn't break if a specific warehouse is selected
   const allVariants = (product.variants || []) as any[];
   const allPrices = allVariants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
-
-  const totalStockCount = Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
+  
   const hasStock = totalStockCount > 0;
-  const fourView = product.attributes?.["4view"];
+  const fourView = !isBundle && product.attributes?.["4view"];
+  const subProductNam = isBundle ? (product.products?.find(p => p.attributes?.gender === 'Nam') || product.products?.[0]) : null;
+  const subProductNu = isBundle ? (product.products?.find(p => p.attributes?.gender === 'Nữ') || (product.products && product.products.length > 1 ? product.products[1] : null)) : null;
+  const fourViewNam = subProductNam?.attributes?.["4view"];
+  const fourViewNu = subProductNu?.attributes?.["4view"];
+  const hasSideStonesNam = fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
+  const hasSideStonesNu = fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
 
-  const priceDisplay = minPrice === 0
-    ? "Liên hệ"
-    : minPrice === maxPrice
-      ? formatPriceMillion(minPrice)
-      : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
+  const priceDisplay = isBundle
+    ? product.salePrice && product.salePrice > 0
+      ? formatPriceMillion(product.salePrice)
+      : "Liên hệ"
+    : minPrice === 0
+      ? "Liên hệ"
+      : minPrice === maxPrice
+        ? formatPriceMillion(minPrice)
+        : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
 
   return (
     <>
@@ -126,12 +107,13 @@ export function JewelryTableRow({
           "divide-x transition-all cursor-pointer group h-14 relative",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-50 hover:bg-primary-50/30 divide-primary-50"
+            : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
+          isBundle && !isExpanded && "bg-amber-50/20"
         )}
         onClick={() => onToggleExpand(product.id)}
       >
         <TableCell className="px-3 py-2 text-center">
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center gap-1">
             <ProductCodes product={product} isExpanded={isExpanded} />
           </div>
         </TableCell>
@@ -143,8 +125,10 @@ export function JewelryTableRow({
               showUpload={false}
               brokenImages={brokenImages}
               onImageError={onImageError}
-              onPreview={(images, index, config) => onPreview(images, index, { ...config, productId: product.id })}
-              designCode={designCode}
+              onPreview={(images, index, config) => {
+                onPreview(images, index, { ...config, productId: product.id, isActual: false });
+              }}
+              designCode={designCode || product.title}
             />
           </div>
         </TableCell>
@@ -153,23 +137,39 @@ export function JewelryTableRow({
           <div className="flex justify-center">
             <CompactGallery
               images={actualImages}
-              showUpload={true}
+              showUpload={!isBundle}
               brokenImages={brokenImages}
               onImageError={onImageError}
-              onPreview={(images, index, config) => onPreview(images, index, { ...config, productId: product.id })}
-              designCode={designCode}
+              onPreview={(images, index, config) => {
+                onPreview(images, index, { ...config, productId: product.id, isActual: true });
+              }}
+              designCode={designCode || product.title}
               onUploadSuccess={onUploadSuccess}
             />
           </div>
         </TableCell>
 
         <TableCell className="px-2 py-2 text-center">
-          {fourView && Array.isArray(fourView) && fourView.length > 0 ? (
-            <div className="flex justify-center">
-              <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
+          {isBundle ? (
+            <div className="flex flex-col items-center gap-1 justify-center">
+              {hasSideStonesNam && (
+                <SideStoneTooltip fourView={fourViewNam as any} isExpanded={isExpanded} label="Tấm Nam" />
+              )}
+              {hasSideStonesNu && (
+                <SideStoneTooltip fourView={fourViewNu as any} isExpanded={isExpanded} label="Tấm Nữ" />
+              )}
+              {!hasSideStonesNam && !hasSideStonesNu && (
+                <span className="text-primary-100 text-[10px] font-black italic">--</span>
+              )}
             </div>
           ) : (
-            <span className="text-primary-100 text-[10px] font-black italic">--</span>
+            fourView && Array.isArray(fourView) && fourView.length > 0 ? (
+              <div className="flex justify-center">
+                <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
+              </div>
+            ) : (
+              <span className="text-primary-100 text-[10px] font-black italic">--</span>
+            )
           )}
         </TableCell>
 
@@ -217,18 +217,95 @@ export function JewelryTableRow({
         <tr className="hover:bg-transparent border-none">
           <TableCell colSpan={9} className="p-0 bg-primary-50">
             <div className="px-0 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200">
-              <ExpandedPanel
-                stockBySKU={stockBySKU}
-                isEarring={isEarring}
-                product={product}
-                onOpenSerialModal={onOpenSerialModal}
-              />
+              {isBundle ? (
+                <div className="bg-white divide-y divide-primary-100">
+                  {product.products!.map((subProduct, idx) => {
+                    const genderTitle = subProduct.attributes?.gender === 'Nam' ? 'Nhẫn Nam' : subProduct.attributes?.gender === 'Nữ' ? 'Nhẫn Nữ' : `Món ${idx + 1}`;
+                    return (
+                      <div key={subProduct.id} className="p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Badge className="bg-secondary-900 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                            {genderTitle}: {subProduct.title}
+                          </Badge>
+                          <span className="text-[10px] font-bold text-primary-400">ID: {subProduct.id}</span>
+                        </div>
+                        <ExpandedPanel
+                          stockBySKU={getGroupedStock(subProduct, warehouseIds)}
+                          isEarring={subProduct.type?.toLowerCase().includes("bông tai") || false}
+                          product={subProduct}
+                          onOpenSerialModal={onOpenSerialModal}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <ExpandedPanel
+                  stockBySKU={stockBySKU}
+                  isEarring={isEarring}
+                  product={product}
+                  onOpenSerialModal={onOpenSerialModal}
+                />
+              )}
             </div>
           </TableCell>
         </tr>
       )}
     </>
   );
+}
+
+// Helper to group stock for sub-products
+function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
+  let variants = (product.variants || []) as any[];
+  const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
+
+  if (hasWarehouseFilter) {
+    const selectedWarehouseNames = warehouseIds.flatMap(id => WAREHOUSE_ID_TO_NAMES[id] || []).filter(Boolean);
+    if (selectedWarehouseNames.length > 0) {
+      const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
+      variants = variants.filter(v => {
+        if (!v.stockAt) return false;
+        const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
+        return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
+      });
+    }
+  }
+
+  const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
+  
+  // Step 1: Group variants by SKU and sum internal quantities.
+  variants.forEach((v) => {
+    const hv = product.haravanVariants?.find(h => String(h.variant_id) === String(v.id));
+    const vWithHv = { ...v, haravanVariant: hv };
+    const sku = v.barcode || v.attributes?.sku || v.sku || "N/A";
+
+    if (!stockBySKU[sku]) {
+      stockBySKU[sku] = {
+        variants: [],
+        totalQuantity: 0,
+        totalHaravanQuantity: 0, // Will calculate in step 2
+        firstVariant: vWithHv
+      };
+    }
+    
+    stockBySKU[sku].variants.push(vWithHv);
+    stockBySKU[sku].totalQuantity += (v.quantity || 0);
+  });
+
+  // Step 2: Calculate Haravan quantity for each SKU.
+  for (const sku in stockBySKU) {
+    // Sum from the main haravanVariants source, ensuring uniqueness.
+    const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
+    uniqueVariantIds.forEach((variantId) => {
+      const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
+      if (hv) {
+        stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+      }
+    });
+  }
+
+  return stockBySKU;
 }
 
 interface ExpandedPanelProps {

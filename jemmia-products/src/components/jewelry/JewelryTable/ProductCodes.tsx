@@ -16,8 +16,11 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const isBundle = product.products && product.products.length > 0;
 
-  const designCode = product.attributes?.designCode;
+  const designCode = isBundle
+    ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
+    : product.attributes?.designCode;
 
   const otherCodes = Array.from(
     new Set([
@@ -27,7 +30,7 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
     ].filter(Boolean))
   ).filter((c) => c !== designCode);
 
-  const hasOther = otherCodes.length > 0;
+  const hasOther = otherCodes.length > 0 && !isBundle;
 
   useEffect(() => {
     if (open && triggerRef.current) {
@@ -58,9 +61,12 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
       onMouseLeave={onLeave} 
       ref={triggerRef}
     >
-      <Badge className="flex items-center gap-1.5 rounded-full bg-secondary-900 text-white pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase whitespace-nowrap">
+      <Badge className={cn(
+        "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase whitespace-nowrap",
+        isBundle ? "bg-secondary-900 text-white" : "bg-secondary-900 text-white"
+      )}>
         <span>{designCode || "N/A"}</span>
-        {designCode && (
+        {!isBundle && designCode && (
           <button
             onClick={(e) => handleCopy(e, designCode)}
             className="text-white/60 hover:text-white transition-colors focus:outline-none flex items-center justify-center"

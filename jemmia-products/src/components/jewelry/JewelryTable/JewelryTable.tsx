@@ -39,20 +39,31 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
-  const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; } | null>(null);
+  const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; } | null>(null);
 
   React.useEffect(() => {
     if (!uploadConfig?.productId) return;
     const activeProduct = jewelries.find((j) => j.id === uploadConfig.productId);
     if (!activeProduct) return;
 
-    const isActual = uploadConfig.showUpload;
-    const newImages = isActual
-      ? [
+    const isBundle = activeProduct.products && activeProduct.products.length > 0;
+
+    const webImages = isBundle
+      ? activeProduct.products?.[0]?.thumbnails?.map((t) => t.url) || []
+      : activeProduct.thumbnails?.map((t) => t.url) || [];
+
+    const actualImages = isBundle
+      ? activeProduct.products!.flatMap((p) => [
+          ...(p.images?.map((img) => img.url) || []),
+          ...(p.videos?.map((v) => v.url) || []),
+        ])
+      : [
           ...(activeProduct.images?.map((img) => img.url) || []),
           ...(activeProduct.videos?.map((v) => v.url) || []),
-        ]
-      : activeProduct.thumbnails?.map((t) => t.url) || [];
+        ];
+
+    const isActual = uploadConfig.isActual ?? uploadConfig.showUpload;
+    const newImages = isActual ? actualImages : webImages;
 
     setPreviewList(newImages);
   }, [jewelries, uploadConfig]);
@@ -170,7 +181,7 @@ interface MediaPreviewDialogProps {
   previewIndex: number;
   selectedMedia: string | null;
   brokenImages: Set<string>;
-  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; } | null;
+  uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; } | null;
   onImageError: (url: string) => void;
   onClose: () => void;
   onPreview: (images: string[], index: number, config?: any) => void;
