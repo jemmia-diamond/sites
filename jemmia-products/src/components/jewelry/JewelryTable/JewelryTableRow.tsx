@@ -295,14 +295,33 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
 
   // Step 2: Calculate Haravan quantity for each SKU.
   for (const sku in stockBySKU) {
-    // Sum from the main haravanVariants source, ensuring uniqueness.
-    const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
-    uniqueVariantIds.forEach((variantId) => {
-      const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
-      if (hv) {
-        stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+    if (hasWarehouseFilter) {
+      // Calculate the sum of physical internal stock (serials quantity)
+      const sumOfSerials = stockBySKU[sku].variants.reduce((acc, v) => acc + (v.quantity || 0), 0);
+      
+      if (sumOfSerials > 0) {
+        // If sum of serials > 0, take sum of serials
+        stockBySKU[sku].totalHaravanQuantity = sumOfSerials;
+      } else {
+        // If sum of serials is 0, display the Haravan quantity
+        const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
+        uniqueVariantIds.forEach((variantId) => {
+          const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
+          if (hv) {
+            stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+          }
+        });
       }
-    });
+    } else {
+      // If not filtering, sum from the main haravanVariants source, ensuring uniqueness.
+      const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
+      uniqueVariantIds.forEach((variantId) => {
+        const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
+        if (hv) {
+          stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+        }
+      });
+    }
   }
 
   return stockBySKU;
