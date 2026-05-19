@@ -21,7 +21,7 @@ export default function DiamondPage() {
 
   const [filters, setFilters] = useState<DiamondFilter>({
     page: 2,
-    limit: 18,
+    limit: 20,
     sortBySalePrice: "DESC",
     stockStatus: "IN_STOCK",
     warehouseIds: [],
@@ -54,6 +54,10 @@ export default function DiamondPage() {
   const totalItems = data?.meta.totalRows || 0;
   const totalPages = data?.meta.totalPages || 1;
   const currentPage = filters.page || 1;
+  const limit = filters.limit || 18;
+  const startRange = totalItems === 0 ? 0 : (currentPage - 1) * limit + 1;
+  const endRange = totalItems === 0 ? 0 : startRange + (data?.data.length || 0) - 1;
+
   const handleGoBack = () => {
     window.dispatchEvent(new Event("search:clear"));
     navigate("/diamonds");
@@ -67,7 +71,7 @@ export default function DiamondPage() {
         <div className="flex-shrink-0">
           <PageHeader
             title={filters.searchQuery ? `Tìm kiếm kim cương: ${filters.searchQuery}` : "Danh sách kim cương"}
-            description={`Hiển thị ${data?.data.length || 0} trên ${totalItems} kết quả`}
+            description={`Hiển thị ${totalItems} kết quả`}
             headerStart={
               searchQueryParam ? (
                 <Button

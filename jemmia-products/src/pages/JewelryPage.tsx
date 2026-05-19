@@ -91,6 +91,10 @@ export default function JewelryPage() {
   const totalResults = data?.meta?.totalRows || 0;
   const totalPages = data?.meta?.totalPages || 1;
   const currentPage = debouncedFilters.page || 1;
+  const limit = 20;
+  const startRange = totalResults === 0 ? 0 : (currentPage - 1) * limit + 1;
+  const endRange = totalResults === 0 ? 0 : startRange + allJewelries.length - 1;
+
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
       {!searchQueryParam && (
@@ -110,7 +114,7 @@ export default function JewelryPage() {
                   ? `Tìm kiếm: ${debouncedFilters.searchQuery}`
                   : `${debouncedFilters.type || "Tất cả trang sức"}`
             }
-            description={`Hiển thị ${allJewelries.length} trên ${totalResults} kết quả`}
+            description={`Hiển thị ${totalResults} kết quả`}
             headerStart={
               searchQueryParam ? (
                 <Button
