@@ -81,6 +81,14 @@ export const jewelryService = {
       params.searchQuery = filters.searchQuery;
     }
 
+    if (filters.ringHeadStyles && filters.ringHeadStyles.length > 0) {
+      params.ringHeadStyles = filters.ringHeadStyles;
+    }
+
+    if (filters.ringBandStyles && filters.ringBandStyles.length > 0) {
+      params.ringBandStyles = filters.ringBandStyles;
+    }
+
     const response = await axios.get<PaginateResponse<ProductModel>>("/products/jewelries", {
       params,
       // Handle the multiple params with same key: ?warehouseIds=1&warehouseIds=2

@@ -83,6 +83,8 @@ export interface JewelryFilter {
   designCode?: string;
   page?: number;
   searchQuery?: string;
+  ringHeadStyles?: string[];
+  ringBandStyles?: string[];
 }
 
 export interface JewelryVariant {

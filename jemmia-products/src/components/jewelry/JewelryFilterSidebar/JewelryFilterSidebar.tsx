@@ -10,6 +10,7 @@ import { StockStatusFilter as StockStatusFilterComponent } from "./StockStatusFi
 import { WarehouseFilter } from "./WarehouseFilter";
 import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
+import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
 import { X } from "lucide-react";
 
 interface JewelryFilterSidebarProps {
@@ -20,6 +21,27 @@ interface JewelryFilterSidebarProps {
 const ALL_WAREHOUSE_IDS = ["1592770", "1582708", "1110168", "1592778", "1593276"];
 
 const STONE_SIZES = ["3.6", "4.0", "4.5", "5.0", "5.4", "6.0", "6.3", "7.0", "7.2", "8.1"];
+
+const RING_HEAD_TITLES = ["Flower", "Halo", "Other", "Solid", "Solitaire", "Three Stone"];
+
+const RING_BAND_STYLES = [
+  "MR - Circle Ring",
+  "MR - Hexagon Ring",
+  "MR - Squared Ring",
+  "MR - Unisex Ring",
+  "MR - Watch Ring",
+  "WD - Peculia",
+  "WD - Twins",
+  "WD - Xerox",
+  "WR - Cathedral",
+  "WR - Chevron",
+  "WR - Eternity",
+  "WR - Other",
+  "WR - Solid",
+  "WR - Split",
+  "WR - Twist",
+  "WR - Wrap"
+];
 
 const WAREHOUSES_LIST = [
   { id: "1582708", name: "Hồ Chí Minh", ids: ["1592770", "1582708", "1110168"] },
@@ -42,6 +64,8 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
     storageSize1: [],
     salePriceFrom: undefined,
     salePriceTo: undefined,
+    ringHeadStyles: [],
+    ringBandStyles: [],
   };
 
   const [filters, setFilters] = useState<JewelryFilter>(initialFilters);
@@ -88,6 +112,18 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
     queryFn: jewelryService.getProductTypes,
   });
 
+  const getPrefix = useCallback((typeId: string | undefined) => {
+    if (!typeId || !productTypes) return "WR";
+    const type = productTypes.find(t => String(t.id) === String(typeId));
+    if (!type) return "WR";
+
+    const name = type.name.toLowerCase();
+    if (name.includes("nhẫn nam")) return "MR";
+    if (name.includes("nhẫn cưới")) return "WD";
+    if (name.includes("nhẫn nữ")) return "WR";
+    return "WR";
+  }, [productTypes]);
+
   useEffect(() => {
     if (productTypes && productTypes.length > 0 && !hasAutoSelected.current && !filters.type) {
       const sorted = [...productTypes].sort((a, b) => {
@@ -108,7 +144,22 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
   }, [productTypes, isLoadingTypes, applyFilters, filters.type]);
 
   const handleTypeChange = (typeId: string) => {
-    handleFastFilterChange((prev) => ({ ...prev, type: typeId }));
+    const newPrefix = getPrefix(typeId);
+
+    handleFastFilterChange((prev) => {
+      // Update head styles prefix when type changes
+      const updatedHeadStyles = prev.ringHeadStyles?.map(s => {
+        const parts = s.split(" - ");
+        const title = parts.length > 1 ? parts[1] : parts[0];
+        return `${newPrefix} - ${title}`;
+      });
+
+      return { 
+        ...prev, 
+        type: typeId, 
+        ringHeadStyles: updatedHeadStyles 
+      };
+    });
   };
 
   const handleStockStatusChange = (status: StockStatusFilter) => {
@@ -139,6 +190,29 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
       ...prev,
       storageSize1: prev.storageSize1?.includes(size) ? [] : [size],
     }));
+  };
+
+  const handleRingHeadStyleToggle = (title: string) => {
+    const prefix = getPrefix(filters.type);
+    const fullStyle = `${prefix} - ${title}`;
+
+    handleFastFilterChange((prev) => {
+      const current = prev.ringHeadStyles || [];
+      const next = current.includes(fullStyle)
+        ? current.filter(s => s !== fullStyle)
+        : [...current, fullStyle];
+      return { ...prev, ringHeadStyles: next };
+    });
+  };
+
+  const handleRingBandStyleToggle = (style: string) => {
+    handleFastFilterChange((prev) => {
+      const current = prev.ringBandStyles || [];
+      const next = current.includes(style)
+        ? current.filter(s => s !== style)
+        : [...current, style];
+      return { ...prev, ringBandStyles: next };
+    });
   };
 
   const handleMinPriceChange = (value: number | undefined) => {
@@ -180,6 +254,29 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
           label: currentFilters.storageSize1.map((s: string) => `${s} ly`).join(", "),
         });
       }
+
+      if (currentFilters.ringHeadStyles && currentFilters.ringHeadStyles.length > 0) {
+        chips.push({
+          key: "ringHeadStyles",
+          value: currentFilters.ringHeadStyles,
+          label: currentFilters.ringHeadStyles.map(s => {
+            const parts = s.split(" - ");
+            return parts.length > 1 ? parts[1] : parts[0];
+          }).join(", "),
+        });
+      }
+
+      if (currentFilters.ringBandStyles && currentFilters.ringBandStyles.length > 0) {
+        chips.push({
+          key: "ringBandStyles",
+          value: currentFilters.ringBandStyles,
+          label: currentFilters.ringBandStyles.map(s => {
+            const parts = s.split(" - ");
+            return parts.length > 1 ? parts[1] : parts[0];
+          }).join(", "),
+        });
+      }
+
       if (currentFilters.salePriceFrom || currentFilters.salePriceTo) {
         const from = currentFilters.salePriceFrom ? `${currentFilters.salePriceFrom.toLocaleString()} triệu` : "";
         const to = currentFilters.salePriceTo ? `${currentFilters.salePriceTo.toLocaleString()} triệu` : "";
@@ -204,7 +301,7 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
     const getResetValue = (k: string): any => {
       if (k === "salePrice") return undefined;
       if (k === "stockStatus") return "all";
-      if (k === "warehouseIds" || k === "storageSize1") return [];
+      if (k === "warehouseIds" || k === "storageSize1" || k === "ringHeadStyles" || k === "ringBandStyles") return [];
       return undefined;
     };
 
@@ -216,6 +313,10 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
       applyFilters({ ...filters, [key]: getResetValue(key) });
     }
   };
+
+  const prefix = getPrefix(filters.type);
+  const selectedType = productTypes?.find(t => String(t.id) === String(filters.type));
+  const isRingType = selectedType?.name.toLowerCase().includes("nhẫn") || false;
 
   return (
     <aside className="w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
@@ -285,6 +386,34 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
             onSizeToggle={handleSizeToggle}
           />
         </FilterSection>
+
+        {isRingType && prefix !== "MR" && prefix !== "WD" && (
+          <FilterSection label="Kiểu đầu nhẫn">
+            <MultiSelectButtonFilter
+              options={RING_HEAD_TITLES}
+              selectedValues={filters.ringHeadStyles?.map(s => {
+                const parts = s.split(" - ");
+                return parts.length > 1 ? parts[1] : parts[0];
+              }) || []}
+              onToggle={handleRingHeadStyleToggle}
+            />
+          </FilterSection>
+        )}
+
+        {isRingType && (
+          <FilterSection label="Kiểu thân nhẫn">
+            <MultiSelectButtonFilter
+              options={RING_BAND_STYLES.filter(s => s.startsWith(getPrefix(filters.type)))}
+              selectedValues={filters.ringBandStyles || []}
+              onToggle={handleRingBandStyleToggle}
+              columns={1}
+              labelModifier={(v) => {
+                const parts = v.split(" - ");
+                return parts.length > 1 ? parts[1] : parts[0];
+              }}
+            />
+          </FilterSection>
+        )}
 
         <FilterSection label="KHOẢNG GIÁ">
           <PriceRangeFilter
