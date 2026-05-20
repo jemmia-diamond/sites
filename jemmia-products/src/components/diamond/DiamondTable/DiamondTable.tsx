@@ -20,7 +20,7 @@ interface DiamondTableProps {
 export function DiamondTable({ diamonds }: DiamondTableProps) {
   const queryClient = useQueryClient();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+
   // Media Preview State
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [previewList, setPreviewList] = useState<string[]>([]);
@@ -93,7 +93,6 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
           <TableHeader>
             <TableRow className="border-b border-primary-100 hover:bg-transparent">
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Định danh</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình minh họa</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Kích thước</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trọng lượng</TableHead>
@@ -101,6 +100,7 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Nước màu</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Độ sạch</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Huỳnh quang</TableHead>
+              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-xs font-black text-secondary-900 whitespace-nowrap">Giá (VND)</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trạng thái</TableHead>
               <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Vị trí kho</TableHead>
@@ -125,7 +125,7 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
       </div>
 
       <GiaCertificateDialog previewUrl={previewUrl} onClose={() => setPreviewUrl(null)} />
-      
+
       <MediaPreviewDialog
         previewUrl={mediaPreviewUrl}
         previewList={previewList}

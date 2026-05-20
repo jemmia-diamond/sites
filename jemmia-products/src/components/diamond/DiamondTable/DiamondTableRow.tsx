@@ -17,8 +17,8 @@ interface DiamondTableRowProps {
   key: string;
 }
 
-export function DiamondTableRow({ 
-  diamond, 
+export function DiamondTableRow({
+  diamond,
   onGiaPdfClick,
   brokenImages,
   onImageError,
@@ -26,7 +26,7 @@ export function DiamondTableRow({
   onUploadSuccess
 }: DiamondTableRowProps) {
   // Filter out intermediate warehouses (Kho trung gian)
-  const realWarehouses = diamond.warehouses.filter(wh => 
+  const realWarehouses = diamond.warehouses.filter(wh =>
     !wh.name.toLowerCase().includes("trung gian")
   );
 
@@ -34,12 +34,12 @@ export function DiamondTableRow({
   // 1. If explicitly has incoming quantity (even if qty_available > 0)
   // 2. If it's only in intermediate warehouses
   // 3. Fallback to isInComing flag or quantity 0
-  const isIncoming = 
-    (diamond.attributes.qty_incoming ?? 0) > 0 || 
+  const isIncoming =
+    (diamond.attributes.qty_incoming ?? 0) > 0 ||
     realWarehouses.length === 0 ||
-    diamond.attributes.isInComing || 
+    diamond.attributes.isInComing ||
     diamond.quantity === 0;
-  
+
   // Has stock if it's not considered incoming AND has real warehouses AND has quantity
   const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
   const hasStock = !isIncoming && realWarehouses.length > 0 && hasAvailableQty;
@@ -55,21 +55,6 @@ export function DiamondTableRow({
         <div className="flex flex-col items-start">
           <p className="text-[11px] font-black text-secondary-900 tracking-tight uppercase">GIA{diamond.attributes.giaId}</p>
           <p className="text-[9px] text-primary-300 font-bold uppercase tracking-wider leading-none mt-0.5">BC:{diamond.barcode}</p>
-        </div>
-      </TableCell>
-      <TableCell className="px-2 py-2 text-center">
-        <div className="flex justify-center">
-          <CompactGallery
-            images={actualImages}
-            showUpload={true}
-            brokenImages={brokenImages}
-            onImageError={onImageError}
-            onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
-            designCode={`GIA${diamond.attributes.giaId}`}
-            onUploadSuccess={onUploadSuccess}
-            uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
-            displayCount={3}
-          />
         </div>
       </TableCell>
       <TableCell className="px-2 py-2 text-center">
@@ -110,7 +95,21 @@ export function DiamondTableRow({
           {diamond.attributes.fluorescence || "NONE"}
         </p>
       </TableCell>
-
+      <TableCell className="px-2 py-2 text-center">
+        <div className="flex justify-center">
+          <CompactGallery
+            images={actualImages}
+            showUpload={true}
+            brokenImages={brokenImages}
+            onImageError={onImageError}
+            onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
+            designCode={`GIA${diamond.attributes.giaId}`}
+            onUploadSuccess={onUploadSuccess}
+            uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
+            displayCount={3}
+          />
+        </div>
+      </TableCell>
       <TableCell className="px-3 py-2 text-right">
         <div className="flex flex-col items-end leading-none">
           {diamond.basePrice > diamond.salePrice && (
@@ -124,8 +123,8 @@ export function DiamondTableRow({
         <Badge
           className={cn(
             "rounded-full px-3 py-1 text-[10px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
-            hasStock 
-              ? "bg-emerald-50 text-emerald-600" 
+            hasStock
+              ? "bg-emerald-50 text-emerald-600"
               : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
           )}
         >
