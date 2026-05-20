@@ -59,13 +59,49 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
     setTimeout(() => setUploadConfig(null), 200);
   };
 
-  const handleDownloadSingle = (url: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = url.split("/").pop() || "image.jpg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadSingle = async (url: string) => {
+    try {
+      const urlParts = url.split('/');
+      let fileName = urlParts[urlParts.length - 1];
+      if (fileName.includes('?')) {
+        fileName = fileName.split('?')[0];
+      }
+      
+      if (!fileName.includes('.')) {
+         const ext = (url.includes('.mp4') || url.includes('.mov')) ? 'mp4' : 'jpg'; // Basic check since isVideo is not imported here, though it might be in JewelryTable
+         fileName = `media_${Date.now()}.${ext}`;
+      }
+
+      const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+      
+      try {
+        const response = await fetch(cacheBusterUrl, { 
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-store' 
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+      } catch (fetchError) {
+        console.warn("Fetch failed, falling back to window.open", fetchError);
+        window.open(url, '_blank');
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải file:", url, error);
+    }
   };
 
   const handleDownloadAll = (images: string[]) => {
