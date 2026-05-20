@@ -10,13 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { formatDateTime } from "./utils/formatters";
 
-function formatGoldWeight(grams: number | null | undefined): string {
-  if (grams === undefined || grams === null || isNaN(grams) || grams <= 0) return "N/A";
+function formatGoldWeight(weightInChi: number | null | undefined): string {
+  if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
   
-  // 1 chỉ = 3.75g
-  const totalChi = grams / 3.75;
-  // Round to 2 decimal places (chỉ, phân, ly)
-  const roundedChi = Math.round(totalChi * 100) / 100;
+  // Input is already in chỉ
+  const roundedChi = Math.round(weightInChi * 100) / 100;
   
   const chiPart = Math.floor(roundedChi);
   const remainder = Math.round((roundedChi - chiPart) * 100);
