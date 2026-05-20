@@ -28,6 +28,7 @@ import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
 import axios from "axios";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "../../../config";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
@@ -307,7 +308,7 @@ function MediaViewer({
         {isVid ? (
           <video key={selectedMedia} src={selectedMedia} controls autoPlay className="max-w-full max-h-full object-contain rounded-xl" />
         ) : (
-          <img key={selectedMedia} src={selectedMedia.match(/\.(heic|heif)(?:\?|$)/i) ? `/files/cloudflare-transform?url=${encodeURIComponent(selectedMedia)}` : selectedMedia} className="max-w-full max-h-full object-contain rounded-xl animate-in zoom-in-95 duration-500" alt="Preview" />
+          <img key={selectedMedia} src={selectedMedia.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(selectedMedia)}` : selectedMedia} className="max-w-full max-h-full object-contain rounded-xl animate-in zoom-in-95 duration-500" alt="Preview" />
         )}
       </div>
     </div>
@@ -494,7 +495,7 @@ function MediaGallery({
                     onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                   />
                 ) : (
-                  <img src={isHeicImg ? `/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
+                  <img src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                 )}
                 {isVid && (
                   <div className="absolute top-3 left-3 bg-secondary-900/80 px-2 py-1 rounded-full flex items-center gap-1.5 z-10 pointer-events-none">

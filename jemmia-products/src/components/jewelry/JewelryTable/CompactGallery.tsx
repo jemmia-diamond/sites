@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "../../../config";
 
 interface CompactGalleryProps {
   images: string[];
@@ -176,7 +177,7 @@ export function CompactGallery({
                       </div>
                     ) : (
                       <img
-                        src={isHeicImg ? `/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+                        src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
                         className="h-full w-full object-cover"
                         alt=""
                         onError={() => onImageError(url)}

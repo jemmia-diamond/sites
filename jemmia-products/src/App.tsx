@@ -7,15 +7,14 @@ import JewelryPage from "./pages/JewelryPage";
 import DiamondPage from "./pages/DiamondPage";
 import { PasswordGate } from "./components/auth/PasswordGate";
 
-// Setup global axios defaults, interceptor and retry
-// In development, requests go through the Vite proxy (same-origin, cookies sent automatically).
-// In production, set the baseURL to the real API and enable withCredentials for cross-origin cookie support.
+import { API_BASE_URL } from "./config";
+
 if (import.meta.env.PROD) {
-  axios.defaults.baseURL = "https://api.salesaya.com";
+  axios.defaults.baseURL = API_BASE_URL;
   axios.defaults.withCredentials = true;
 }
-axiosRetry(axios, { 
-  retries: 3, 
+axiosRetry(axios, {
+  retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     // Retry on network errors or 5xx status codes
