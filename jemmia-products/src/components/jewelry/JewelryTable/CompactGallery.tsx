@@ -51,7 +51,10 @@ export function CompactGallery({
   const totalCount = validImages.length;
 
   const isVideo = (url: string) =>
-    !!url.match(/\.(mp4|webm|ogg|mov)$|^blob:|^data:video/i);
+    !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
+
+  const isHeic = (url: string) =>
+    !!url.match(/\.(heic|heif)(?:\?|$)/i);
 
   const handleSelectOption = (option: { label: string; designCode: string }) => {
     setActiveDesignCode(option.designCode);
@@ -147,6 +150,7 @@ export function CompactGallery({
             <div className="flex items-center gap-1">
               {items.map((url, idx) => {
                 const isVid = isVideo(url);
+                const isHeicImg = isHeic(url);
 
                 return (
                   <div
@@ -172,7 +176,7 @@ export function CompactGallery({
                       </div>
                     ) : (
                       <img
-                        src={url}
+                        src={isHeicImg ? `/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
                         className="h-full w-full object-cover"
                         alt=""
                         onError={() => onImageError(url)}
@@ -251,7 +255,9 @@ export function CompactGallery({
             </p>
             <div className="grid grid-cols-4 gap-3 max-h-[300px] overflow-y-auto pr-2">
               {previewUrls.map((url, idx) => {
-                const isVid = isVideo(selectedFiles[idx].name);
+                const fileName = selectedFiles[idx].name;
+                const isVid = isVideo(fileName);
+                const isHeicFile = isHeic(fileName);
                 return (
                   <div key={idx} className="relative aspect-square overflow-hidden border border-primary-100 shadow-sm">
                     {isVid ? (
@@ -260,6 +266,10 @@ export function CompactGallery({
                         <div className="absolute inset-0 flex items-center justify-center">
                           <PlayCircle size={24} weight="fill" className="text-white/80" />
                         </div>
+                      </div>
+                    ) : isHeicFile ? (
+                      <div className="h-full w-full bg-primary-50 flex items-center justify-center flex-col">
+                        <span className="text-[12px] font-black text-primary-300">HEIC</span>
                       </div>
                     ) : (
                       <img src={url} className="h-full w-full object-cover" alt="Preview" />
