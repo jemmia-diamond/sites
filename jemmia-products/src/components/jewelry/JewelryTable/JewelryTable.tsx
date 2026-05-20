@@ -110,7 +110,7 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
   };
 
   const isVideo = (url: string) =>
-    !!url.match(/\.(mp4|webm|ogg|mov)$|^blob:|^data:video/i);
+    !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
 
   const handleOpenSerialModal = (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => {
     setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
@@ -307,7 +307,7 @@ function MediaViewer({
         {isVid ? (
           <video key={selectedMedia} src={selectedMedia} controls autoPlay className="max-w-full max-h-full object-contain rounded-xl" />
         ) : (
-          <img key={selectedMedia} src={selectedMedia} className="max-w-full max-h-full object-contain rounded-xl animate-in zoom-in-95 duration-500" alt="Preview" />
+          <img key={selectedMedia} src={selectedMedia.match(/\.(heic|heif)(?:\?|$)/i) ? `/files/cloudflare-transform?url=${encodeURIComponent(selectedMedia)}` : selectedMedia} className="max-w-full max-h-full object-contain rounded-xl animate-in zoom-in-95 duration-500" alt="Preview" />
         )}
       </div>
     </div>
@@ -485,6 +485,7 @@ function MediaGallery({
           <div className="grid grid-cols-3 gap-4">
             {validPreviewList.map((url, i) => {
               const isVid = isVideo(url);
+              const isHeicImg = !!url.match(/\.(heic|heif)(?:\?|$)/i);
             return (
               <div key={i} className="group relative aspect-square overflow-hidden bg-primary-50 border border-primary-100 hover:border-secondary-900 transition-all duration-500 cursor-pointer" onClick={() => onSelectMedia(url)}>
                 {isVid ? (
@@ -493,7 +494,7 @@ function MediaGallery({
                     onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                   />
                 ) : (
-                  <img src={url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
+                  <img src={isHeicImg ? `/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                 )}
                 {isVid && (
                   <div className="absolute top-3 left-3 bg-secondary-900/80 px-2 py-1 rounded-full flex items-center gap-1.5 z-10 pointer-events-none">
@@ -533,7 +534,9 @@ function MediaGallery({
             </p>
             <div className="grid grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2">
               {previewUrls.map((url, idx) => {
-                const isVid = isVideo(selectedFiles[idx].name);
+                const fileName = selectedFiles[idx].name;
+                const isVid = isVideo(fileName);
+                const isHeicFile = !!fileName.match(/\.(heic|heif)(?:\?|$)/i);
                 return (
                   <div key={idx} className="relative aspect-square overflow-hidden border border-primary-100 shadow-sm rounded-lg bg-primary-50">
                     {isVid ? (
@@ -542,6 +545,10 @@ function MediaGallery({
                         <div className="absolute inset-0 flex items-center justify-center">
                           <PlayCircle size={24} weight="fill" className="text-white/80" />
                         </div>
+                      </div>
+                    ) : isHeicFile ? (
+                      <div className="h-full w-full bg-primary-50 flex items-center justify-center flex-col">
+                        <span className="text-[12px] font-black text-primary-300">HEIC</span>
                       </div>
                     ) : (
                       <img src={url} className="h-full w-full object-cover" alt="Preview" />
