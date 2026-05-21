@@ -12,15 +12,15 @@ import { formatDateTime } from "./utils/formatters";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
-  
+
   // Input is already in chỉ
   const roundedChi = Math.round(weightInChi * 100) / 100;
-  
+
   const chiPart = Math.floor(roundedChi);
   const remainder = Math.round((roundedChi - chiPart) * 100);
   const phanPart = Math.floor(remainder / 10);
   const lyPart = remainder % 10;
-  
+
   if (chiPart === 0) {
     if (phanPart === 0 && lyPart === 0) return "0p";
     return lyPart > 0 ? `${phanPart}p${lyPart}` : `${phanPart}p`;
@@ -107,10 +107,15 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
                   key={`${v.id}-${index}`}
                   className="flex items-center px-8 py-4 hover:bg-primary-50/40 transition-all"
                 >
-                  <div className="w-[120px]">
+                  <div className="w-[120px] flex items-center gap-1.5">
                     <span className="text-xs font-bold text-secondary-900 tracking-tight leading-none">
                       {v.attributes?.serialNumber || "N/A"}
                     </span>
+                    {v.inCombo && (
+                      <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-black rounded-sm tracking-tighter">
+                        Không bán lẻ
+                      </Badge>
+                    )}
                   </div>
                   <div className="w-[160px] text-center">
                     <Badge className="rounded-full bg-secondary-900/5 text-secondary-900 border-none text-[10px] px-3 py-1 font-bold h-6 tracking-wider">

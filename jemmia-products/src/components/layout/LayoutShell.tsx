@@ -9,9 +9,9 @@ interface LayoutShellProps {
 
 export function LayoutShell({ children, searchPlaceholder }: LayoutShellProps) {
   return (
-    <div className="min-h-screen bg-bg-1 font-sans antialiased text-primary-900 selection:bg-secondary-200 selection:text-secondary-900">
+    <div className="min-h-screen w-full font-sans antialiased bg-white text-primary-900 selection:bg-secondary-200 selection:text-secondary-900">
       <Header searchPlaceholder={searchPlaceholder} />
-      <div className="flex h-[calc(100vh-48px)] overflow-hidden">
+      <div className="flex p-6 h-[calc(100vh-48px)] w-full overflow-hidden">
         {children}
       </div>
     </div>

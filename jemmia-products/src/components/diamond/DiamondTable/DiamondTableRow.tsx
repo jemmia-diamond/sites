@@ -14,7 +14,7 @@ interface DiamondTableRowProps {
   onImageError: (url: string) => void;
   onPreview: (images: string[], index: number, config?: any) => void;
   onUploadSuccess?: () => void;
-  key: string;
+  key?: string | number;
 }
 
 export function DiamondTableRow({
@@ -50,10 +50,20 @@ export function DiamondTableRow({
   ];
 
   return (
-    <TableRow className="divide-x transition-all group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50">
+    <TableRow className={cn(
+      "divide-x transition-all group h-14 relative border-primary-50 hover:bg-primary-50/30 divide-primary-50",
+      diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
+    )}>
       <TableCell className="px-3 py-2">
         <div className="flex flex-col items-start">
-          <p className="text-[11px] font-black text-secondary-900 tracking-tight uppercase">GIA{diamond.attributes.giaId}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[11px] font-black text-secondary-900 tracking-tight uppercase">GIA{diamond.attributes.giaId}</p>
+            {diamond.inCombo && (
+              <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-black rounded-sm tracking-tighter">
+                Không bán lẻ
+              </Badge>
+            )}
+          </div>
           <p className="text-[9px] text-primary-300 font-bold uppercase tracking-wider leading-none mt-0.5">BC:{diamond.barcode}</p>
         </div>
       </TableCell>

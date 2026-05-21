@@ -176,6 +176,7 @@ export interface DiamondModel {
   variants: any[];
   quantity: number;
   isBookmarked: boolean;
+  inCombo?: boolean;
   collections: {
     id: string;
     name: string;

@@ -5,6 +5,7 @@ import axios from "axios";
 import axiosRetry from "axios-retry";
 import JewelryPage from "./pages/JewelryPage";
 import DiamondPage from "./pages/DiamondPage";
+import ComboPage from "./pages/ComboPage";
 import { PasswordGate } from "./components/auth/PasswordGate";
 
 import { API_BASE_URL } from "./config";
@@ -78,6 +79,7 @@ export default function App() {
         <Routes>
           <Route path="/jewelry" element={<JewelryPage />} />
           <Route path="/diamonds" element={<DiamondPage />} />
+          <Route path="/combos" element={<ComboPage />} />
           <Route path="/" element={<Navigate to="/jewelry" replace />} />
           <Route path="*" element={<Navigate to="/jewelry" replace />} />
         </Routes>

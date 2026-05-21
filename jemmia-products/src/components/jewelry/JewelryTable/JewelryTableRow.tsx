@@ -20,7 +20,7 @@ interface JewelryTableRowProps {
   onToggleExpand: (id: string) => void;
   onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
   onUploadSuccess?: () => void;
-  key: string;
+  key?: string | number;
 }
 
 const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
