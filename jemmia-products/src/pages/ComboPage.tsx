@@ -20,7 +20,7 @@ export default function ComboPage() {
     <LayoutShell searchPlaceholder="Tìm kiếm combo...">
       <div className="flex flex-col h-full bg-white w-full">
         <PageHeader
-          title="Trang sức theo bộ"
+          title="Sản phẩm nguyên chiếc"
           description={`Hiển thị ${data?.meta.totalItems} kết quả`}
         />
 

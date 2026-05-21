@@ -20,7 +20,7 @@ interface SearchResponse {
 const NAV_ITEMS = [
   { name: "Kim cương", path: "/diamonds" },
   { name: "Trang sức", path: "/jewelry" },
-  { name: "Trang sức theo bộ", path: "/combos" },
+  { name: "Sản phẩm nguyên chiếc", path: "/combos" },
 ];
 
 export function Header({ searchPlaceholder }: HeaderProps) {
