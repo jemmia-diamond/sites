@@ -183,7 +183,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       </TableCell>
 
       <TableCell className="px-4 py-3 text-right">
-        <div className="flex flex-col items-center justify-center h-full gap-1.5">
+        <div className="flex flex-col items-end justify-end h-full gap-1.5">
           {totalBasePrice > totalSalePrice && (
             <p className="text-[11px] font-semibold text-primary-200 line-through opacity-70">
               {formatPrice(totalBasePrice)}
