@@ -1,0 +1,14 @@
+{
+  "name": "jemmia-static",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-25",
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/*.txt"
+      ],
+      "fallback": false
+    }
+  ]
+}
