@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jemmia-sites-home",
+  "compatibility_date": "2026-05-25",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "jemmia-products"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
