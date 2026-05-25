@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "jemmia",
+  "main": "src/index.js",
+  "compatibility_date": "2024-05-21",
+  // This rule tells Cloudflare to bundle any .txt file as a plain text string module
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/*.txt"
+      ],
+      "fallback": false
+    }
+  ]
+}
