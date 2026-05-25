@@ -4,8 +4,8 @@
   "compatibility_date": "2026-05-25",
   "routes": [
     {
-      "pattern": "jemmia.vn",
-      "custom_domain": true
+      "pattern": "jemmia.vn/*.txt",
+      "zone_name": "jemmia.vn"
     }
   ],
   "rules": [
