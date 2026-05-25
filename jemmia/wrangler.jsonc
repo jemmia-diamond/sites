@@ -2,13 +2,19 @@
   "name": "jemmia",
   "main": "src/index.js",
   "compatibility_date": "2026-05-25",
+  "routes": [
+    {
+      "pattern": "jemmia.vn",
+      "custom_domain": true
+    }
+  ],
   "rules": [
     {
       "type": "Text",
       "globs": [
         "**/*.txt"
       ],
-      "fallback": false
+      "fallthrough": true
     }
   ]
 }

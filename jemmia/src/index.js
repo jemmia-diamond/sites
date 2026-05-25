@@ -1,9 +1,4 @@
-/**
- * jemmia-config - Cloudflare Worker
- * Handles authoritative static files like cas.txt and robots.txt
- */
-
-import casContent from "./assets/cas.txt";
+import casContent from "./public/cas.txt";
 
 const STATIC_FILES = {
   "/cas.txt": casContent,
