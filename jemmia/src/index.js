@@ -1,5 +1,5 @@
 /**
- * jemmia-static - Cloudflare Worker
+ * jemmia-config - Cloudflare Worker
  * Handles authoritative static files like cas.txt and robots.txt
  */
 

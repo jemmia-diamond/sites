@@ -1,5 +1,5 @@
 {
-  "name": "jemmia-static",
+  "name": "jemmia-config",
   "main": "src/index.js",
   "compatibility_date": "2026-05-25",
   "rules": [
