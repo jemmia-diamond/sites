@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchDiamonds } from "../services/diamondService";
 import { DiamondFilter } from "../types";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { DiamondFilterSidebar } from "../components/diamond/DiamondFilterSidebar";
 import { DiamondTable } from "../components/diamond/DiamondTable";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn, getPaginationRange } from "@/lib/utils";
-import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow, Filter, X } from "lucide-react";
+import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
 import { PageHeader } from "../components/layout/PageHeader";
 
@@ -18,9 +19,10 @@ export default function DiamondPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchQueryParam = searchParams.get("searchQuery");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeChips, setActiveChips] = useState<{ key: string; value: any; label: string }[]>([]);
 
-  const [filters, setFilters] = useState<DiamondFilter>({
-    page: 2,
+  const [filters, setFilters] = useState<Omit<DiamondFilter, 'page'>>({
     limit: 20,
     sortBySalePrice: "DESC",
     stockStatus: "IN_STOCK",
@@ -32,31 +34,91 @@ export default function DiamondPage() {
     setFilters(prev => ({
       ...prev,
       searchQuery: searchQueryParam || undefined,
-      page: 1
     }));
   }, [searchQueryParam]);
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ["diamonds", filters],
-    queryFn: () => fetchDiamonds(filters),
+    queryFn: ({ pageParam = 1 }) => fetchDiamonds({ ...filters, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
     staleTime: 5 * 60 * 1000,
   });
 
   const handleApplyFilters = (newFilters: DiamondFilter) => {
-    setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+    const { page, ...restFilters } = newFilters;
+    const updated = { ...filters, ...restFilters };
+    setFilters(updated);
+    if (window.innerWidth < 1024) setIsFilterOpen(false);
+  };
+
+  const handleRemoveChip = (key: string) => {
+    let nextFilters = { ...filters };
+    if (key === "salePrice") {
+      nextFilters.salePriceFrom = undefined;
+      nextFilters.salePriceTo = undefined;
+    } else if (key === "carat") {
+      nextFilters.caratFrom = undefined;
+      nextFilters.caratTo = undefined;
+    } else {
+      const getResetValue = (k: string): any => {
+        if (k === "stockStatus") return "IN_STOCK";
+        if (["edgeSizes", "shapes", "color", "clarity", "fluorescence", "warehouseIds"].includes(k)) return [];
+        return undefined;
+      };
+      (nextFilters as any)[key] = getResetValue(key);
+    }
+    handleApplyFilters(nextFilters as DiamondFilter);
+  };
+
+  const handleClearAllFilters = () => {
+    const resetFilters: Omit<DiamondFilter, 'page'> = {
+      limit: 20,
+      sortBySalePrice: "DESC",
+      stockStatus: "IN_STOCK",
+      warehouseIds: [],
+      searchQuery: searchQueryParam || undefined,
+      salePriceFrom: undefined,
+      salePriceTo: undefined,
+      caratFrom: undefined,
+      caratTo: undefined,
+      edgeSizes: [],
+      shapes: [],
+      color: [],
+      clarity: [],
+      fluorescence: [],
+    };
+    handleApplyFilters(resetFilters as DiamondFilter);
+    setActiveChips([]);
   };
 
   const toggleSort = () => {
     const newSort = filters.sortBySalePrice === "DESC" ? "ASC" : "DESC";
-    setFilters(prev => ({ ...prev, sortBySalePrice: newSort, page: 1 }));
+    setFilters(prev => ({ ...prev, sortBySalePrice: newSort }));
   };
 
-  const totalItems = data?.meta.totalRows || 0;
-  const totalPages = data?.meta.totalPages || 1;
-  const currentPage = filters.page || 1;
-  const limit = filters.limit || 18;
-  const startRange = totalItems === 0 ? 0 : (currentPage - 1) * limit + 1;
-  const endRange = totalItems === 0 ? 0 : startRange + (data?.data.length || 0) - 1;
+  const allDiamonds = data?.pages.flatMap(page => page.data) || [];
+  const totalItems = data?.pages[0]?.meta?.totalRows || 0;
+
+  const lastElementRef = useInfiniteScroll(
+    () => {
+      fetchNextPage();
+    },
+    hasNextPage,
+    isFetchingNextPage
+  );
 
   const handleGoBack = () => {
     window.dispatchEvent(new Event("search:clear"));
@@ -65,9 +127,24 @@ export default function DiamondPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      {!searchQueryParam && <DiamondFilterSidebar onApply={handleApplyFilters} />}
+      <div className={cn(
+        "fixed inset-0 z-[60] lg:relative lg:inset-auto bg-white lg:bg-transparent transition-transform duration-300 lg:translate-x-0",
+        isFilterOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        "w-full lg:w-auto h-full"
+      )}>
+        {!searchQueryParam && (
+          <div className="h-full relative flex flex-col">
+            <DiamondFilterSidebar
+              onApply={handleApplyFilters}
+              currentFilters={filters as DiamondFilter}
+              onClose={() => setIsFilterOpen(false)}
+              onChipsChange={setActiveChips}
+            />
+          </div>
+        )}
+      </div>
 
-      <main className="flex-1 flex flex-col bg-white p-6 pt-4 gap-4 overflow-hidden">
+      <main className="flex-1 flex flex-col bg-white px-4 lg:px-6 pt-4 pb-6 gap-4 w-full max-w-full min-w-0 overflow-hidden min-h-0">
         <div className="flex-shrink-0">
           <PageHeader
             title={filters.searchQuery ? `Tìm kiếm kim cương: ${filters.searchQuery}` : "Danh sách kim cương"}
@@ -85,7 +162,7 @@ export default function DiamondPage() {
             }
             actions={
               <div className="flex items-center gap-2">
-                <div className="flex flex-col gap-1.5 min-w-[150px]">
+                <div className="hidden lg:flex flex-col gap-1.5 min-w-[150px]">
                   <Button
                     onClick={toggleSort}
                     variant="outline"
@@ -101,73 +178,79 @@ export default function DiamondPage() {
                     )}
                   </Button>
                 </div>
+
+                <div className="flex lg:hidden items-center gap-2 w-full">
+                  <Button
+                    onClick={() => setIsFilterOpen(true)}
+                    variant="outline"
+                    className="flex-1 h-9 rounded-none border-primary-100 font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    <Filter size={14} className="mr-2" />
+                    <span className="w-max">Bộ lọc</span>
+                  </Button>
+                  <Button
+                    onClick={toggleSort}
+                    variant="outline"
+                    className="flex-1 h-9 rounded-none border-primary-100 font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
+                    <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>
+                  </Button>
+                </div>
               </div>
             }
           />
         </div>
 
-        <div className="flex-1 min-h-0">
+        {activeChips.length > 0 && (
+          <div className="lg:hidden flex flex-wrap gap-2 flex-shrink-0 pb-1 items-center">
+            <div className="flex flex-wrap gap-2 flex-1">
+              {activeChips.map((chip) => (
+                <Badge
+                  key={chip.key}
+                  variant="default"
+                  className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
+                >
+                  <span className="text-xs font-medium">{chip.label}</span>
+                  <button
+                    onClick={() => handleRemoveChip(chip.key)}
+                    className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAllFilters}
+              className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent uppercase tracking-wider flex-shrink-0"
+            >
+              Xóa bộ lọc
+            </Button>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {isLoading ? (
             <div className="h-full overflow-y-auto">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-96 w-full rounded-none shadow-sm" />
+                <Skeleton key={i} className="h-96 w-full rounded-none mb-4 shadow-sm" />
               ))}
             </div>
-          ) : !data || data.data.length === 0 ? (
+          ) : isError || allDiamonds.length === 0 ? (
             <div className="py-24 text-center bg-white rounded-none border border-dashed border-primary-200">
               <p className="text-primary-400 font-medium">Không tìm thấy viên kim cương nào phù hợp với yêu cầu</p>
             </div>
           ) : (
-            <DiamondTable diamonds={data.data} />
+            <DiamondTable
+              diamonds={allDiamonds}
+              lastElementRef={lastElementRef}
+              isFetchingNextPage={isFetchingNextPage}
+            />
           )}
         </div>
-
-        {totalPages > 1 && (
-          <div className="flex-shrink-0 flex flex-col items-center gap-4">
-            <Pagination>
-              <PaginationContent className="gap-2">
-                <PaginationItem>
-                  <PaginationPrevious
-                    text="TRƯỚC"
-                    onClick={() => setFilters(prev => ({ ...prev, page: Math.max(1, currentPage - 1) }))}
-                    className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest disabled:opacity-30"
-                  />
-                </PaginationItem>
-
-                <div className="flex items-center gap-1 mx-2">
-                  {getPaginationRange(currentPage, totalPages).map((p, idx) => (
-                    <PaginationItem key={idx}>
-                      {p === "..." ? (
-                        <PaginationEllipsis className="text-primary-100" />
-                      ) : (
-                        <PaginationLink
-                          onClick={() => setFilters(prev => ({ ...prev, page: p as number }))}
-                          isActive={currentPage === p}
-                          className={cn(
-                            "rounded-none h-10 w-10 border transition-all cursor-pointer text-xs font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900",
-                            currentPage === p
-                              ? "bg-secondary-900 text-white border-secondary-900 shadow-xl shadow-secondary-900/10"
-                              : "border-primary-50 text-primary-300"
-                          )}
-                        >
-                          {p}
-                        </PaginationLink>
-                      )}
-                    </PaginationItem>
-                  ))}
-                </div>
-
-                <PaginationItem>
-                  <PaginationNext
-                    text="SAU"
-                    onClick={() => setFilters(prev => ({ ...prev, page: Math.min(totalPages, currentPage + 1) }))}
-                    className="border border-primary-50 hover:border-secondary-900 hover:bg-white text-primary-200 hover:text-secondary-900 cursor-pointer rounded-none transition-all px-4 h-10 text-[10px] font-black tracking-widest"
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
       </main>
     </LayoutShell>
   );

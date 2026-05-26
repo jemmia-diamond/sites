@@ -240,28 +240,28 @@ export function MediaGallery({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-8 py-4 lg:py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
         <div>
-          <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+          <h3 className="text-base lg:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
             Thư viện
             {uploadConfig?.designCode && (
-              <span className="bg-white/20 text-white text-[10px] px-2 py-1 rounded-full tracking-widest uppercase">
+              <span className="bg-white/20 text-white text-[9px] lg:text-[10px] px-2 py-1 rounded-full tracking-widest uppercase">
                 {uploadConfig.designCode}
               </span>
             )}
           </h3>
-          <p className="text-xs text-white/70 font-bold mt-1">Tổng cộng {validPreviewList.length} tệp tin</p>
+          <p className="text-[10px] lg:text-xs text-white/70 font-bold mt-1">Tổng cộng {validPreviewList.length} tệp tin</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
           {validPreviewList.length > 0 && (
             <>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleToggleSelectAll}
-                className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2"
+                className="h-8 lg:h-10 px-3 lg:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] lg:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1 lg:gap-2"
               >
-                <Checks size={16} />
+                <Checks size={14} />
                 {selectedMediaUrls.length === validPreviewList.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
               </Button>
               <Button
@@ -269,12 +269,12 @@ export function MediaGallery({
                 size="sm"
                 onClick={handleDownloadSelected}
                 disabled={isDownloading || selectedMediaUrls.length === 0}
-                className="h-10 px-4 border-white font-bold text-xs uppercase tracking-widest bg-white text-secondary-700 hover:bg-secondary-700 hover:text-white transition-all flex items-center gap-2 disabled:bg-white/50 disabled:text-secondary-700/50 disabled:border-transparent"
+                className="h-8 lg:h-10 px-3 lg:px-4 border-white font-bold text-[10px] lg:text-xs uppercase tracking-widest bg-white text-secondary-700 hover:bg-secondary-700 hover:text-white transition-all flex items-center gap-1 lg:gap-2 disabled:bg-white/50 disabled:text-secondary-700/50 disabled:border-transparent"
               >
                 {isDownloading ? (
-                  <CircleNotch size={16} className="animate-spin" />
+                  <CircleNotch size={14} className="animate-spin" />
                 ) : (
-                  <DownloadSimple size={16} />
+                  <DownloadSimple size={14} />
                 )}
                 Tải về ({selectedMediaUrls.length})
               </Button>
@@ -286,7 +286,7 @@ export function MediaGallery({
                 variant="outline"
                 size="sm"
                 disabled={uploading}
-                className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
+                className="h-8 lg:h-10 px-3 lg:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] lg:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1 lg:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
                 onClick={() => {
                   if (uploadConfig.uploadOptions && uploadConfig.uploadOptions.length > 1) {
                     setIsSelectionDialogOpen(true);
@@ -298,9 +298,9 @@ export function MediaGallery({
                 }}
               >
                 {uploading ? (
-                  <CircleNotch size={16} className="animate-spin" />
+                  <CircleNotch size={14} className="animate-spin" />
                 ) : (
-                  <UploadSimple size={16} />
+                  <UploadSimple size={14} />
                 )}
                 Tải lên
               </Button>
@@ -314,22 +314,22 @@ export function MediaGallery({
               />
             </>
           )}
-          <Button variant="ghost" size="icon" className="h-10 w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
-            <X size={20} />
+          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
+            <X size={16} />
           </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-8 pt-4">
+      <div className="flex-1 overflow-y-auto p-4 lg:p-8 pt-2 lg:pt-4">
         {validPreviewList.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">
-            <UploadSimple size={48} weight="thin" />
+            <UploadSimple size={40} lg:size={48} weight="thin" />
             <p className="text-sm font-bold">Chưa có tệp tin nào</p>
             {uploadConfig?.showUpload && (
               <p className="text-xs">Nhấn "Tải lên" để thêm tệp tin mới</p>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-4">
             {validPreviewList.map((url, i) => {
               const isVid = isVideo(url);
               const isHeicImg = !!url.match(/\.(heic|heif)(?:\?|$)/i);
@@ -343,14 +343,14 @@ export function MediaGallery({
                 >
                   {/* Checkbox Overlay */}
                   <div
-                    className="absolute top-3 right-3 z-30 transition-opacity duration-300 opacity-100"
+                    className="absolute top-2 right-2 z-30 transition-opacity duration-300 opacity-100"
                     onClick={(e) => handleToggleSelect(url, e)}
                   >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected
+                    <div className={`w-5 h-5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected
                       ? 'bg-secondary-700 border-secondary-700 text-white'
                       : 'bg-white border-primary-200 text-transparent'
                       }`}>
-                      {isSelected && <Checks size={14} weight="bold" />}
+                      {isSelected && <Checks size={12} lg:size={14} weight="bold" />}
                     </div>
                   </div>
 
@@ -363,17 +363,17 @@ export function MediaGallery({
                     <img src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                   )}
                   {isVid && (
-                    <div className="absolute top-3 left-3 bg-secondary-900/80 px-2 py-1 rounded-full flex items-center gap-1.5 z-10 pointer-events-none">
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-[10px] font-black text-white uppercase tracking-wider">Video</span>
+                    <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">
+                      <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[8px] lg:text-[10px] font-black text-white uppercase tracking-wider">Video</span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-secondary-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
-                    <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
+                    <div className="h-10 w-10 lg:h-12 lg:w-12 bg-white/20 rounded-full flex items-center justify-center border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
                       {isVid ? (
-                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                        <div className="w-0 h-0 border-t-[6px] lg:border-t-[8px] border-t-transparent border-l-[10px] lg:border-l-[12px] border-l-white border-b-[6px] lg:border-b-[8px] border-b-transparent ml-0.5" />
                       ) : (
-                        <Eye size={24} className="text-white" />
+                        <Eye size={20} lg:size={24} className="text-white" />
                       )}
                     </div>
                   </div>
@@ -385,20 +385,20 @@ export function MediaGallery({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && handleCancelUpload()}>
-        <DialogContent className="w-[90%] sm:max-w-2xl gap-0 bg-white border-none shadow-2xl p-0 rounded-none! overflow-hidden" showCloseButton={false}>
-          <DialogHeader className="px-6 py-4 bg-primary-50/50 border-b border-primary-50">
-            <DialogTitle className="text-secondary-900 font-black tracking-tight flex items-center justify-between">
+        <DialogContent className="w-[95%] sm:w-[90%] sm:max-w-2xl gap-0 bg-white border-none shadow-2xl p-0 rounded-none! overflow-hidden" showCloseButton={false}>
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-sm sm:text-base text-secondary-900 font-black tracking-tight flex items-center justify-between">
               Xác nhận tải lên
-              <span className="bg-secondary-900 text-white text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
+              <span className="bg-secondary-900 text-white text-[9px] sm:text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
                 {activeLabel ? `${activeLabel} - ${activeDesignCode}` : (activeDesignCode || uploadConfig?.designCode)}
               </span>
             </DialogTitle>
           </DialogHeader>
-          <div className="px-6 py-4">
-            <p className="text-sm text-secondary-600 font-medium mb-4">
+          <div className="px-4 sm:px-6 py-3 sm:py-4">
+            <p className="text-xs sm:text-sm text-secondary-600 font-medium mb-3 sm:mb-4">
               Bạn có chắc chắn muốn tải lên <span className="font-bold text-secondary-900">{selectedFiles.length} tệp</span> không?
             </p>
-            <div className="grid grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-1 sm:pr-2">
               {previewUrls.map((url, idx) => {
                 const fileName = selectedFiles[idx].name;
                 const isVid = isVideo(fileName);
@@ -409,12 +409,12 @@ export function MediaGallery({
                       <div className="h-full w-full bg-secondary-900 flex items-center justify-center relative group">
                         <video src={url} className="h-full w-full object-cover opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <PlayCircle size={24} weight="fill" className="text-white/80" />
+                          <PlayCircle size={20} sm:size={24} weight="fill" className="text-white/80" />
                         </div>
                       </div>
                     ) : isHeicFile ? (
                       <div className="h-full w-full bg-primary-50 flex items-center justify-center flex-col">
-                        <span className="text-[12px] font-black text-primary-300">HEIC</span>
+                        <span className="text-[10px] sm:text-[12px] font-black text-primary-300">HEIC</span>
                       </div>
                     ) : (
                       <img src={url} className="h-full w-full object-cover" alt="Preview" />
@@ -424,24 +424,24 @@ export function MediaGallery({
               })}
             </div>
           </div>
-          <DialogFooter className="px-6 py-4 m-0 bg-primary-50/30 border-t border-primary-50">
+          <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 m-0 bg-primary-50/30 border-t border-primary-50">
             <div className="flex w-full justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={handleCancelUpload}
                 disabled={uploading}
-                className="border-primary-100 font-bold text-xs rounded-full px-6"
+                className="border-primary-100 font-bold text-xs rounded-full px-4 sm:px-6 h-8 sm:h-auto"
               >
                 Hủy
               </Button>
               <Button
                 onClick={handleConfirmUpload}
                 disabled={uploading}
-                className="bg-secondary-900 text-white hover:bg-secondary-800 font-bold text-xs rounded-full px-6"
+                className="bg-secondary-900 text-white hover:bg-secondary-800 font-bold text-xs rounded-full px-4 sm:px-6 h-8 sm:h-auto"
               >
                 {uploading ? (
                   <>
-                    <CircleNotch size={14} className="animate-spin mr-2" weight="bold" />
+                    <CircleNotch size={12} sm:size={14} className="animate-spin mr-1 sm:mr-2" weight="bold" />
                     Đang tải...
                   </>
                 ) : (
@@ -454,21 +454,21 @@ export function MediaGallery({
       </Dialog>
 
       <Dialog open={isSelectionDialogOpen} onOpenChange={(open) => !open && setIsSelectionDialogOpen(false)}>
-        <DialogContent className="w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
-          <DialogHeader className="px-4 py-4 bg-primary-50/50 border-b border-primary-50">
-            <DialogTitle className="text-secondary-900 font-black tracking-tight text-xs uppercase">
+        <DialogContent className="w-[95%] sm:w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
+          <DialogHeader className="px-4 py-3 sm:py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-secondary-900 font-black tracking-tight text-[10px] sm:text-xs uppercase">
               Chọn nhẫn cần tải lên tệp
             </DialogTitle>
           </DialogHeader>
-          <div className="px-4 pb-4 flex flex-col gap-2">
+          <div className="px-4 pb-3 sm:pb-4 flex flex-col gap-2">
             {uploadConfig?.uploadOptions?.map((option, idx) => (
               <Button
                 key={idx}
                 onClick={() => handleSelectOption(option)}
-                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
+                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-10 sm:h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
               >
-                <span>{option.label}</span>
-                <span className="text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
+                <span className="text-xs sm:text-sm">{option.label}</span>
+                <span className="text-[9px] sm:text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
                   {option.designCode}
                 </span>
               </Button>

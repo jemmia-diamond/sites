@@ -15,9 +15,11 @@ import { MediaPreviewDialog } from "../../jewelry/JewelryTable/JewelryTable";
 
 interface DiamondTableProps {
   diamonds: DiamondModel[];
+  lastElementRef?: (node: HTMLElement | null) => void;
+  isFetchingNextPage?: boolean;
 }
 
-export function DiamondTable({ diamonds }: DiamondTableProps) {
+export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: DiamondTableProps) {
   const queryClient = useQueryClient();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -121,10 +123,10 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
   const handleUploadSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["diamonds"] });
   };
-
-  return (
-    <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
-      <div className="h-full overflow-auto">
+return (
+  <>
+    <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
+      <div className="flex-1 overflow-auto min-w-0 w-full relative">
         <table className="w-full min-w-[1200px] border-collapse">
           <TableHeader>
             <TableRow className="border-b border-primary-100 hover:bg-transparent">
@@ -158,6 +160,15 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
             ))}
           </TableBody>
         </table>
+        <div ref={lastElementRef} className="h-4 w-full" />
+        {isFetchingNextPage && (
+          <div className="py-6 flex justify-center items-center w-full">
+            <div className="h-6 w-6 relative">
+              <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
+              <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <GiaCertificateDialog previewUrl={previewUrl} onClose={() => setPreviewUrl(null)} />
@@ -179,5 +190,6 @@ export function DiamondTable({ diamonds }: DiamondTableProps) {
         isVideo={isVideo}
       />
     </div>
+  </>
   );
 }

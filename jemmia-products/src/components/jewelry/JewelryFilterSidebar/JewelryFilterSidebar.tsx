@@ -16,6 +16,8 @@ import { X } from "lucide-react";
 interface JewelryFilterSidebarProps {
   onApply: (filters: JewelryFilter) => void;
   currentFilters?: JewelryFilter;
+  onClose?: () => void;
+  onChipsChange?: (chips: { key: string; value: any; label: string }[]) => void;
 }
 
 const ALL_WAREHOUSE_IDS = ["1592770", "1582708", "1110168", "1592778", "1593276"];
@@ -55,7 +57,7 @@ const STOCK_LABELS: Record<string, string> = {
   OUT_OF_STOCK: "Hết hàng",
 };
 
-export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterSidebarProps) {
+export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChipsChange }: JewelryFilterSidebarProps) {
   const [appliedChips, setAppliedChips] = useState<{ key: string; value: any; label: string }[]>([]);
   const initialFilters: JewelryFilter = {
     type: undefined,
@@ -73,12 +75,7 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
 
   useEffect(() => {
     if (currentFilters) {
-      setFilters((prev) => ({
-        ...prev,
-        ...currentFilters,
-        salePriceFrom: prev.salePriceFrom !== undefined ? prev.salePriceFrom : currentFilters.salePriceFrom,
-        salePriceTo: prev.salePriceTo !== undefined ? prev.salePriceTo : currentFilters.salePriceTo,
-      }));
+      setFilters(currentFilters);
 
       if (!currentFilters.type && !currentFilters.searchQuery) {
         hasAutoSelected.current = false;
@@ -295,7 +292,8 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
   useEffect(() => {
     const chips = buildChips(filters);
     setAppliedChips(chips);
-  }, [filters, buildChips]);
+    onChipsChange?.(chips);
+  }, [filters, buildChips, onChipsChange]);
 
   const removeChip = (key: string) => {
     const getResetValue = (k: string): any => {
@@ -319,23 +317,30 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
   const isRingType = selectedType?.name.toLowerCase().includes("nhẫn") || false;
 
   return (
-    <aside className="w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
-      <div className="px-8 mb-6 flex items-center justify-between">
+    <aside className="w-full lg:w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
+      <div className="px-6 lg:px-8 mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-bold tracking-widest text-secondary-900">BỘ LỌC</h2>
+          <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">BỘ LỌC</h2>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={resetFilters}
-          className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent uppercase tracking-wider"
-        >
-          Xóa bộ lọc
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent uppercase tracking-wider"
+          >
+            Xóa bộ lọc
+          </Button>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 lg:hidden -mr-2 text-primary-900">
+              <X size={18} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {appliedChips.length > 0 && (
-        <div className="px-8 mb-4 flex flex-wrap gap-2">
+        <div className="px-6 lg:px-8 mb-4 flex flex-wrap gap-2">
           {appliedChips.map((chip) => (
             <Badge
               key={chip.key}
@@ -354,7 +359,7 @@ export function JewelryFilterSidebar({ onApply, currentFilters }: JewelryFilterS
         </div>
       )}
 
-      <div className="flex-1 px-8 space-y-9 pb-20">
+      <div className="flex-1 px-6 lg:px-8 space-y-9 pb-20">
         <FilterSection label="Loại Trang Sức">
           <ProductTypeFilter
             productTypes={productTypes}

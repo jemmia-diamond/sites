@@ -18,19 +18,19 @@ interface PageHeaderProps {
   className?: string;
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
-  actions, 
+export function PageHeader({
+  title,
+  description,
+  actions,
   headerStart,
-  sortOptions, 
+  sortOptions,
   onSortChange,
   defaultSort,
   sortLabel = "SẮP XẾP THEO",
   className
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-4", className)}>
+    <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-1", className)}>
       <div className="flex items-center gap-4">
         {headerStart && <div>{headerStart}</div>}
         <div className="space-y-0">
@@ -41,7 +41,7 @@ export function PageHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6 pt-2">
+      <div className="flex items-center gap-4 sm:gap-6 pt-2 justify-end">
         {sortOptions && (
           <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">{sortLabel}</span>
@@ -59,7 +59,7 @@ export function PageHeader({
             </Select>
           </div>
         )}
-        
+
         {actions && (
           <div>
             {actions}

@@ -24,9 +24,11 @@ import { API_BASE_URL } from "../../../config";
 interface JewelryTableProps {
   jewelries: ProductModel[];
   warehouseIds?: string[];
+  lastElementRef?: (node: HTMLElement | null) => void;
+  isFetchingNextPage?: boolean;
 }
 
-export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
+export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchingNextPage }: JewelryTableProps) {
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
@@ -153,8 +155,8 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
 
   return (
     <>
-      <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
-        <div className="h-full overflow-auto">
+      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
+        <div className="flex-1 overflow-auto min-w-0 w-full relative">
           <table className="w-full border-collapse">
             <JewelryTableHeader />
 
@@ -178,6 +180,15 @@ export function JewelryTable({ jewelries, warehouseIds }: JewelryTableProps) {
               ))}
             </TableBody>
           </table>
+          <div ref={lastElementRef} className="h-4 w-full" />
+          {isFetchingNextPage && (
+            <div className="py-6 flex justify-center items-center w-full">
+              <div className="h-6 w-6 relative">
+                <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
+                <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

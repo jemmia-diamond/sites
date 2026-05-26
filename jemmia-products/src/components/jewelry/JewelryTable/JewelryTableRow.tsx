@@ -109,7 +109,7 @@ export function JewelryTableRow({
     <>
       <TableRow
         className={cn(
-          "divide-x transition-all cursor-pointer group h-14 relative",
+          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
@@ -117,13 +117,13 @@ export function JewelryTableRow({
         )}
         onClick={() => onToggleExpand(product.id)}
       >
-        <TableCell className="px-3 py-2 text-center">
+        <TableCell className="px-6 sm:px-3 py-2 text-center">
           <div className="flex flex-col items-center justify-center gap-1">
             <ProductCodes product={product} isExpanded={isExpanded} />
           </div>
         </TableCell>
 
-        <TableCell className="px-2 py-2">
+        <TableCell className="px-6 sm:px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={webImages}
@@ -138,7 +138,7 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-2 py-2">
+        <TableCell className="px-6 sm:px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={actualImages}
@@ -155,50 +155,52 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-2 py-2 text-center">
-          {isBundle ? (
-            <div className="flex flex-col items-center gap-1 justify-center">
-              {hasSideStonesNam && (
-                <SideStoneTooltip fourView={fourViewNam as any} isExpanded={isExpanded} label="Tấm Nam" />
-              )}
-              {hasSideStonesNu && (
-                <SideStoneTooltip fourView={fourViewNu as any} isExpanded={isExpanded} label="Tấm Nữ" />
-              )}
-              {!hasSideStonesNam && !hasSideStonesNu && (
-                <span className="text-primary-100 text-[10px] font-black italic">--</span>
-              )}
-            </div>
-          ) : (
-            fourView && Array.isArray(fourView) && fourView.length > 0 ? (
-              <div className="flex justify-center">
-                <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
-              </div>
+        <TableCell className="px-6 sm:px-2 py-2 text-center">
+          <div className="flex flex-col items-center gap-1 justify-center">
+            {isBundle ? (
+              <>
+                {hasSideStonesNam && (
+                  <SideStoneTooltip fourView={fourViewNam as any} isExpanded={isExpanded} label="Tấm Nam" />
+                )}
+                {hasSideStonesNu && (
+                  <SideStoneTooltip fourView={fourViewNu as any} isExpanded={isExpanded} label="Tấm Nữ" />
+                )}
+                {!hasSideStonesNam && !hasSideStonesNu && (
+                  <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">--</span>
+                )}
+              </>
             ) : (
-              <span className="text-primary-100 text-[10px] font-black italic">--</span>
-            )
-          )}
+              fourView && Array.isArray(fourView) && fourView.length > 0 ? (
+                <div className="flex justify-center">
+                  <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
+                </div>
+              ) : (
+                <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">--</span>
+              )
+            )}
+          </div>
         </TableCell>
 
-        <TableCell className="px-2 py-2 text-center">
+        <TableCell className="px-6 sm:px-2 py-2 text-center">
           <span className={cn(
-            "text-[11px] font-black tracking-tight",
+            "text-[10px] sm:text-[11px] font-black tracking-tight",
             isExpanded ? "text-white" : "text-secondary-900"
           )}>
             {priceDisplay}
           </span>
         </TableCell>
 
-        <TableCell className="px-2 py-2 text-center">
+        <TableCell className="px-6 sm:px-2 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-3 py-1 text-[10px] font-black tracking-widest border-none shadow-sm",
+              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-black tracking-widest border-none shadow-sm",
               hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
             )}
           >
             {hasStock ? "Có hàng" : "Hết hàng"}
           </Badge>
         </TableCell>
-        <TableCell className="px-2 text-center">
+        <TableCell className="px-6 sm:px-2 text-center">
           <div className="flex justify-center">
             <Button
               size="icon"
@@ -210,7 +212,7 @@ export function JewelryTableRow({
               )}
             >
               <CaretDown
-                size={12}
+                size={10}
                 weight="bold"
                 className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
               />
@@ -228,9 +230,9 @@ export function JewelryTableRow({
                   {product.products!.map((subProduct, idx) => {
                     const genderTitle = subProduct.attributes?.gender === 'Nam' ? 'Nhẫn Nam' : subProduct.attributes?.gender === 'Nữ' ? 'Nhẫn Nữ' : `Món ${idx + 1}`;
                     return (
-                      <div key={subProduct.id} className="p-4">
+                      <div key={subProduct.id} className="p-3 sm:p-4">
                         <div className="flex items-center gap-3 mb-3">
-                          <span className="text-sm font-bold text-secondary-800">{genderTitle}</span>
+                          <span className="text-xs sm:text-sm font-bold text-secondary-800">{genderTitle}</span>
                           <ProductCodes product={subProduct} isExpanded={false} />
                         </div>
                         <ExpandedPanel
@@ -350,7 +352,6 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
           const variant = group.firstVariant;
           const hasSale = variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
-          const haravanLink = `https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`;
 
           return (
             <div
@@ -362,18 +363,18 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 group.totalHaravanQuantity === 0 && "opacity-50 hover:opacity-80"
               )}
             >
-              <div className="px-5 py-3.5 flex flex-col gap-0.5">
-                <p className="text-xs font-black text-secondary-900 tracking-tight leading-none">SKU: {sku}</p>
-                <p className="text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
+              <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 flex flex-col gap-0.5">
+                <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
+                <p className="text-[9px] sm:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
                   Barcode: {variant.barcode || "No Barcode"}
                 </p>
               </div>
 
-              <div className="px-4 py-3.5 flex items-center justify-center gap-1.5 flex-wrap">
+              <div className="px-4 py-2 sm:py-3.5 flex items-center justify-start sm:justify-center gap-1.5 flex-wrap">
                 {variant.attributes?.fineness && (
                   <Badge
                     variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[10px] font-black px-2 py-1 shadow-sm"
+                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
                   >
                     {variant.attributes.fineness}
                   </Badge>
@@ -382,7 +383,7 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 {variant.attributes?.materialColor && (
                   <Badge
                     variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[10px] font-black px-2 py-1 shadow-sm"
+                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
                   >
                     {variant.attributes.materialColor}
                   </Badge>
@@ -391,37 +392,37 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
                 {variant.attributes?.ringSize !== 0 && (
                   <Badge
                     variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[10px] font-black px-2 py-1 shadow-sm"
+                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
                   >
                     Ni {variant.attributes?.ringSize}
                   </Badge>
                 )}
               </div>
 
-              <div className="px-4 py-3.5 flex items-center gap-2">
-                <Badge className="rounded-full bg-secondary-800 text-white text-[11px] font-black shadow-sm">
-                  Khả dụng Haravan: {group.totalHaravanQuantity}
+              <div className="px-4 py-2 sm:py-3.5 flex items-center gap-2">
+                <Badge className="rounded-full bg-secondary-800 text-white text-[10px] sm:text-[11px] font-black shadow-sm px-2 py-0.5">
+                  Haravan: {group.totalHaravanQuantity}
                 </Badge>
                 <a
                   href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
+                  className="flex items-center text-[9px] sm:text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
                 >
                   <span>Haravan</span>
-                  <ArrowSquareOut size={12} />
+                  <ArrowSquareOut size={10} />
                 </a>
               </div>
 
-              <div className="px-4 py-3.5 text-right">
-                <div className="flex flex-col items-end gap-0.5">
+              <div className="px-4 py-2 sm:py-3.5 text-left sm:text-right">
+                <div className="flex flex-col items-start sm:items-end gap-0.5">
                   {hasSale && (
-                    <p className="text-[10px] font-bold text-primary-200 line-through leading-none">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-primary-200 line-through leading-none">
                       {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
                     </p>
                   )}
 
-                  <p className="text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
+                  <p className="text-xs sm:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
                     {formatPrice(
                       isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
                     )}
@@ -436,19 +437,19 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
               </div>
 
               <div
-                className="px-4 py-3.5 flex justify-center"
+                className="px-4 py-3 sm:py-3.5 flex justify-start sm:justify-center"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={group.totalQuantity === 0}
-                  className="text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
+                  className="text-[9px] sm:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
                   onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
                 >
                   <span>Xem Serials</span>
                   <span className={cn(
-                    "flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-black transition-all duration-300",
+                    "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
                     group.totalQuantity === 0
                       ? "bg-primary-50 text-primary-200"
                       : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"

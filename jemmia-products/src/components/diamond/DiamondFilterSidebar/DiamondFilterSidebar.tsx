@@ -14,6 +14,8 @@ import { X } from "lucide-react";
 interface DiamondFilterSidebarProps {
   onApply: (filters: DiamondFilter) => void;
   currentFilters?: DiamondFilter;
+  onClose?: () => void;
+  onChipsChange?: (chips: { key: string; value: any; label: string }[]) => void;
 }
 
 const SIZES = [
@@ -46,7 +48,7 @@ const STOCK_LABELS: Record<string, string> = {
   IN_STOCK: "Có hàng",
 };
 
-export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterSidebarProps) {
+export function DiamondFilterSidebar({ onApply, currentFilters, onClose, onChipsChange }: DiamondFilterSidebarProps) {
   const [appliedChips, setAppliedChips] = useState<{ key: string; value: any; label: string }[]>([]);
   const initialFilters: DiamondFilter = {
     salePriceFrom: undefined,
@@ -66,14 +68,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
 
   useEffect(() => {
     if (currentFilters) {
-      setFilters((prev) => ({
-        ...prev,
-        ...currentFilters,
-        salePriceFrom: prev.salePriceFrom !== undefined ? prev.salePriceFrom : currentFilters.salePriceFrom,
-        salePriceTo: prev.salePriceTo !== undefined ? prev.salePriceTo : currentFilters.salePriceTo,
-        caratFrom: prev.caratFrom !== undefined ? prev.caratFrom : currentFilters.caratFrom,
-        caratTo: prev.caratTo !== undefined ? prev.caratTo : currentFilters.caratTo,
-      }));
+      setFilters(currentFilters);
     }
   }, [currentFilters]);
 
@@ -248,6 +243,8 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
   useEffect(() => {
     const chips = buildChips(filters);
     setAppliedChips(chips);
+    onChipsChange?.(chips);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, buildChips]);
 
   const removeChip = (key: string) => {
@@ -272,23 +269,30 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
   };
 
   return (
-    <aside className="w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
-      <div className="px-8 mb-6 flex items-center justify-between">
+    <aside className="w-full lg:w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
+      <div className="px-6 lg:px-8 mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">Bộ lọc</h2>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClear}
-          className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent tracking-wider"
-        >
-          Xóa bộ lọc
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent tracking-wider uppercase"
+          >
+            Xóa bộ lọc
+          </Button>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 lg:hidden -mr-2 text-primary-900">
+              <X size={18} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {appliedChips.length > 0 && (
-        <div className="px-8 mb-4 flex flex-wrap gap-2">
+        <div className="px-6 lg:px-8 mb-4 flex flex-wrap gap-2">
           {appliedChips.map((chip) => (
             <Badge
               key={chip.key}
@@ -307,7 +311,7 @@ export function DiamondFilterSidebar({ onApply, currentFilters }: DiamondFilterS
         </div>
       )}
 
-      <div className="flex-1 px-8 space-y-9 pb-20">
+      <div className="flex-1 px-6 lg:px-8 space-y-9 pb-20">
         <FilterSection label="Hình dạng">
           <MultiSelectButtonFilter
             label="Shape"

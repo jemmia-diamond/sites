@@ -60,15 +60,15 @@ export function SearchDropdown({
   }, [onClose]);
 
   return (
-    <div className="w-[400px] max-w-lg flex items-center relative group" ref={dropdownRef}>
-      <MagnifyingGlass className="absolute left-3 h-4 w-4 text-primary-300 group-hover:text-secondary-900 transition-colors z-10" />
+    <div className="w-full max-w-[200px] sm:max-w-[300px] md:max-w-lg lg:w-[400px] flex items-center relative group" ref={dropdownRef}>
+      <MagnifyingGlass className="absolute left-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-300 group-hover:text-secondary-900 transition-colors z-10" />
       <Input
         placeholder={searchPlaceholder}
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim() && onClose()}
-        className="bg-gray-50/50 border border-primary-200 pl-10 pr-4 h-8 rounded-none text-xs font-black focus-visible:ring-0 focus-visible:bg-white focus-visible:border-secondary-900 placeholder:text-primary-200 transition-all duration-500"
+        className="bg-gray-50/50 border border-primary-200 pl-8 sm:pl-10 pr-4 h-8 rounded-none text-[10px] sm:text-xs font-black focus-visible:ring-0 focus-visible:bg-white focus-visible:border-secondary-900 placeholder:text-primary-200 transition-all duration-500"
       />
       {query && (
         <button
@@ -83,7 +83,7 @@ export function SearchDropdown({
       )}
 
       {isOpen && (query.trim() || isLoading) && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white shadow-[0_30px_60px_-12px_rgba(0,0,0,0.18)] border border-primary-50 max-h-[520px] overflow-y-auto no-scrollbar z-50 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="absolute top-[calc(100%+8px)] right-0 w-[85vw] sm:w-[400px] md:w-full bg-white shadow-[0_30px_60px_-12px_rgba(0,0,0,0.18)] border border-primary-50 max-h-[520px] overflow-y-auto no-scrollbar z-50 animate-in fade-in slide-in-from-top-4 duration-500">
           {isLoading ? (
             <LoadingState />
           ) : results && (results.diamonds.data.length > 0 || results.jewelries.data.length > 0) ? (
@@ -134,8 +134,8 @@ function SearchResults({ results, query, onClose }: SearchResultsProps) {
       <div className="divide-y divide-primary-50">
         {[...results.jewelries.data.map(i => ({ ...i, category: 'Jewelry' as const })), ...results.diamonds.data.map(i => ({ ...i, category: 'Diamond' as const }))].slice(0, 8).map((item, index) => {
           const designCode = item.category === 'Jewelry' ? item.attributes?.designCode : ("GIA" + item.attributes?.giaId);
-          const imageUrl = item.category === 'Jewelry' 
-            ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url) 
+          const imageUrl = item.category === 'Jewelry'
+            ? (item.thumbnails?.[0]?.url || item.images?.[0]?.url)
             : getDiamondShapeImage(item.attributes?.shape);
 
           return (

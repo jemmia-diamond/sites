@@ -1,60 +1,92 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { fetchCombos, ComboFilter } from "../services/comboService";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { PageHeader } from "../components/layout/PageHeader";
-import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DiamondModel, ProductModel } from "../types";
+import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
 export default function ComboPage() {
-  const [filters, setFilters] = useState<ComboFilter>({ page: 1, limit: 100 });
+  const [filters, setFilters] = useState<Omit<ComboFilter, 'page'>>({ limit: 100 });
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery({
     queryKey: ["combos", filters],
-    queryFn: () => fetchCombos(filters),
+    queryFn: ({ pageParam = 1 }) => fetchCombos({ ...filters, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
+        return lastPageParam + 1;
+      }
+      return undefined;
+    },
   });
 
+  const allCombos = data?.pages.flatMap(page => page.data) || [];
+
+  const lastElementRef = useInfiniteScroll(
+    () => {
+      fetchNextPage();
+    },
+    hasNextPage,
+    isFetchingNextPage
+  );
+
   return (
-    <LayoutShell searchPlaceholder="Tìm kiếm combo...">
-      <div className="flex flex-col h-full bg-white w-full">
+    <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
+      <div className="flex flex-col h-full bg-white w-full px-4 lg:px-6 pt-4 pb-6 gap-4 min-w-0 overflow-hidden min-h-0">
         <PageHeader
           title="Sản phẩm nguyên chiếc"
-          description={`Hiển thị ${data?.meta.totalItems} kết quả`}
+          description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
         />
 
-        <div className="flex-1 overflow-auto bg-white pt-4">
-          <div className="relative border border-primary-100 bg-white shadow-sm h-full overflow-hidden">
-            <div className="h-full overflow-auto">
+        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full overflow-hidden">
+          <div className="relative border border-primary-100 bg-white shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-auto min-w-0 w-full relative">
               <table className="w-full border-collapse">
                 <TableHeader>
                   <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-left text-xs font-black text-secondary-900 whitespace-nowrap">Trang sức (Vỏ)</TableHead>
-                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-left text-xs font-black text-secondary-900 whitespace-nowrap">Kim cương (Chủ)</TableHead>
-                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-right text-xs font-black text-secondary-900 whitespace-nowrap">Tổng giá bán</TableHead>
+                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-left text-[10px] sm:text-xs font-black text-secondary-900 whitespace-nowrap uppercase">Trang sức (Vỏ)</TableHead>
+                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-left text-[10px] sm:text-xs font-black text-secondary-900 whitespace-nowrap uppercase">Kim cương (Chủ)</TableHead>
+                    <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-4 py-0 text-right text-[10px] sm:text-xs font-black text-secondary-900 whitespace-nowrap uppercase">Tổng giá bán</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="h-32 text-center text-primary-300">
+                      <TableCell colSpan={3} className="h-32 text-center text-primary-300 text-xs">
                         Đang tải dữ liệu...
                       </TableCell>
                     </TableRow>
-                  ) : !data?.data?.length ? (
+                  ) : !allCombos.length ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="h-32 text-center text-primary-300">
+                      <TableCell colSpan={3} className="h-32 text-center text-primary-300 text-xs">
                         Không tìm thấy combo nào.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data.data.map((combo) => (
+                    allCombos.map((combo) => (
                       <ComboTableRow key={`${combo.variant_serials_id}-${combo.diamonds_id}`} combo={combo} />
                     ))
                   )}
                 </TableBody>
               </table>
+              <div ref={lastElementRef} className="h-4 w-full" />
+              {isFetchingNextPage && (
+                <div className="py-6 flex justify-center items-center w-full">
+                  <div className="h-6 w-6 relative">
+                    <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
+                    <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
