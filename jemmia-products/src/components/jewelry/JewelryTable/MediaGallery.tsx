@@ -18,6 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import axios from "axios";
 import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import { API_BASE_URL } from "../../../config";
 
 export interface MediaGalleryProps {
@@ -100,17 +101,7 @@ export function MediaGallery({
           if (!response.ok) throw new Error('Network response was not ok');
 
           const blob = await response.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = blobUrl;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-
-          setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
-          }, 100);
+          saveAs(blob, fileName);
         } catch (fetchError) {
           console.warn("Fetch failed, falling back to window.open", fetchError);
           window.open(url, '_blank');
@@ -138,29 +129,16 @@ export function MediaGallery({
             });
             if (!response.ok) throw new Error('Fetch failed');
             const blob = await response.blob();
-            // Đảm bảo tên file duy nhất trong zip (phòng trường hợp trùng tên)
             zip.file(`${index + 1}_${fileName}`, blob);
           } catch (err) {
             console.error("Lỗi khi tải file vào zip:", url, err);
           }
         });
 
-        // Chờ tất cả file được tải xong
         await Promise.all(fetchPromises);
 
-        // Tạo file zip
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const zipUrl = window.URL.createObjectURL(zipBlob);
-        const link = document.createElement('a');
-        link.href = zipUrl;
-        link.download = `Jemmia_Media_${Date.now()}.zip`;
-        document.body.appendChild(link);
-        link.click();
-
-        setTimeout(() => {
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(zipUrl);
-        }, 100);
+        saveAs(zipBlob, `Jemmia_Media_${Date.now()}.zip`);
       }
     } catch (error) {
       console.error("Lỗi khi xử lý tải file:", error);

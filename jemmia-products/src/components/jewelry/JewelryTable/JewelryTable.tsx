@@ -109,17 +109,8 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
         if (!response.ok) throw new Error('Network response was not ok');
 
         const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-
-        setTimeout(() => {
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(blobUrl);
-        }, 100);
+        const { saveAs } = await import("file-saver");
+        saveAs(blob, fileName);
       } catch (fetchError) {
         console.warn("Fetch failed, falling back to window.open", fetchError);
         window.open(url, '_blank');
