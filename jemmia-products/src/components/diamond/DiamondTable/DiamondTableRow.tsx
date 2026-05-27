@@ -370,20 +370,27 @@ export function DiamondTableRow({
                   <span>Haravan</span>
                   <ArrowSquareOut size={8} />
                 </a>
-                {/* Illustration */}
-                <div className="w-10 h-10 rounded-none overflow-hidden border border-primary-100 bg-white p-1 flex-shrink-0">
-                  <img
-                    src={getDiamondShapeImage(diamond.attributes.shape)}
-                    className="h-full w-full object-contain"
-                    alt="Illustration"
-                    referrerPolicy="no-referrer"
-                  />
+              </div>
+              {/* Row 2: Diamond History */}
+              {diamond.attributes.diamondHistory?.errors && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[8px] font-bold text-primary-300 tracking-wider">Ghi chú:</span>
+                    <span className="text-[8px] font-bold text-secondary-900">
+                      {diamond.attributes.diamondHistory.errors}
+                      {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
+                    </span>
+                  </div>
+                  {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[8px] font-bold text-primary-300 tracking-wider">Kiểm định:</span>
+                      <span className="text-[9px] font-bold text-emerald-600">
+                        {diamond.attributes.diamondHistory.stage}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              {/* Row 2: Status + GIA + Haravan */}
-              <div className="flex items-center gap-3 flex-wrap">
-
-              </div>
+              )}
               {/* Actual Images */}
               {actualImages.length > 0 && (
                 <div>
