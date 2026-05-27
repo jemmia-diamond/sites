@@ -312,6 +312,15 @@ export function DiamondFilterSidebar({ onApply, currentFilters, onClose, onChips
       )}
 
       <div className="flex-1 px-6 lg:px-8 space-y-9 pb-20">
+        <FilterSection label="KHOẢNG GIÁ">
+          <PriceRangeFilter
+            filters={filters}
+            onMinPriceChange={handleMinPriceChange}
+            onMaxPriceChange={handleMaxPriceChange}
+            onApply={() => applyFilters(filters)}
+          />
+        </FilterSection>
+
         <FilterSection label="Hình dạng">
           <MultiSelectButtonFilter
             label="Shape"
@@ -388,15 +397,6 @@ export function DiamondFilterSidebar({ onApply, currentFilters, onClose, onChips
             filters={filters}
             onMinCaratChange={handleMinCaratChange}
             onMaxCaratChange={handleMaxCaratChange}
-            onApply={() => applyFilters(filters)}
-          />
-        </FilterSection>
-
-        <FilterSection label="KHOẢNG GIÁ">
-          <PriceRangeFilter
-            filters={filters}
-            onMinPriceChange={handleMinPriceChange}
-            onMaxPriceChange={handleMaxPriceChange}
             onApply={() => applyFilters(filters)}
           />
         </FilterSection>

@@ -360,6 +360,15 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
       )}
 
       <div className="flex-1 px-6 lg:px-8 space-y-9 pb-20">
+        <FilterSection label="KHOẢNG GIÁ">
+          <PriceRangeFilter
+            filters={filters}
+            onMinPriceChange={handleMinPriceChange}
+            onMaxPriceChange={handleMaxPriceChange}
+            onApply={() => applyFilters(filters)}
+          />
+        </FilterSection>
+
         <FilterSection label="Loại Trang Sức">
           <ProductTypeFilter
             productTypes={productTypes}
@@ -419,15 +428,6 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
             />
           </FilterSection>
         )}
-
-        <FilterSection label="KHOẢNG GIÁ">
-          <PriceRangeFilter
-            filters={filters}
-            onMinPriceChange={handleMinPriceChange}
-            onMaxPriceChange={handleMaxPriceChange}
-            onApply={() => applyFilters(filters)}
-          />
-        </FilterSection>
       </div>
     </aside>
   );

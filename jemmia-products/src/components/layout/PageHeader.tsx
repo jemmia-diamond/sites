@@ -34,14 +34,14 @@ export function PageHeader({
       <div className="flex items-center gap-4">
         {headerStart && <div>{headerStart}</div>}
         <div className="space-y-0">
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
+          <h1 className="text-lg md:text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
           <div className="text-sm text-gray-500 max-w-2xl leading-relaxed font-medium">
             {description}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6 pt-2 justify-end">
+      <div className="flex items-center gap-4 sm:gap-6 pt-2 justify-between sm:justify-end">
         {sortOptions && (
           <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">{sortLabel}</span>
@@ -61,7 +61,7 @@ export function PageHeader({
         )}
 
         {actions && (
-          <div>
+          <div className="w-full flex items-center justify-between sm:justify-end">
             {actions}
           </div>
         )}

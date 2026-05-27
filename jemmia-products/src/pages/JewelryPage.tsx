@@ -23,6 +23,7 @@ export default function JewelryPage() {
   const searchQueryParam = searchParams.get("searchQuery");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeChips, setActiveChips] = useState<{ key: string; value: any; label: string }[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // We omit `page` from the local state since react-query handles it for infinite scroll
   const [filters, setFilters] = useState<Omit<JewelryFilter, 'page'>>({
@@ -56,6 +57,7 @@ export default function JewelryPage() {
   }, [designCodeParam, searchQueryParam]);
 
   const handleGoBack = () => {
+    setExpandedId(null);
     window.dispatchEvent(new Event("search:clear"));
     navigate("/jewelry");
   };
@@ -138,6 +140,12 @@ export default function JewelryPage() {
   const allJewelries = data?.pages.flatMap(page => page.data) || [];
   const totalResults = data?.pages[0]?.meta?.totalRows || 0;
 
+  useEffect(() => {
+    if (allJewelries.length === 1) {
+      setExpandedId(allJewelries[0].id);
+    }
+  }, [allJewelries]);
+
   const lastElementRef = useInfiniteScroll(
     () => {
       fetchNextPage();
@@ -183,7 +191,7 @@ export default function JewelryPage() {
               searchQueryParam ? (
                 <Button
                   onClick={handleGoBack}
-                  className={'h-full'}
+                  className={'h-full w-max'}
                 >
                   <ArrowLeft size={16} />
                   Quay về
@@ -191,7 +199,7 @@ export default function JewelryPage() {
               ) : null
             }
             actions={
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full">
                 <div className="hidden lg:flex flex-col gap-1.5 min-w-[150px]">
                   <Button
                     onClick={toggleSort}
@@ -209,11 +217,11 @@ export default function JewelryPage() {
                   </Button>
                 </div>
 
-                <div className="flex lg:hidden items-center gap-2 w-full">
+                <div className="sm:hidden flex items-center justify-between w-full">
                   <Button
                     onClick={() => setIsFilterOpen(true)}
                     variant="outline"
-                    className="flex-1 h-9 rounded-none border-primary-100 font-bold text-[10px] uppercase tracking-widest"
+                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
                   >
                     <Filter size={14} className="mr-2" />
                     <span className="w-max">Bộ lọc</span>
@@ -221,7 +229,7 @@ export default function JewelryPage() {
                   <Button
                     onClick={toggleSort}
                     variant="outline"
-                    className="flex-1 h-9 rounded-none border-primary-100 font-bold text-[10px] uppercase tracking-widest"
+                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
                   >
                     {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
                     <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>
@@ -283,6 +291,8 @@ export default function JewelryPage() {
               warehouseIds={debouncedFilters.warehouseIds}
               lastElementRef={lastElementRef}
               isFetchingNextPage={isFetchingNextPage}
+              expandedId={expandedId}
+              onToggleExpand={setExpandedId}
             />
           )}
         </div>

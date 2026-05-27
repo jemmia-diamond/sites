@@ -57,7 +57,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
       onClick={(e) => e.stopPropagation()}
       ref={triggerRef}
     >
-      <div className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md hover:bg-primary-50 transition-colors">
+      <div className="flex items-center gap-1 -mt-0.5 cursor-pointer px-2 rounded-md hover:bg-primary-50 transition-colors">
         <span
           className={cn(
             "text-[11px] font-semibold leading-none transition-colors",

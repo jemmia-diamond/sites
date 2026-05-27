@@ -291,7 +291,7 @@ export function DiamondTableRow({
             <Button
               size="icon"
               className={cn(
-                "h-6 w-6 rounded-full transition-all duration-300 flex items-center justify-center flex-shrink-0",
+                "h-4 w-4 rounded-full transition-all duration-300 flex items-center justify-center flex-shrink-0",
                 isExpanded
                   ? "bg-white text-secondary-900"
                   : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
@@ -302,7 +302,7 @@ export function DiamondTableRow({
               }}
             >
               <CaretDown
-                size={12}
+                size={10}
                 weight="bold"
                 className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
               />

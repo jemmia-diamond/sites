@@ -43,7 +43,6 @@ export function JewelryTableRow({
   onUploadSuccess,
 }: JewelryTableRowProps) {
   const isBundle = product.products && product.products.length > 0;
-
   const isEarring =
     product.type?.toLowerCase().includes("bông tai") ||
     product.type?.toLowerCase().includes("earring");
@@ -257,44 +256,72 @@ export function JewelryTableRow({
             </div>
 
             {/* Content */}
-            <div className="flex-1 min-w-0 flex flex-col gap-1">
-              {/* Price */}
-              <div className="flex items-center justify-between gap-2">
-                <span className={cn(
-                  "text-[12px] font-black tracking-tight",
-                  isExpanded ? "text-white" : "text-secondary-900"
-                )}>
-                  {priceDisplay}
-                </span>
-                <Badge
-                  className={cn(
-                    "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
-                    hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
-                  )}
-                >
-                  {hasStock ? "Có hàng" : "Hết hàng"}
-                </Badge>
+            <div className="flex-1 w-full flex justify-between items-center gap-3">
+              {/* Product Codes */}
+              <div className="w-full flex flex-col gap-2">
+                <div className="flex items-center gap-1 justify-between w-full overflow-hidden">
+                  <div className="flex-1 min-w-0">
+                    {isBundle ? (
+                      <div className="flex flex-wrap gap-1">
+                        {product.products?.map((subProduct, idx) => {
+                          const code = subProduct.attributes?.designCode;
+                          if (!code) return null;
+                          return (
+                            <Badge key={idx} className={cn(
+                              "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase w-fit",
+                              "bg-secondary-900 text-white"
+                            )}>
+                              <span className="truncate overflow-hidden whitespace-nowrap">{code}</span>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <ProductCodes product={product} isExpanded={isExpanded} />
+                    )}
+                  </div>
 
-                <Button
-                  size="icon"
-                  className={cn(
-                    "h-6 w-6 rounded-full transition-all duration-300 flex-shrink-0 flex items-center justify-center",
-                    isExpanded
-                      ? "bg-white text-secondary-900"
-                      : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleExpand(product.id);
-                  }}
-                >
-                  <CaretDown
-                    size={12}
-                    weight="bold"
-                    className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
-                  />
-                </Button>
+                  <Badge
+                    className={cn(
+                      "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
+                      hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
+                    )}
+                  >
+                    {hasStock ? "Có hàng" : "Hết hàng"}
+                  </Badge>
+                </div>
+                {/* Price */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={cn(
+                    "text-sm font-black tracking-tight",
+                    isExpanded ? "text-white" : "text-secondary-900"
+                  )}>
+                    {priceDisplay}
+                  </span>
+
+
+                </div>
               </div>
+
+              <Button
+                size="icon"
+                className={cn(
+                  "h-6 w-6 rounded-full transition-all duration-300 flex-shrink-0 flex items-center justify-center",
+                  isExpanded
+                    ? "bg-white text-secondary-900"
+                    : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpand(product.id);
+                }}
+              >
+                <CaretDown
+                  size={12}
+                  weight="bold"
+                  className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
+                />
+              </Button>
             </div>
           </div>
         </TableCell>
@@ -317,9 +344,11 @@ export function JewelryTableRow({
                     const subHasSideStones = Array.isArray(subFourView) && subFourView.length > 0;
                     return (
                       <div key={subProduct.id} className="p-3 sm:p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-xs sm:text-sm font-bold text-secondary-800">{genderTitle}</span>
-                          <ProductCodes product={subProduct} isExpanded={false} />
+                        <div className="flex items-center gap-3 mb-0 overflow-hidden">
+                          <span className="text-xs sm:text-sm font-bold text-secondary-800 flex-shrink-0">{genderTitle}</span>
+                          <div className="flex-1 min-w-0">
+                            <ProductCodes product={subProduct} isExpanded={false} />
+                          </div>
                         </div>
                         <ExpandedPanel
                           stockBySKU={getGroupedStock(subProduct, warehouseIds)}
@@ -330,7 +359,7 @@ export function JewelryTableRow({
                           actualImages={subActualImages}
                           fourView={subFourView}
                           hasSideStones={subHasSideStones}
-                          isBundle={false}
+                          isBundle={isBundle}
                           brokenImages={brokenImages}
                           onImageError={onImageError}
                           onPreview={onPreview}
@@ -491,15 +520,36 @@ function ExpandedPanel({
     if (!price) return "N/A";
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
   };
-
+  console.log(isBundle);
   return (
     <div className="bg-white overflow-hidden">
       {/* Mobile Only: Additional Info Section */}
       {(webImages.length > 0 || actualImages.length > 0 || hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
-        <div className="sm:hidden px-3 py-2 border-b border-primary-100 space-y-2">
+        <div className={`${isBundle ? 'pb-2' : 'px-3 py-2'} sm:hidden border-b border-primary-100 space-y-2`}>
           {/* Product Codes */}
-          <div>
-            <ProductCodes product={product} isExpanded={true} className="justify-start" />
+          <div className="flex items-center justify-between">
+            {/* Side Stones */}
+            {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
+              <div className="h-full flex items-center mt-1">
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Viên Tấm</p>
+                <div className="flex flex-wrap gap-1">
+                  {isBundle ? (
+                    <>
+                      {hasSideStonesNam && (
+                        <SideStoneTooltip fourView={fourViewNam as any} isExpanded={true} label="Tấm Nam" />
+                      )}
+                      {hasSideStonesNu && (
+                        <SideStoneTooltip fourView={fourViewNu as any} isExpanded={true} label="Tấm Nữ" />
+                      )}
+                    </>
+                  ) : (
+                    fourView && Array.isArray(fourView) && fourView.length > 0 && (
+                      <SideStoneTooltip fourView={fourView as any} isExpanded={true} />
+                    )
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Galleries */}
@@ -536,29 +586,6 @@ function ExpandedPanel({
               </div>
             )}
           </div>
-
-          {/* Side Stones */}
-          {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
-            <div className="flex items-center">
-              <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Viên Tấm</p>
-              <div className="flex flex-wrap gap-1">
-                {isBundle ? (
-                  <>
-                    {hasSideStonesNam && (
-                      <SideStoneTooltip fourView={fourViewNam as any} isExpanded={true} label="Tấm Nam" />
-                    )}
-                    {hasSideStonesNu && (
-                      <SideStoneTooltip fourView={fourViewNu as any} isExpanded={true} label="Tấm Nữ" />
-                    )}
-                  </>
-                ) : (
-                  fourView && Array.isArray(fourView) && fourView.length > 0 && (
-                    <SideStoneTooltip fourView={fourView as any} isExpanded={true} />
-                  )
-                )}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -673,7 +700,7 @@ function ExpandedPanel({
               </div>
 
               {/* Mobile Compact View */}
-              <div className="sm:hidden px-3 py-2.5">
+              <div className={isBundle ? 'py-2 sm:hidden' : 'px-3 py-2.5 sm:hidden'}>
                 <div className="flex flex-col gap-1.5 w-full">
                   {/* SKU + Barcode + Price + Haravan */}
                   <div className="flex items-start justify-between gap-2">

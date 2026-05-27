@@ -26,11 +26,12 @@ interface JewelryTableProps {
   warehouseIds?: string[];
   lastElementRef?: (node: HTMLElement | null) => void;
   isFetchingNextPage?: boolean;
+  expandedId: string | null;
+  onToggleExpand: (id: string | null) => void;
 }
 
-export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchingNextPage }: JewelryTableProps) {
+export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchingNextPage, expandedId, onToggleExpand }: JewelryTableProps) {
   const queryClient = useQueryClient();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewList, setPreviewList] = useState<string[]>([]);
@@ -171,7 +172,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
                   onImageError={handleImageError}
                   onPreview={handlePreview}
                   onToggleExpand={(id) =>
-                    setExpandedId(expandedId === id ? null : id)
+                    onToggleExpand(expandedId === id ? null : id)
                   }
                   onOpenSerialModal={handleOpenSerialModal}
                   onUploadSuccess={handleUploadSuccess}

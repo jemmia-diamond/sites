@@ -93,7 +93,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
 
   return (
     <div
-      className={cn("relative flex items-center justify-center", className)}
+      className={cn("relative flex items-center justify-center w-fit", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       ref={triggerRef}

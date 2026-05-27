@@ -17,12 +17,13 @@ interface DiamondTableProps {
   diamonds: DiamondModel[];
   lastElementRef?: (node: HTMLElement | null) => void;
   isFetchingNextPage?: boolean;
+  expandedId: string | null;
+  onToggleExpand: (id: string | null) => void;
 }
 
-export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: DiamondTableProps) {
+export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, expandedId, onToggleExpand }: DiamondTableProps) {
   const queryClient = useQueryClient();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Media Preview State
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
@@ -158,7 +159,7 @@ return (
                   onImageError={handleImageError}
                   onPreview={handlePreview}
                   onUploadSuccess={handleUploadSuccess}
-                  onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
+                  onToggleExpand={(id) => onToggleExpand(expandedId === id ? null : id)}
                 />
               ))}
             </TableBody>
