@@ -45,7 +45,7 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
     const match = val.match(/^(\d+)%-(\d+)%$/);
     if (match) {
       return (
-        <span className={`flex ${isMobile ? 'gap-3' : 'items-center gap-1.5 justify-center'}`}>
+        <span className={`flex ${isMobile ? 'gap-1' : 'items-center gap-1.5 justify-center'}`}>
           <span className={`${isMobile ? "text-[8px] font-bold text-primary-300 uppercase tracking-wider" : ""}`}>
             Thu mua:{" "}
             <span className={`${isMobile ? "text-[9px]" : ""} font-bold text-secondary-900`}>{match[1]}%</span>
@@ -169,7 +169,7 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
               activeSerials.map((v, index) => (
                 <div
                   key={`${v.id}-${index}`}
-                  className="bg-white border border-primary-100 rounded-sm p-3 hover:bg-primary-50/40 transition-all shadow-sm"
+                  className="bg-white border border-primary-100 rounded-sm p-2 hover:bg-primary-50/40 transition-all shadow-sm"
                 >
                   {/* Serial & Badge */}
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -189,7 +189,7 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
                   </div>
 
                   {/* Info Grid */}
-                  <div className="grid grid-cols-2 space-y-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Trọng lượng vàng</span>
                       <span className="text-[10px] -mt-0.5 font-semibold text-secondary-600 leading-none">
@@ -210,7 +210,7 @@ export function SerialListModal({ variants, sku, totalQuantity, totalHaravanQuan
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Thời gian Quét kho</span>
+                      <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Quét kho</span>
                       <span className="text-[9px] font-medium text-secondary-900">
                         {formatDateTime(v.lastRfidScanTime)}
                       </span>

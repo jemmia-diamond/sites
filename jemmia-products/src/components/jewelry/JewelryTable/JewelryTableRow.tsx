@@ -25,7 +25,7 @@ interface JewelryTableRowProps {
 
 const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
   "1592770": ["[HCM] Cửa Hàng HCM"],
-  "1582708": ["[HCM] Kế Toán", "[HCM] Kho Hàng Khách Đặt"],
+  "1582708": ["[HCM] Kế Toán"],
   "1110168": ["[HCM] Admin"],
   "1592778": ["[HN] Cửa Hàng HN"],
   "1593276": ["[CT] Cửa Hàng CT", "[CT] Cửa Hàng Cần Thơ"],
@@ -105,11 +105,14 @@ export function JewelryTableRow({
         ? formatPriceMillion(minPrice)
         : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
 
+  const firstImage = (webImages.length > 0 ? webImages[0] : actualImages[0]) || "";
+
   return (
     <>
+      {/* Desktop Table View - Only visible on desktop */}
       <TableRow
         className={cn(
-          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative",
+          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative hidden sm:table-row",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
@@ -221,6 +224,82 @@ export function JewelryTableRow({
         </TableCell>
       </TableRow>
 
+      {/* Mobile Card View - Only visible on mobile */}
+      <TableRow
+        className={cn(
+          "transition-all cursor-pointer group relative sm:hidden",
+          isExpanded
+            ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
+            : "border-primary-50 hover:bg-primary-50/30",
+          isBundle && !isExpanded && "bg-amber-50/20"
+        )}
+        onClick={() => onToggleExpand(product.id)}
+      >
+        <TableCell className="px-3 py-2">
+          <div className="flex items-center gap-3 w-full">
+            {/* Image or Placeholder */}
+            <div className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-gray-50 flex items-center justify-center">
+              {firstImage ? (
+                <img
+                  src={firstImage}
+                  alt={designCode || product.title}
+                  className="w-full h-full object-cover"
+                  onError={() => onImageError(firstImage)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-primary-300">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-[8px] mt-0.5">No image</span>
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              {/* Price */}
+              <div className="flex items-center justify-between gap-2">
+                <span className={cn(
+                  "text-[12px] font-black tracking-tight",
+                  isExpanded ? "text-white" : "text-secondary-900"
+                )}>
+                  {priceDisplay}
+                </span>
+                <Badge
+                  className={cn(
+                    "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
+                    hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
+                  )}
+                >
+                  {hasStock ? "Có hàng" : "Hết hàng"}
+                </Badge>
+
+                <Button
+                  size="icon"
+                  className={cn(
+                    "h-6 w-6 rounded-full transition-all duration-300 flex-shrink-0 flex items-center justify-center",
+                    isExpanded
+                      ? "bg-white text-secondary-900"
+                      : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleExpand(product.id);
+                  }}
+                >
+                  <CaretDown
+                    size={12}
+                    weight="bold"
+                    className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
+                  />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>
+
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
           <TableCell colSpan={9} className="p-0 bg-primary-50">
@@ -229,6 +308,13 @@ export function JewelryTableRow({
                 <div className="bg-white divide-y divide-primary-100">
                   {product.products!.map((subProduct, idx) => {
                     const genderTitle = subProduct.attributes?.gender === 'Nam' ? 'Nhẫn Nam' : subProduct.attributes?.gender === 'Nữ' ? 'Nhẫn Nữ' : `Món ${idx + 1}`;
+                    const subWebImages = subProduct.thumbnails?.map((t) => t.url) || [];
+                    const subActualImages = [
+                      ...(subProduct.images?.map((img) => img.url) || []),
+                      ...(subProduct.videos?.map((v) => v.url) || []),
+                    ];
+                    const subFourView = subProduct.attributes?.["4view"];
+                    const subHasSideStones = Array.isArray(subFourView) && subFourView.length > 0;
                     return (
                       <div key={subProduct.id} className="p-3 sm:p-4">
                         <div className="flex items-center gap-3 mb-3">
@@ -240,6 +326,16 @@ export function JewelryTableRow({
                           isEarring={subProduct.type?.toLowerCase().includes("bông tai") || false}
                           product={subProduct}
                           onOpenSerialModal={onOpenSerialModal}
+                          webImages={subWebImages}
+                          actualImages={subActualImages}
+                          fourView={subFourView}
+                          hasSideStones={subHasSideStones}
+                          isBundle={false}
+                          brokenImages={brokenImages}
+                          onImageError={onImageError}
+                          onPreview={onPreview}
+                          designCode={subProduct.attributes?.designCode}
+                          onUploadSuccess={onUploadSuccess}
                         />
                       </div>
                     );
@@ -251,6 +347,21 @@ export function JewelryTableRow({
                   isEarring={isEarring}
                   product={product}
                   onOpenSerialModal={onOpenSerialModal}
+                  webImages={webImages}
+                  actualImages={actualImages}
+                  fourView={fourView}
+                  hasSideStones={Array.isArray(fourView) && fourView.length > 0}
+                  isBundle={isBundle}
+                  fourViewNam={fourViewNam}
+                  fourViewNu={fourViewNu}
+                  hasSideStonesNam={hasSideStonesNam}
+                  hasSideStonesNu={hasSideStonesNu}
+                  brokenImages={brokenImages}
+                  onImageError={onImageError}
+                  onPreview={onPreview}
+                  designCode={designCode}
+                  uploadOptions={uploadOptions}
+                  onUploadSuccess={onUploadSuccess}
                 />
               )}
             </div>
@@ -284,7 +395,7 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
   variants.forEach((v) => {
     const hv = product.haravanVariants?.find(h => String(h.variant_id) === String(v.id));
     const vWithHv = { ...v, haravanVariant: hv };
-    const sku = v.barcode || v.attributes?.sku || v.sku || "N/A";
+    const sku = v.sku || "N/A";
 
     if (!stockBySKU[sku]) {
       stockBySKU[sku] = {
@@ -338,9 +449,44 @@ interface ExpandedPanelProps {
   isEarring: boolean;
   product: ProductModel;
   onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
+  webImages?: string[];
+  actualImages?: string[];
+  fourView?: any;
+  hasSideStones?: boolean;
+  isBundle?: boolean;
+  fourViewNam?: any;
+  fourViewNu?: any;
+  hasSideStonesNam?: boolean;
+  hasSideStonesNu?: boolean;
+  brokenImages?: Set<string>;
+  onImageError?: (url: string) => void;
+  onPreview?: (images: string[], index: number, config?: any) => void;
+  designCode?: string | undefined;
+  uploadOptions?: any;
+  onUploadSuccess?: () => void;
 }
 
-function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: ExpandedPanelProps) {
+function ExpandedPanel({
+  stockBySKU,
+  isEarring,
+  product,
+  onOpenSerialModal,
+  webImages = [],
+  actualImages = [],
+  fourView,
+  hasSideStones,
+  isBundle,
+  fourViewNam,
+  fourViewNu,
+  hasSideStonesNam,
+  hasSideStonesNu,
+  brokenImages,
+  onImageError,
+  onPreview,
+  designCode,
+  uploadOptions,
+  onUploadSuccess
+}: ExpandedPanelProps) {
   const formatPrice = (price: number | null) => {
     if (!price) return "N/A";
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -348,115 +494,283 @@ function ExpandedPanel({ stockBySKU, isEarring, product, onOpenSerialModal }: Ex
 
   return (
     <div className="bg-white overflow-hidden">
+      {/* Mobile Only: Additional Info Section */}
+      {(webImages.length > 0 || actualImages.length > 0 || hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
+        <div className="sm:hidden px-3 py-2 border-b border-primary-100 space-y-2">
+          {/* Product Codes */}
+          <div>
+            <ProductCodes product={product} isExpanded={true} className="justify-start" />
+          </div>
+
+          {/* Galleries */}
+          <div className="space-y-2">
+            {/* Website Images */}
+            {webImages.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Ảnh Website</p>
+                <CompactGallery
+                  images={webImages}
+                  showUpload={false}
+                  brokenImages={brokenImages || new Set()}
+                  onImageError={onImageError || (() => { })}
+                  onPreview={onPreview || (() => { })}
+                  designCode={designCode || product.title}
+                />
+              </div>
+            )}
+
+            {/* Actual Images */}
+            {actualImages.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Ảnh/Video Thực Tế</p>
+                <CompactGallery
+                  images={actualImages}
+                  showUpload={true}
+                  uploadOptions={uploadOptions}
+                  brokenImages={brokenImages || new Set()}
+                  onImageError={onImageError || (() => { })}
+                  onPreview={onPreview || (() => { })}
+                  designCode={designCode || product.title}
+                  onUploadSuccess={onUploadSuccess}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Side Stones */}
+          {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
+            <div className="flex items-center">
+              <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Viên Tấm</p>
+              <div className="flex flex-wrap gap-1">
+                {isBundle ? (
+                  <>
+                    {hasSideStonesNam && (
+                      <SideStoneTooltip fourView={fourViewNam as any} isExpanded={true} label="Tấm Nam" />
+                    )}
+                    {hasSideStonesNu && (
+                      <SideStoneTooltip fourView={fourViewNu as any} isExpanded={true} label="Tấm Nữ" />
+                    )}
+                  </>
+                ) : (
+                  fourView && Array.isArray(fourView) && fourView.length > 0 && (
+                    <SideStoneTooltip fourView={fourView as any} isExpanded={true} />
+                  )
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="divide-y divide-secondary-600">
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
           const variant = group.firstVariant;
           const hasSale = variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
 
           return (
-            <div
-              key={sku}
-              className={cn(
-                "grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center transition-all",
-                idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
-                "hover:bg-primary-50/50",
-                group.totalHaravanQuantity === 0 && "opacity-50 hover:opacity-80"
-              )}
-            >
-              <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 flex flex-col gap-0.5">
-                <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
-                  Barcode: {variant.barcode || "No Barcode"}
-                </p>
-              </div>
+            <div key={sku} className={cn(
+              idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
+              "hover:bg-primary-50/50 transition-all",
+              group.totalHaravanQuantity === 0 && "opacity-50 hover:opacity-80"
+            )}>
+              {/* Desktop Grid View */}
+              <div className="hidden sm:grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center">
+                <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 flex flex-col gap-0.5">
+                  <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
+                    Barcode: {variant.barcode || "No Barcode"}
+                  </p>
+                </div>
 
-              <div className="px-4 py-2 sm:py-3.5 flex items-center justify-start sm:justify-center gap-1.5 flex-wrap">
-                {variant.attributes?.fineness && (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
-                  >
-                    {variant.attributes.fineness}
-                  </Badge>
-                )}
-
-                {variant.attributes?.materialColor && (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
-                  >
-                    {variant.attributes.materialColor}
-                  </Badge>
-                )}
-
-                {variant.attributes?.ringSize !== 0 && (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
-                  >
-                    Ni {variant.attributes?.ringSize}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="px-4 py-2 sm:py-3.5 flex items-center gap-2">
-                <Badge className="rounded-full bg-secondary-800 text-white text-[10px] sm:text-[11px] font-black shadow-sm px-2 py-0.5">
-                  Haravan: {group.totalHaravanQuantity}
-                </Badge>
-                <a
-                  href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center text-[9px] sm:text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
-                >
-                  <span>Haravan</span>
-                  <ArrowSquareOut size={10} />
-                </a>
-              </div>
-
-              <div className="px-4 py-2 sm:py-3.5 text-left sm:text-right">
-                <div className="flex flex-col items-start sm:items-end gap-0.5">
-                  {hasSale && (
-                    <p className="text-[9px] sm:text-[10px] font-bold text-primary-200 line-through leading-none">
-                      {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
-                    </p>
+                <div className="px-4 py-2 sm:py-3.5 flex items-center justify-start sm:justify-center gap-1.5 flex-wrap">
+                  {variant.attributes?.fineness && (
+                    <Badge
+                      variant="outline"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                    >
+                      {variant.attributes.fineness}
+                    </Badge>
                   )}
 
-                  <p className="text-xs sm:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
-                    {formatPrice(
-                      isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
-                    )}
-                  </p>
+                  {variant.attributes?.materialColor && (
+                    <Badge
+                      variant="outline"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                    >
+                      {variant.attributes.materialColor}
+                    </Badge>
+                  )}
 
-                  {!product.showOnWebsite && (
-                    <Badge className="bg-blue-50 text-blue-500 rounded-full border-none text-[8px] font-black uppercase px-1.5 py-0 tracking-tighter">
-                      Giá tham khảo
+                  {variant.attributes?.ringSize !== 0 && (
+                    <Badge
+                      variant="outline"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                    >
+                      Ni {variant.attributes?.ringSize}
                     </Badge>
                   )}
                 </div>
+
+                <div className="px-4 py-2 sm:py-3.5 flex items-center gap-2">
+                  <Badge className="rounded-full bg-secondary-800 text-white text-[10px] sm:text-[11px] font-black shadow-sm px-2 py-0.5">
+                    Khả dụng Haravan: {group.totalHaravanQuantity}
+                  </Badge>
+                  <a
+                    href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center text-[9px] sm:text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
+                  >
+                    <span>Haravan</span>
+                    <ArrowSquareOut size={10} />
+                  </a>
+                </div>
+
+                <div className="px-4 py-2 sm:py-3.5 text-left sm:text-right">
+                  <div className="flex flex-col items-start sm:items-end gap-0.5">
+                    {hasSale && (
+                      <p className="text-[9px] sm:text-[10px] font-bold text-primary-200 line-through leading-none">
+                        {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
+                      </p>
+                    )}
+
+                    <p className="text-xs sm:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
+                      {formatPrice(
+                        isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
+                      )}
+                    </p>
+
+                    {!product.showOnWebsite && (
+                      <Badge className="bg-blue-50 text-blue-500 rounded-full border-none text-[8px] font-black uppercase px-1.5 py-0 tracking-tighter">
+                        Giá tham khảo
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div
+                  className="px-4 py-3 sm:py-3.5 flex justify-start sm:justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={group.totalQuantity === 0}
+                    className="text-[9px] sm:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
+                    onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
+                  >
+                    <span>Xem Serials</span>
+                    <span className={cn(
+                      "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
+                      group.totalQuantity === 0
+                        ? "bg-primary-50 text-primary-200"
+                        : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
+                    )}>
+                      {group.totalQuantity}
+                    </span>
+                  </Button>
+                </div>
               </div>
 
-              <div
-                className="px-4 py-3 sm:py-3.5 flex justify-start sm:justify-center"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={group.totalQuantity === 0}
-                  className="text-[9px] sm:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
-                  onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
-                >
-                  <span>Xem Serials</span>
-                  <span className={cn(
-                    "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
-                    group.totalQuantity === 0
-                      ? "bg-primary-50 text-primary-200"
-                      : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
-                  )}>
-                    {group.totalQuantity}
-                  </span>
-                </Button>
+              {/* Mobile Compact View */}
+              <div className="sm:hidden px-3 py-2.5">
+                <div className="flex flex-col gap-1.5 w-full">
+                  {/* SKU + Barcode + Price + Haravan */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
+                      <p className="text-[8px] font-bold text-primary-400 font-mono tracking-tighter">
+                        Barcode: {variant.barcode || "No Barcode"}
+                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Badge className="rounded-full bg-secondary-800 text-white text-[8px] font-black shadow-sm px-1.5 py-0">
+                          Khả dụng Haravan: {group.totalHaravanQuantity}
+                        </Badge>
+                        <a
+                          href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center text-[7px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-0.5 tracking-tight"
+                        >
+                          <span>Haravan</span>
+                          <ArrowSquareOut size={8} />
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-0.5">
+                      {hasSale && (
+                        <p className="text-[8px] font-bold text-primary-200 line-through leading-none">
+                          {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
+                        </p>
+                      )}
+                      <p className="text-[11px] font-black text-secondary-900 tracking-tight leading-none">
+                        {formatPrice(
+                          isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
+                        )}
+                      </p>
+                      {!product.showOnWebsite && (
+                        <Badge className="bg-blue-50 text-blue-500 rounded-full border-none text-[7px] font-black uppercase px-1 py-0 tracking-tighter">
+                          Giá tham khảo
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between gap-2">
+                    {/* Badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {variant.attributes?.fineness && (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-primary-100 bg-white text-secondary-900 text-[8px] font-black px-1.5 py-0 shadow-sm"
+                        >
+                          {variant.attributes.fineness}
+                        </Badge>
+                      )}
+                      {variant.attributes?.materialColor && (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-primary-100 bg-white text-secondary-900 text-[8px] font-black px-1.5 py-0 shadow-sm"
+                        >
+                          {variant.attributes.materialColor}
+                        </Badge>
+                      )}
+                      {variant.attributes?.ringSize !== 0 && (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full border-primary-100 bg-white text-secondary-900 text-[8px] font-black px-1.5 py-0 shadow-sm"
+                        >
+                          Ni {variant.attributes?.ringSize}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* View Serials Button */}
+                    <div
+                      className="flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={group.totalQuantity === 0}
+                        className="text-[8px] font-bold h-6 px-2 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1"
+                        onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
+                      >
+                        <span>Xem Serials</span>
+                        <span className={cn(
+                          "flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300",
+                          group.totalQuantity === 0
+                            ? "bg-primary-50 text-primary-200"
+                            : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
+                        )}>
+                          {group.totalQuantity}
+                        </span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           );

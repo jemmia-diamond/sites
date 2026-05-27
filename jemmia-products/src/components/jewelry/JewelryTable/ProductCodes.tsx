@@ -9,9 +9,10 @@ import { useHoverPopover } from "./hooks/useHoverPopover";
 interface ProductCodesProps {
   product: ProductModel;
   isExpanded: boolean;
+  className?: string;
 }
 
-export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
+export function ProductCodes({ product, isExpanded, className }: ProductCodesProps) {
   const { open, onEnter, onLeave } = useHoverPopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
@@ -33,10 +34,10 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
     product.products?.forEach((subProduct, idx) => {
       const code = subProduct.attributes?.designCode;
       if (code) {
-        const genderLabel = subProduct.attributes?.gender === 'Nam' 
-          ? 'Nhẫn Nam' 
-          : subProduct.attributes?.gender === 'Nữ' 
-            ? 'Nhẫn Nữ' 
+        const genderLabel = subProduct.attributes?.gender === 'Nam'
+          ? 'Nhẫn Nam'
+          : subProduct.attributes?.gender === 'Nữ'
+            ? 'Nhẫn Nữ'
             : `Nhẫn con ${idx + 1}`;
         copyableItems.push({
           code,
@@ -91,10 +92,10 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
   const shouldShowAbove = coords ? (coords.bottom + 160 > window.innerHeight) : false;
 
   return (
-    <div 
-      className="relative flex items-center justify-center" 
-      onMouseEnter={onEnter} 
-      onMouseLeave={onLeave} 
+    <div
+      className={cn("relative flex items-center justify-center", className)}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
       ref={triggerRef}
     >
       <Badge className={cn(
@@ -133,18 +134,18 @@ export function ProductCodes({ product, isExpanded }: ProductCodesProps) {
       )}
 
       {hasPopover && open && coords && createPortal(
-        <div 
+        <div
           className="fixed z-[100] pointer-events-none"
-          style={{ 
-            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`, 
+          style={{
+            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`,
             left: `${coords.left}px`,
             transform: shouldShowAbove ? "translate(-50%, -100%)" : "translate(-50%, 0)"
           }}
         >
           <div className="bg-white border border-primary-100 shadow-2xl p-1.5 flex flex-col gap-1 min-w-[180px] items-stretch animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
             {copyableItems.map((item, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="group/item flex items-center justify-between gap-3 px-2.5 py-1.5 bg-primary-50 border border-primary-100 hover:bg-primary-100/80 transition-colors cursor-pointer"
                 onClick={(e) => handleCopy(e, item.code)}
                 title={`Copy ${item.label}`}

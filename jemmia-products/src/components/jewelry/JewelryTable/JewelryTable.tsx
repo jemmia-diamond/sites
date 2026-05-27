@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ProductModel } from "../../../types";
-import { TableBody } from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -156,8 +156,8 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
   return (
     <>
       <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
-        <div className="flex-1 overflow-auto min-w-0 w-full relative">
-          <table className="w-full border-collapse">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden sm:overflow-x-auto min-w-0 w-full relative">
+          <Table className="w-full sm:min-w-[1200px] border-collapse">
             <JewelryTableHeader />
 
             <TableBody>
@@ -179,7 +179,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
                 />
               ))}
             </TableBody>
-          </table>
+          </Table>
           <div ref={lastElementRef} className="h-4 w-full" />
           {isFetchingNextPage && (
             <div className="py-6 flex justify-center items-center w-full">

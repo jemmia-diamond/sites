@@ -22,6 +22,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+  const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
     if (open && triggerRef.current) {
@@ -61,7 +62,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
           className={cn(
             "text-[11px] font-semibold leading-none transition-colors",
             isExpanded
-              ? open ? "text-secondary-900" : "text-white"
+              ? isMobile ? "text-secondary-900" : "text-white"
               : open ? "text-secondary-900" : "text-primary-400"
           )}
         >
@@ -73,17 +74,17 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
           className={cn(
             "transition-all duration-200",
             isExpanded
-              ? open ? "text-secondary-900 rotate-180" : "text-white"
+              ? "text-secondary-900"
               : open ? "text-secondary-900 rotate-180" : "text-primary-400"
           )}
         />
       </div>
 
       {open && coords && createPortal(
-        <div 
+        <div
           className="fixed z-[100] pointer-events-none"
-          style={{ 
-            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`, 
+          style={{
+            top: shouldShowAbove ? `${coords.top - 8}px` : `${coords.bottom + 8}px`,
             left: `${coords.left}px`,
             transform: shouldShowAbove ? "translate(-50%, -100%)" : "translate(-50%, 0)"
           }}
