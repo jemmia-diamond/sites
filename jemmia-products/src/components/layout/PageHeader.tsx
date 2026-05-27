@@ -41,7 +41,7 @@ export function PageHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-6 pt-2 justify-between sm:justify-end">
+      <div className="flex items-center gap-4 sm:gap-6 sm:pt-2 justify-between sm:justify-end">
         {sortOptions && (
           <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">{sortLabel}</span>
