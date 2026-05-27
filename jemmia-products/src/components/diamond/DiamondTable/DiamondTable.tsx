@@ -22,6 +22,7 @@ interface DiamondTableProps {
 export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: DiamondTableProps) {
   const queryClient = useQueryClient();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Media Preview State
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
@@ -68,23 +69,23 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: D
       if (fileName.includes('?')) {
         fileName = fileName.split('?')[0];
       }
-      
+
       if (!fileName.includes('.')) {
          const ext = (url.includes('.mp4') || url.includes('.mov')) ? 'mp4' : 'jpg'; // Basic check since isVideo is not imported here, though it might be in JewelryTable
          fileName = `media_${Date.now()}.${ext}`;
       }
 
       const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-      
+
       try {
-        const response = await fetch(cacheBusterUrl, { 
+        const response = await fetch(cacheBusterUrl, {
           method: 'GET',
           mode: 'cors',
-          cache: 'no-store' 
+          cache: 'no-store'
         });
-        
+
         if (!response.ok) throw new Error('Network response was not ok');
-        
+
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -92,7 +93,7 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: D
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
-        
+
         setTimeout(() => {
           document.body.removeChild(link);
           window.URL.revokeObjectURL(blobUrl);
@@ -124,42 +125,44 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage }: D
     queryClient.invalidateQueries({ queryKey: ["diamonds"] });
   };
 return (
-  <>
-    <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
-      <div className="flex-1 overflow-auto min-w-0 w-full relative">
-        <table className="w-full min-w-[1200px] border-collapse">
-          <TableHeader>
-            <TableRow className="border-b border-primary-100 hover:bg-transparent">
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Định danh</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình minh họa</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Kích thước</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trọng lượng</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình dạng</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Nước màu</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Độ sạch</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Huỳnh quang</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-xs font-black text-secondary-900 whitespace-nowrap">Giá (VND)</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trạng thái</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Vị trí kho</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Chứng nhận GIA</TableHead>
-              <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Haravan</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {diamonds.map((diamond) => (
-              <DiamondTableRow
-                key={diamond.id}
-                diamond={diamond}
-                onGiaPdfClick={setPreviewUrl}
-                brokenImages={brokenImages}
-                onImageError={handleImageError}
-                onPreview={handlePreview}
-                onUploadSuccess={handleUploadSuccess}
-              />
-            ))}
-          </TableBody>
-        </table>
+    <>
+      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden sm:overflow-x-auto min-w-0 w-full relative">
+          <Table className="w-full sm:min-w-[1200px] border-collapse">
+            <TableHeader className="hidden sm:table-header-group">
+              <TableRow className="border-b border-primary-100 hover:bg-transparent">
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Định danh</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình minh họa</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Kích thước</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trọng lượng</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình dạng</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Nước màu</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Độ sạch</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Huỳnh quang</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Hình thực tế</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-xs font-black text-secondary-900 whitespace-nowrap">Giá (VND)</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Trạng thái</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Vị trí kho</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Chứng nhận GIA</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-xs font-black text-secondary-900 whitespace-nowrap">Haravan</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {diamonds.map((diamond) => (
+                <DiamondTableRow
+                  key={diamond.id}
+                  diamond={diamond}
+                  isExpanded={expandedId === diamond.id}
+                  onGiaPdfClick={setPreviewUrl}
+                  brokenImages={brokenImages}
+                  onImageError={handleImageError}
+                  onPreview={handlePreview}
+                  onUploadSuccess={handleUploadSuccess}
+                  onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
+                />
+              ))}
+            </TableBody>
+          </Table>
         <div ref={lastElementRef} className="h-4 w-full" />
         {isFetchingNextPage && (
           <div className="py-6 flex justify-center items-center w-full">

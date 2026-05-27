@@ -45,7 +45,7 @@ export function CompactGallery({
   const [isSelectionDialogOpen, setIsSelectionDialogOpen] = React.useState(false);
   const [activeDesignCode, setActiveDesignCode] = React.useState<string | null>(null);
   const [activeLabel, setActiveLabel] = React.useState<string | null>(null);
-
+  const isMobile = window.innerWidth <= 768;
   const validImages = images.filter((url) => !brokenImages.has(url));
 
   const items = validImages.slice(0, displayCount);
@@ -61,7 +61,7 @@ export function CompactGallery({
     setActiveDesignCode(option.designCode);
     setActiveLabel(option.label);
     setIsSelectionDialogOpen(false);
-    
+
     setTimeout(() => {
       fileInputRef.current?.click();
     }, 100);
@@ -130,9 +130,9 @@ export function CompactGallery({
   return (
     <>
       <div className="flex items-center gap-2">
-        <div style={{ width: `${43 * displayCount}px` }}>
+        <div style={{ ...(isMobile ? {} : { width: `${43 * displayCount}px` }) }}>
           {validImages.length === 0 ? (
-            <div 
+            <div
               className="h-10 w-full border border-dashed border-primary-100 flex items-center justify-center gap-2 bg-white cursor-pointer hover:bg-primary-50/50 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
@@ -186,7 +186,7 @@ export function CompactGallery({
 
                     {idx === displayCount - 1 &&
                       totalCount > displayCount && (
-                        <div 
+                        <div
                           className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10"
                           onClick={(e) => {
                             e.stopPropagation();
