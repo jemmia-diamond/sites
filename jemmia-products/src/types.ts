@@ -137,6 +137,13 @@ export interface DiamondFilter {
   searchQuery?: string;
 }
 
+export interface DiamondHistory {
+  errors: string;
+  note: string;
+  stage: string;
+  status: string;
+}
+
 export interface DiamondAttribute {
   edgeSize1: number;
   edgeSize2: number;
@@ -155,6 +162,7 @@ export interface DiamondAttribute {
   isInComing: boolean | null;
   qty_incoming?: number;
   qty_available?: number;
+  diamondHistory?: DiamondHistory;
 }
 
 export interface DiamondModel {

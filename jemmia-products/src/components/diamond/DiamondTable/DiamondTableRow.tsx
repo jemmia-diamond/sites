@@ -70,17 +70,6 @@ export function DiamondTableRow({
           </div>
         </TableCell>
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <div className="h-8 w-8 sm:h-10 sm:w-10 mx-auto rounded-none overflow-hidden border border-primary-50 bg-white p-0.5">
-            <img
-              src={getDiamondShapeImage(diamond.attributes.shape)}
-              className="h-full w-full object-contain"
-              alt="Illustration"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </TableCell>
-
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
           <p className="text-[10px] sm:text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">
             {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
           </p>
@@ -107,6 +96,19 @@ export function DiamondTableRow({
             {diamond.attributes.fluorescence || "NONE"}
           </p>
         </TableCell>
+
+        <TableCell className="px-1 sm:px-2 py-2 text-left">
+          <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
+          </span>
+        </TableCell>
+
+        <TableCell className="px-1 sm:px-2 py-2 text-center">
+          <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight">
+            {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" ? diamond.attributes.diamondHistory.stage : ""}
+          </span>
+        </TableCell>
+
         <TableCell className="px-1 sm:px-2 py-2 text-center">
           <div className="flex justify-center">
             <CompactGallery
@@ -314,7 +316,7 @@ export function DiamondTableRow({
       {/* Expanded Panel */}
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <TableCell colSpan={14} className="p-0">
+          <TableCell colSpan={15} className="p-0">
             <div className="px-3 py-2 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200 space-y-1">
               {/* Row 1: Identification + Illustration + Shape */}
               <div className="flex items-center gap-3">

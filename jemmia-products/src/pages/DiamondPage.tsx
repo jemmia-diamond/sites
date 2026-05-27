@@ -61,7 +61,6 @@ export default function DiamondPage() {
     const { page, ...restFilters } = newFilters;
     const updated = { ...filters, ...restFilters };
     setFilters(updated);
-    if (window.innerWidth < 1024) setIsFilterOpen(false);
   };
 
   const handleRemoveChip = (key: string) => {

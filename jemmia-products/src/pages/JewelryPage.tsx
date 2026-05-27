@@ -164,10 +164,7 @@ export default function JewelryPage() {
         {!searchQueryParam && (
           <div className="h-full relative flex flex-col">
             <JewelryFilterSidebar
-              onApply={(f) => {
-                handleApplyFilters(f);
-                if (window.innerWidth < 1024) setIsFilterOpen(false);
-              }}
+              onApply={handleApplyFilters}
               currentFilters={filters as JewelryFilter}
               onClose={() => setIsFilterOpen(false)}
               onChipsChange={setActiveChips}

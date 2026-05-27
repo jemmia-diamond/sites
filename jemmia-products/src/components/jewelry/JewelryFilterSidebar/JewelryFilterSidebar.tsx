@@ -151,10 +151,10 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
         return `${newPrefix} - ${title}`;
       });
 
-      return { 
-        ...prev, 
-        type: typeId, 
-        ringHeadStyles: updatedHeadStyles 
+      return {
+        ...prev,
+        type: typeId,
+        ringHeadStyles: updatedHeadStyles
       };
     });
   };
@@ -317,12 +317,12 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
   const isRingType = selectedType?.name.toLowerCase().includes("nhẫn") || false;
 
   return (
-    <aside className="w-full lg:w-80 h-full border-r border-primary-100 bg-white flex flex-col pt-5 overflow-y-auto no-scrollbar">
-      <div className="px-6 lg:px-8 mb-6 flex items-center justify-between">
+    <aside className="w-full lg:w-80 h-full border-r border-primary-100 bg-white flex flex-col overflow-y-auto no-scrollbar">
+      <div className="px-6 lg:px-8 mb-6 flex items-center justify-between sticky top-0 bg-white z-10 py-4 border-b border-primary-50">
         <div>
           <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">BỘ LỌC</h2>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -339,27 +339,27 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
         </div>
       </div>
 
-      {appliedChips.length > 0 && (
-        <div className="px-6 lg:px-8 mb-4 flex flex-wrap gap-2">
-          {appliedChips.map((chip) => (
-            <Badge
-              key={chip.key}
-              variant="default"
-              className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
-            >
-              <span className="text-xs font-medium">{chip.label}</span>
-              <button
-                onClick={() => removeChip(chip.key)}
-                className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
-
       <div className="flex-1 px-6 lg:px-8 space-y-9 pb-20">
+        {appliedChips.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {appliedChips.map((chip) => (
+              <Badge
+                key={chip.key}
+                variant="default"
+                className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
+              >
+                <span className="text-xs font-medium">{chip.label}</span>
+                <button
+                  onClick={() => removeChip(chip.key)}
+                  className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+
         <FilterSection label="KHOẢNG GIÁ">
           <PriceRangeFilter
             filters={filters}
@@ -428,6 +428,15 @@ export function JewelryFilterSidebar({ onApply, currentFilters, onClose, onChips
             />
           </FilterSection>
         )}
+      </div>
+
+      <div className="lg:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
+        <Button
+          onClick={onClose}
+          className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
+        >
+          Áp dụng
+        </Button>
       </div>
     </aside>
   );
