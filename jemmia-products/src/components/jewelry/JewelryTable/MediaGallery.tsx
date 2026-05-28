@@ -15,6 +15,7 @@ import {
   PlayCircle,
   DownloadSimple,
   Checks,
+  Copy,
 } from "@phosphor-icons/react";
 import axios from "axios";
 import JSZip from "jszip";
@@ -54,12 +55,71 @@ export function MediaGallery({
   const [activeDesignCode, setActiveDesignCode] = useState<string | null>(null);
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const [selectedMediaUrls, setSelectedMediaUrls] = useState<string[]>([]);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [copyingUrl, setCopyingUrl] = useState<string | null>(null);
 
   const handleToggleSelect = (url: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setSelectedMediaUrls(prev =>
       prev.includes(url) ? prev.filter(u => u !== url) : [...prev, url]
     );
+  };
+
+  const handleCopyImage = async (url: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCopyingUrl(url);
+    try {
+      const isVid = isVideo(url);
+
+      if (isVid) {
+        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+        const response = await fetch(cacheBusterUrl, { mode: 'cors', cache: 'no-store' });
+        const blob = await response.blob();
+
+        try {
+          const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+          await navigator.clipboard.write([clipboardItem]);
+        } catch {
+          await navigator.clipboard.writeText(cacheBusterUrl);
+        }
+      } else {
+        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+        const response = await fetch(cacheBusterUrl, { mode: 'cors', cache: 'no-store' });
+        const blob = await response.blob();
+
+        let clipboardBlob = blob;
+        if (blob.type !== 'image/png') {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = URL.createObjectURL(blob);
+          });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(img.src);
+
+          clipboardBlob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas toBlob failed')), 'image/png');
+          });
+        }
+
+        const clipboardItem = new ClipboardItem({ 'image/png': clipboardBlob });
+        await navigator.clipboard.write([clipboardItem]);
+      }
+
+      setCopiedUrl(url);
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    } finally {
+      setCopyingUrl(null);
+    }
   };
 
   const handleToggleSelectAll = () => {
@@ -354,6 +414,22 @@ export function MediaGallery({
                         <Eye size={20} lg:size={24} className="text-white" />
                       )}
                     </div>
+                    {!isVid && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCopyImage(url, e); }}
+                        disabled={copyingUrl === url}
+                        className="absolute bottom-2 right-2 lg:bottom-3 lg:right-3 h-8 w-8 lg:h-9 lg:w-9 bg-white/20 rounded-full flex items-center justify-center border border-white/30 hover:bg-white hover:border-transparent z-30 transition-colors duration-200 group/copy disabled:opacity-50"
+                        title="Copy image"
+                      >
+                        {copyingUrl === url ? (
+                          <CircleNotch size={16} lg:size={18} className="text-white animate-spin group-hover/copy:text-secondary-900" />
+                        ) : copiedUrl === url ? (
+                          <Checks size={16} lg:size={18} className="text-green-400" />
+                        ) : (
+                          <Copy size={16} lg:size={18} className="text-white group-hover/copy:text-secondary-900" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
