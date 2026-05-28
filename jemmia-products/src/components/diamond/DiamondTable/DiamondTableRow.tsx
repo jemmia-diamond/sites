@@ -98,15 +98,16 @@ export function DiamondTableRow({
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-left">
-          <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
-            {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
-          </span>
-        </TableCell>
-
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight">
-            {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" ? diamond.attributes.diamondHistory.stage : ""}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+              {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
+            </span>
+            {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
+              <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight">
+                {diamond.attributes.diamondHistory.stage}
+              </span>
+            )}
+          </div>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
@@ -372,23 +373,14 @@ export function DiamondTableRow({
                 </a>
               </div>
               {/* Row 2: Diamond History */}
-              {diamond.attributes.diamondHistory?.errors && (
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[8px] font-bold text-primary-300 tracking-wider">Ghi chú:</span>
-                    <span className="text-[8px] font-bold text-secondary-900">
-                      {diamond.attributes.diamondHistory.errors}
-                      {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
-                    </span>
-                  </div>
-                  {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[8px] font-bold text-primary-300 tracking-wider">Kiểm định:</span>
-                      <span className="text-[9px] font-bold text-emerald-600">
-                        {diamond.attributes.diamondHistory.stage}
-                      </span>
-                    </div>
-                  )}
+              {diamond.attributes.diamondHistory  && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[8px] font-bold text-primary-300 tracking-wider">Ghi chú:</span>
+                  <span className="text-[8px] font-bold text-secondary-900">
+                    {diamond.attributes.diamondHistory.errors}
+                    {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
+                    {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && `${diamond.attributes.diamondHistory.stage}`}
+                  </span>
                 </div>
               )}
               {/* Actual Images */}

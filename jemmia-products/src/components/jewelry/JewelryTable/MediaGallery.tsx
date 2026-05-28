@@ -414,23 +414,23 @@ export function MediaGallery({
                         <Eye size={20} lg:size={24} className="text-white" />
                       )}
                     </div>
-                    {!isVid && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleCopyImage(url, e); }}
-                        disabled={copyingUrl === url}
-                        className="absolute bottom-2 right-2 lg:bottom-3 lg:right-3 h-8 w-8 lg:h-9 lg:w-9 bg-white/20 rounded-full flex items-center justify-center border border-white/30 hover:bg-white hover:border-transparent z-30 transition-colors duration-200 group/copy disabled:opacity-50"
-                        title="Copy image"
-                      >
-                        {copyingUrl === url ? (
-                          <CircleNotch size={16} lg:size={18} className="text-white animate-spin group-hover/copy:text-secondary-900" />
-                        ) : copiedUrl === url ? (
-                          <Checks size={16} lg:size={18} className="text-green-400" />
-                        ) : (
-                          <Copy size={16} lg:size={18} className="text-white group-hover/copy:text-secondary-900" />
-                        )}
-                      </button>
-                    )}
                   </div>
+                  {!isVid && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCopyImage(url, e); }}
+                      disabled={copyingUrl === url}
+                      className="absolute bottom-2 right-2 lg:bottom-3 lg:right-3 h-8 w-8 lg:h-9 lg:w-9 bg-white/90 hover:bg-secondary-900 rounded-full flex items-center justify-center border border-primary-200 hover:border-transparent z-30 transition-colors duration-200 group/copy disabled:opacity-50 shadow-sm"
+                      title="Copy image"
+                    >
+                      {copyingUrl === url ? (
+                        <CircleNotch size={16} lg:size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
+                      ) : copiedUrl === url ? (
+                        <Checks size={16} lg:size={18} className="text-green-600" />
+                      ) : (
+                        <Copy size={16} lg:size={18} className="text-secondary-900 group-hover/copy:text-white" />
+                      )}
+                    </button>
+                  )}
                 </div>
               );
             })}
