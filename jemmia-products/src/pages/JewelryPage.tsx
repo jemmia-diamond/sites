@@ -157,8 +157,8 @@ export default function JewelryPage() {
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
       <div className={cn(
-        "fixed inset-0 z-[60] lg:relative lg:inset-auto bg-white lg:bg-transparent transition-transform duration-300 lg:translate-x-0",
-        isFilterOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-transform duration-300 lg:translate-x-0",
+        isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
         "w-full lg:w-auto h-full"
       )}>
         {!searchQueryParam && (

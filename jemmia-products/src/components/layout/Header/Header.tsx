@@ -1,9 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { MagnifyingGlass, List, X } from "@phosphor-icons/react";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { ProductModel, PaginateResponse } from "../../../types";
 import { NavLinks } from "./NavLinks";
 import { SearchDropdown } from "./SearchDropdown";
@@ -28,7 +25,6 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleClearSearch = () => {
@@ -65,28 +61,21 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   }, [query]);
 
   return (
-    <header className="h-12 border-b border-primary-50 bg-white/80 backdrop-blur-md sticky top-0 z-50 flex items-center px-4 md:px-10 gap-4 md:gap-16 transition-all duration-300">
-      <button 
-        className="md:hidden p-2 text-primary-900 -ml-2"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        {isMobileMenuOpen ? <X size={20} weight="bold" /> : <List size={20} weight="bold" />}
-      </button>
-
-      <Link to="/" className="flex-shrink-0">
+    <header className="h-12 border-b border-primary-50 bg-white/80 backdrop-blur-md sticky top-0 z-50 flex items-center px-4 lg:px-10 gap-4 lg:gap-16 transition-all duration-300">
+      <Link to="/" className="flex-shrink-0 mx-auto lg:mx-0">
         <img
           src="https://file.hstatic.net/200000355853/file/logo.svg"
           alt="Jemmia Logo"
-          className="h-5 md:h-7 w-auto"
+          className="h-5 lg:h-7 w-auto"
           referrerPolicy="no-referrer"
         />
       </Link>
 
-      <div className="hidden md:flex h-full">
+      <div className="hidden lg:flex h-full">
         <NavLinks items={NAV_ITEMS} />
       </div>
 
-      <div className="flex-1 flex justify-end">
+      <div className="hidden lg:flex flex-1 justify-end">
         <SearchDropdown
           query={query}
           isLoading={isLoading}
@@ -97,16 +86,6 @@ export function Header({ searchPlaceholder }: HeaderProps) {
           searchPlaceholder={searchPlaceholder}
         />
       </div>
-
-      {isMobileMenuOpen && (
-        <div className="absolute top-12 left-0 w-full bg-white border-b border-primary-50 p-6 flex flex-col gap-6 md:hidden z-50 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
-          <NavLinks 
-            items={NAV_ITEMS} 
-            isMobile 
-            onClose={() => setIsMobileMenuOpen(false)} 
-          />
-        </div>
-      )}
     </header>
   );
 }
