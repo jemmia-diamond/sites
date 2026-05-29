@@ -34,8 +34,8 @@ export function PageHeader({
       <div className="flex items-center gap-4">
         {headerStart && <div>{headerStart}</div>}
         <div className="space-y-0">
-          <h1 className="text-lg md:text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
-          <div className="text-sm text-gray-500 max-w-2xl leading-relaxed font-medium">
+          <h1 className="text-lg md:text-2xl font-bold tracking-tight text-primary-900">{title}</h1>
+          <div className="text-sm text-primary-500 max-w-2xl leading-relaxed font-medium">
             {description}
           </div>
         </div>
@@ -44,9 +44,9 @@ export function PageHeader({
       <div className="flex items-center gap-4 sm:gap-6 sm:pt-2 justify-between sm:justify-end">
         {sortOptions && (
           <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">{sortLabel}</span>
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-widest pl-1">{sortLabel}</span>
             <Select defaultValue={defaultSort} onValueChange={onSortChange}>
-              <SelectTrigger className="w-full sm:w-[200px] bg-white border border-gray-200 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-[#002B2B]">
+              <SelectTrigger className="w-full sm:w-[200px] bg-white border border-primary-100 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-secondary-900">
                 <SelectValue placeholder={sortLabel} />
               </SelectTrigger>
               <SelectContent>

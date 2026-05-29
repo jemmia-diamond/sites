@@ -397,7 +397,7 @@ export function JewelryTableRow({
         <TableCell className="px-3 py-2">
           <div className="flex items-center gap-3 w-full">
             {/* Image or Placeholder */}
-            <div className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-gray-50 flex items-center justify-center">
+            <div className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center">
               {firstImage ? (
                 <img
                   src={firstImage}

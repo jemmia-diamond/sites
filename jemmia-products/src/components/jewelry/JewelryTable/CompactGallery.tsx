@@ -210,7 +210,7 @@ export function CompactGallery({
             variant="ghost"
             size="icon"
             disabled={uploading}
-            className="h-6 w-6 shrink-0 bg-slate-50 text-primary-300 hover:text-secondary-900 hover:bg-secondary-50 rounded-full"
+            className="h-6 w-6 shrink-0 bg-primary-50 text-primary-300 hover:text-secondary-900 hover:bg-secondary-100/50 rounded-full"
             onClick={(e) => {
               e.stopPropagation();
               if (uploadOptions && uploadOptions.length > 1) {

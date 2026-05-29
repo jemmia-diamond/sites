@@ -127,7 +127,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       product: jewelry,
       variant: variant,
       image: jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url,
-      title: `${jewelry.type || ""} ${isMobile ? "" : "-"} ${jewelry.attributes?.designCode || ""}`.trim(),
+      title: `${jewelry.attributes?.designCode || ""}`.trim(),
       sku: variant?.sku,
       barcode: variant?.barcode,
       price: jewelryPrice,
@@ -152,14 +152,22 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
 
   return (
     <>
-      <div className="border border-gray-200 bg-white flex flex-col overflow-hidden">
+      <div
+        className={cn(
+          "border border-primary-100 bg-white flex flex-col overflow-hidden transition-colors duration-200 select-none",
+          isMobile && "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30"
+        )}
+        onClick={() => {
+          if (isMobile) setDetailsOpen(true);
+        }}
+      >
         {products.map((product, idx) => (
           <div key={idx} className={cn(
             "flex items-center p-2 sm:p-4",
-            idx !== products.length - 1 && "border-b border-gray-100"
+            idx !== products.length - 1 && "border-b border-primary-50"
           )}>
             {/* Product thumbnail */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 border border-primary-100 overflow-hidden bg-primary-50/40 flex items-center justify-center">
               {product.image ? (
                 <img
                   src={product.image}
@@ -175,101 +183,108 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
 
             {/* Product info */}
             <div className="flex-1 ml-2 sm:ml-3 min-w-0">
-              <div className="font-bold text-sm text-gray-900 leading-tight flex items-center gap-2">
+              <div className="font-medium text-xs text-primary-900 leading-tight flex items-center gap-2">
                 {product.title}
               </div>
 
               {/* Additional info - only visible on desktop */}
-              <div className="mt-1 hidden sm:grid sm:grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+              <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
                 {product.sku && (
-                  <div className="text-gray-500">
-                    SKU: <span className="text-gray-700">{product.sku}</span>
+                  <div className="text-primary-400">
+                    SKU: <span className="text-primary-700 font-semibold">{product.sku}</span>
                   </div>
                 )}
                 {product.barcode && (
-                  <div className="text-gray-500">
-                    Barcode: <span className="text-gray-700">{product.barcode}</span>
+                  <div className="text-primary-400">
+                    Barcode: <span className="text-primary-700 font-semibold">{product.barcode}</span>
                   </div>
                 )}
                 {product.type === 'jewelry' ? (
                   <>
                     {product.variant?.attributes?.serialNumber && (
-                      <div className="text-gray-500">
-                        Serial: <span className="text-gray-700">{product.variant.attributes.serialNumber}</span>
+                      <div className="text-primary-400">
+                        Serial: <span className="text-primary-700 font-semibold">{product.variant.attributes.serialNumber}</span>
                       </div>
                     )}
                     {product.variant?.attributes?.ringSize && (
-                      <div className="text-gray-500">
-                        Ni nhẫn: <span className="text-gray-700">{product.variant.attributes.ringSize}</span>
+                      <div className="text-primary-400">
+                        Ni nhẫn: <span className="text-primary-700 font-semibold">{product.variant.attributes.ringSize}</span>
                       </div>
                     )}
                     {product.variant?.attributes?.fineness && (
-                      <div className="text-gray-500">
-                        Chất liệu: <span className="text-gray-700">{product.variant.attributes.fineness}</span>
+                      <div className="text-primary-400">
+                        Chất liệu: <span className="text-primary-700 font-semibold">{product.variant.attributes.fineness}</span>
                       </div>
                     )}
-                    <div className="text-gray-500">
-                      TL vàng: <span className="text-gray-700">{formatGoldWeight(product.variant?.attributes?.serialNumber?.goldWeight || product.variant?.attributes?.goldWeight)}</span>
+                    <div className="text-primary-400">
+                      TL vàng: <span className="text-primary-700 font-semibold">{formatGoldWeight(product.variant?.attributes?.serialNumber?.goldWeight || product.variant?.attributes?.goldWeight)}</span>
                     </div>
                     {product.variant?.stockAt && (
-                      <div className="text-gray-500 col-span-2">
-                        Kho: <span className="text-gray-700">{product.variant.stockAt}</span>
+                      <div className="text-primary-400 col-span-2">
+                        Kho: <span className="text-primary-700 font-semibold">{product.variant.stockAt}</span>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
-                    <div className="text-gray-500">
-                      Kích thước: <span className="text-gray-700">{product.product.attributes?.edgeSize1 ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ''}` : ''}</span>
+                    <div className="text-primary-400">
+                      Kích thước: <span className="text-primary-700 font-semibold">{product.product.attributes?.edgeSize1 ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ''}` : ''}</span>
                     </div>
-                    <div className="text-gray-500">
-                      Thông số 4Cs: <span className="text-gray-700">{product.product.attributes.color} - {product.product.attributes.clarity} - {product.product.attributes.carat}ct - {product.product.attributes.fluorescence}</span>
+                    <div className="text-primary-400">
+                      Thông số 4Cs: <span className="text-primary-700 font-semibold">{product.product.attributes.color} - {product.product.attributes.clarity} - {product.product.attributes.carat}ct - {product.product.attributes.fluorescence}</span>
                     </div>
                     {product.product.warehouses?.[0]?.name && (
-                      <div className="text-gray-500 col-span-2">
-                        Kho: <span className="text-gray-700">{product.product.warehouses[0].name}</span>
+                      <div className="text-primary-400 col-span-2">
+                        Kho: <span className="text-primary-700 font-semibold">{product.product.warehouses[0].name}</span>
                       </div>
                     )}
                   </>
                 )}
               </div>
+
+              {/* Mobile-only info (for diamond: 4Cs & size) */}
+              {isMobile && product.type === "diamond" && (
+                <div className="mt-1 flex flex-col gap-0.5 text-[10px] text-primary-500 leading-tight">
+                  <div>
+                    <span className="font-semibold text-primary-700">{product.product.attributes?.edgeSize1 ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ''}` : '—'} - {[product.product.attributes.color, product.product.attributes.clarity, product.product.attributes.carat ? `${product.product.attributes.carat}ct` : '', product.product.attributes.fluorescence].filter(Boolean).join(" - ")}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile-only info (for jewelry: Ni, Vàng, TL vàng) */}
+              {isMobile && product.type === "jewelry" && (
+                <div className="mt-1 flex flex-col gap-0.5 text-[10px] text-primary-500 leading-tight">
+                  {product.variant?.attributes?.fineness && (
+                    <div className="font-semibold text-primary-700">
+                      Ni {product.variant.attributes.ringSize} - {product.variant.attributes.fineness} - {formatGoldWeight(product.variant?.attributes?.serialNumber?.goldWeight || product.variant?.attributes?.goldWeight)}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Price */}
             <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
               {product.originalPrice > product.price && (
-                <div className="text-[10px] sm:text-xs text-gray-400 line-through truncate w-full text-right">
+                <div className="text-[10px] sm:text-xs text-primary-300 line-through truncate w-full text-right">
                   {formatPrice(product.originalPrice)}
                 </div>
               )}
-              <div className="text-sm font-bold text-gray-900">
+              <div className="text-sm font-medium text-primary-900">
                 {formatPrice(product.price)}
               </div>
             </div>
           </div>
         ))}
 
-        {isMobile && (
-          <div className="px-2 pb-1 sm:hidden border-b border-gray-100">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-8 text-[11px] font-bold text-secondary-900 hover:bg-primary-50"
-              onClick={() => setDetailsOpen(true)}
-            >
-              Xem chi tiết
-            </Button>
-          </div>
-        )}
-
         {/* Total section */}
-        <div className="flex justify-between items-center px-3 py-2 border-t border-gray-100">
-          <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">TỔNG CỘNG</span>
+        <div className="flex justify-between items-center px-3 py-2 border-t border-primary-50">
+          <span className="text-xs font-medium text-primary-400 uppercase">TỔNG CỘNG</span>
           <div className="flex flex-col items-end">
-            <div className="text-[10px] text-gray-400 line-through">
+            <div className="text-[10px] text-primary-300 line-through">
               {formatPrice(totalBasePrice)}
             </div>
-            <span className="text-sm font-bold text-gray-900">
+            <span className="text-sm font-medium text-primary-900">
               {formatPrice(totalSalePrice)}
             </span>
           </div>
@@ -325,7 +340,7 @@ function CompactPrice({
       {showStrike && (
         <div className="text-[10px] text-primary-300 line-through leading-none">{formatPrice(base!)}</div>
       )}
-      <div className={cn("text-xs font-bold text-secondary-900 leading-tight", className)}>{formatPrice(sale)}</div>
+      <div className={cn("text-xs font-medium text-secondary-900 leading-tight", className)}>{formatPrice(sale)}</div>
     </div>
   );
 }
@@ -371,8 +386,8 @@ function ComboDetailsSheetContent({
           </div>
           <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
             <div className="min-w-0">
-              <p className="text-[9px] font-bold text-primary-400 uppercase tracking-wider">Nhẫn</p>
-              <p className="text-[12px] font-bold text-secondary-900 truncate leading-tight">
+              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">Nhẫn</p>
+              <p className="text-[12px] font-medium text-secondary-900 truncate leading-tight">
                 {[jewelry.type, jewelry.attributes?.designCode].filter(Boolean).join(" · ") || "—"}
               </p>
             </div>
@@ -410,8 +425,8 @@ function ComboDetailsSheetContent({
           </div>
           <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
             <div className="min-w-0">
-              <p className="text-[9px] font-bold text-primary-400 uppercase tracking-wider">Kim cương</p>
-              <p className="text-[12px] font-bold text-secondary-900 truncate leading-tight">
+              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">Kim cương</p>
+              <p className="text-[12px] font-medium text-secondary-900 truncate leading-tight">
                 GIA {d?.giaId || "—"}
                 {d?.shape ? ` · ${d.shape}` : ""}
               </p>
@@ -429,7 +444,7 @@ function ComboDetailsSheetContent({
 
       {/* Tổng */}
       <div className="flex justify-between items-center py-2 px-1">
-        <span className="text-[10px] font-bold text-primary-400 uppercase tracking-wider">Tổng cộng</span>
+        <span className="text-[10px] font-medium text-primary-400 uppercase tracking-wider">Tổng cộng</span>
         <CompactPrice className="text-sm" sale={totalSalePrice} base={totalBasePrice} formatPrice={formatPrice} />
       </div>
     </div>

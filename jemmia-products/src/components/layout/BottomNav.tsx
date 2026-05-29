@@ -40,7 +40,7 @@ export function BottomNav() {
                 "text-xs tracking-wide transition-all duration-300",
                 isActive
                   ? "text-secondary-900 font-bold"
-                  : "text-slate-500 font-medium"
+                  : "text-primary-400 font-medium"
               )}
             >
               {item.name}

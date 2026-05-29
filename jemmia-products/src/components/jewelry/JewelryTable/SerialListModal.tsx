@@ -142,7 +142,7 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
   return (
     <div className="hidden sm:block">
       <div className="min-w-[800px]">
-        <div className="flex items-center px-8 py-3 border-b border-gray-100 bg-gray-50/30">
+        <div className="flex items-center px-8 py-3 border-b border-primary-100 bg-primary-50/20">
           <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider">Serial</span>
           <span className="w-[160px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Vị trí kho</span>
           <span className="w-[130px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Trọng lượng vàng</span>
@@ -150,7 +150,7 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
           <span className="flex-1 text-center text-[10px] font-bold text-primary-300 uppercase tracking-wider">Chính sách</span>
           <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-right">Thời gian Quét kho</span>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-primary-50">
           {activeSerials.length > 0 ? (
             activeSerials.map((v, index) => (
               <div
@@ -339,7 +339,7 @@ export function SerialListModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[95%] sm:w-full sm:max-w-[900px] gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none flex flex-col max-h-[90vh] sm:max-h-[75vh]">
-        <DialogHeader className="px-4 sm:px-8 py-3 sm:py-4 border-b border-gray-200 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
+        <DialogHeader className="px-4 sm:px-8 py-3 sm:py-4 border-b border-primary-100 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
           <DialogTitle className="text-sm sm:text-[16px] flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center font-bold tracking-tight text-secondary-900 flex-1">
             <span>DANH SÁCH SERIALS</span>
             <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} />

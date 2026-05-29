@@ -56,7 +56,7 @@ export function CaratRangeFilter({
             step="0.01"
             min="0"
             placeholder="0"
-            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
+            className="h-9 text-xs font-bold bg-primary-50/30 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
             value={filters.caratFrom ?? ""}
             onChange={(e) => handleMinChange(e.target.value)}
           />
@@ -64,7 +64,7 @@ export function CaratRangeFilter({
         </div>
       </div>
 
-      <div className="pt-6 font-bold text-gray-300">-</div>
+      <div className="pt-6 font-bold text-primary-200">-</div>
 
       <div className="flex-1 space-y-1.5">
         <span className="text-[9px] text-primary-300 font-black uppercase tracking-widest pl-1">Tối đa</span>
@@ -74,7 +74,7 @@ export function CaratRangeFilter({
             step="0.01"
             min="0"
             placeholder="∞"
-            className="h-9 text-xs font-bold bg-gray-50/50 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
+            className="h-9 text-xs font-bold bg-primary-50/30 border-primary-100 rounded-none focus-visible:ring-1 focus-visible:ring-secondary-500 pr-9 placeholder:text-primary-200"
             value={filters.caratTo ?? ""}
             onChange={(e) => handleMaxChange(e.target.value)}
           />

@@ -9,7 +9,7 @@ import { SizeFilter } from "./SizeFilter";
 import { StockStatusFilter } from "./StockStatusFilter";
 import { WarehouseFilter } from "./WarehouseFilter";
 import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
-import { Filter, X } from "lucide-react";
+import { Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DiamondFilterSidebarProps {
   onApply: (filters: DiamondFilter) => void;
@@ -293,7 +293,7 @@ export function DiamondFilterSidebar({
   useEffect(() => {
     if (currentFilters) {
       setFilters(currentFilters);
-      
+
       // On mobile, update the parent's chips only when currentFilters changes (which means filters were applied)!
       if (window.innerWidth < 1024) {
         const chips = buildChips(currentFilters);
@@ -336,7 +336,7 @@ export function DiamondFilterSidebar({
       };
       next = { ...filters, [key]: getResetValue(key) };
     }
-    
+
     setFilters(next);
     if (window.innerWidth >= 1024) {
       applyFilters(next);
@@ -347,15 +347,15 @@ export function DiamondFilterSidebar({
     <div className="flex h-full">
       {/* GIAO DIỆN KHI BỊ ẨN (CHỈ HIỂN THỊ TRÊN DESKTOP) */}
       {isCollapsed && (
-        <aside className="hidden lg:flex w-16 h-full border-r border-primary-100 bg-white flex-col items-center py-6 justify-between sticky top-0">
+        <aside className="hidden lg:flex w-16 h-full border-r border-primary-100 bg-white flex-col items-center sticky top-0 shrink-0">
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="icon"
             onClick={onToggleCollapse}
-            className="h-auto p-2 writing-mode-vertical text-[11px] font-black text-secondary-900 hover:bg-primary-50 tracking-widest uppercase transition-all duration-300 flex items-center gap-2"
-            style={{ writingMode: "vertical-lr" }}
+            className="h-9 w-9 rounded-full border-primary-200 hover:bg-primary-50 flex items-center justify-center cursor-pointer shadow-sm text-secondary-900 transition-all duration-300 mt-4"
+            title="Hiển thị bộ lọc"
           >
-            <Filter size={16} />
+            <ChevronRight size={18} />
           </Button>
         </aside>
       )}
@@ -365,63 +365,72 @@ export function DiamondFilterSidebar({
           isCollapsed ? "lg:hidden" : "flex"
         }`}
       >
-        <div className="px-6 lg:px-8 mb-6 flex items-center justify-between sticky top-0 bg-white z-10 py-4 border-b border-primary-50">
-          <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">
-            Bộ lọc
-          </h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent tracking-wider uppercase"
-            >
-              Xóa bộ lọc
-            </Button>
-            {onToggleCollapse && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onToggleCollapse}
-                className="hidden lg:inline-flex h-8 px-3 text-[10px] font-bold uppercase tracking-wider border-primary-200"
-              >
-                Ẩn bộ lọc
-              </Button>
-            )}
-            {onClose && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8 lg:hidden -mr-2 text-primary-900"
-              >
-                <X size={18} />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 px-6 lg:px-8 space-y-9 pb-6">
-          {/* ... Giữ nguyên toàn bộ các thẻ <FilterSection> bên trong ... */}
-          {appliedChips.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {appliedChips.map((chip) => (
-                <Badge
-                  key={chip.key}
-                  variant="default"
-                  className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
+        {/* Sticky Header & Active Chips Block */}
+        <div className="sticky top-0 bg-white z-30 border-b border-primary-50 shrink-0">
+          <div className="px-6 lg:px-8 flex items-center justify-between py-4">
+            <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">
+              Bộ lọc
+            </h2>
+            <div className="flex items-center gap-2">
+              {onToggleCollapse && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={onToggleCollapse}
+                  className="hidden lg:inline-flex h-8 w-8 text-secondary-900 border-primary-200 hover:bg-primary-50 cursor-pointer rounded-full items-center justify-center"
+                  title="Ẩn bộ lọc"
                 >
-                  <span className="text-xs font-medium">{chip.label}</span>
-                  <button
-                    onClick={() => removeChip(chip.key)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                  <ChevronLeft size={16} />
+                </Button>
+              )}
+              {onClose && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="h-8 w-8 lg:hidden -mr-2 text-primary-900 cursor-pointer rounded-full items-center justify-center"
+                >
+                  <X size={18} />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Active Chips & Clear Filters Block inside the same sticky container */}
+          {appliedChips.length > 0 && (
+            <div className="px-6 lg:px-8 pb-4 flex flex-col gap-2 animate-in fade-in duration-200">
+              <div className="flex items-center justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClear}
+                  className="h-auto p-0 text-[9px] font-black text-blue-500 hover:text-blue-600 hover:bg-transparent tracking-wider uppercase cursor-pointer"
+                >
+                  Xóa bộ lọc
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-[88px] overflow-y-auto pr-1 no-scrollbar">
+                {appliedChips.map((chip) => (
+                  <Badge
+                    key={chip.key}
+                    variant="secondary"
+                    className="rounded-none bg-primary-50 text-secondary-900 border-none px-2 py-0.5 flex items-center shadow-sm text-[10px] font-medium"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
+                    <span>{chip.label}</span>
+                    <button
+                      onClick={() => removeChip(chip.key)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
+        </div>
+
+        <div className="flex-1 px-6 lg:px-8 space-y-9 py-6">
 
           <FilterSection label="KHOẢNG GIÁ">
             <PriceRangeFilter
