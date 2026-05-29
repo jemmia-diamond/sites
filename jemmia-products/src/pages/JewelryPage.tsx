@@ -204,9 +204,9 @@ export default function JewelryPage() {
         </>
       )}
 
-      <main className="flex-1 flex flex-col md:gap-4 bg-white px-4 xl:px-6 pt-4 pb-6 w-full max-w-full min-w-0 xl:overflow-hidden min-h-0">
-        <div className="flex justify-between gap-4">
-          <div className="flex-shrink-0">
+      <main className="flex-1 flex flex-col md:gap-2 xl:gap-4 bg-white px-4 xl:px-6 pt-4 md:pt-0 xl:pt-4 pb-6 w-full max-w-full min-w-0 xl:overflow-hidden min-h-0">
+        <div className="sticky top-12 xl:top-0 z-51 w-full bg-white flex justify-between gap-4 py-2">
+          <div className="flex-shrink-0 xl:w-full">
             <PageHeader
               title={
                 debouncedFilters.designCode

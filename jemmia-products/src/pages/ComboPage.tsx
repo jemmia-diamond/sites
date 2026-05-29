@@ -45,7 +45,7 @@ export default function ComboPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className="flex flex-col xl:h-full bg-white w-full px-4 xl:px-6 pt-4 pb-6 gap-2 min-w-0 xl:overflow-hidden min-h-0">
+      <div className="flex flex-col xl:h-full bg-white w-full px-4 xl:px-6 pt-4 md:pt-2 xl:pt-4 pb-6 gap-4 min-w-0 xl:overflow-hidden min-h-0">
         <PageHeader
           title="Sản phẩm nguyên chiếc"
           description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}

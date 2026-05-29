@@ -20,7 +20,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="xl:hidden fixed bottom-0 left-0 right-0 h-12 bg-white border-t border-primary-50 flex items-center justify-around z-[55] shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-12 bg-white border-t border-primary-50 flex items-center justify-around z-[55] shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
 
