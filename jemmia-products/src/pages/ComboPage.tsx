@@ -7,6 +7,7 @@ import { PageHeader } from "../components/layout/PageHeader";
 
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DiamondModel, ProductModel } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -53,8 +54,60 @@ export default function ComboPage() {
         <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full overflow-hidden">
           <div className="flex-1 overflow-y-auto min-w-0 w-full">
             {isLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <p className="text-primary-300 text-xs">Đang tải dữ liệu...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm">
+                    {/* Item 1: Jewelry Skeleton */}
+                    <div className="flex items-center p-2 sm:p-4 border-b border-primary-50">
+                      <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100/50 flex-shrink-0" />
+                      <div className="flex-1 ml-2 sm:ml-3 min-w-0">
+                        <Skeleton className="h-4 w-1/3 bg-primary-100/50 mb-2" />
+                        <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-2">
+                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                          <Skeleton className="h-3 w-1/2 bg-primary-100/50" />
+                          <Skeleton className="h-3 w-5/6 bg-primary-100/50" />
+                        </div>
+                        <div className="sm:hidden mt-1">
+                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                        </div>
+                      </div>
+                      <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                        <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
+                        <Skeleton className="h-4 w-20 bg-primary-100/50" />
+                      </div>
+                    </div>
+
+                    {/* Item 2: Diamond Skeleton */}
+                    <div className="flex items-center p-2 sm:p-4">
+                      <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100/50 flex-shrink-0 rounded-full" />
+                      <div className="flex-1 ml-2 sm:ml-3 min-w-0">
+                        <Skeleton className="h-4 w-1/4 bg-primary-100/50 mb-2" />
+                        <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-2">
+                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                          <Skeleton className="h-3 w-1/2 bg-primary-100/50 col-span-2" />
+                        </div>
+                        <div className="sm:hidden mt-1">
+                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                        </div>
+                      </div>
+                      <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                        <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
+                        <Skeleton className="h-4 w-20 bg-primary-100/50" />
+                      </div>
+                    </div>
+
+                    {/* Total Section Skeleton */}
+                    <div className="flex justify-between items-center px-3 py-2 border-t border-primary-50 bg-primary-50/10">
+                      <Skeleton className="h-3 w-20 bg-primary-100/50" />
+                      <div className="flex flex-col items-end">
+                        <Skeleton className="h-3 w-16 bg-primary-100/50 mb-1" />
+                        <Skeleton className="h-4 w-24 bg-primary-100/50" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : !allCombos.length ? (
               <div className="flex items-center justify-center h-32">

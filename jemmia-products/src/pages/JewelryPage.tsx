@@ -14,6 +14,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "../components/layout/PageHeader";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow, Filter, X } from "lucide-react";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
@@ -285,10 +293,58 @@ export default function JewelryPage() {
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {isLoading ? (
-            <div className="h-full overflow-y-auto">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-none mb-2" />
-              ))}
+            <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-w-0 w-full relative">
+                <Table className="w-full sm:min-w-[1200px] border-collapse">
+                  {/* Desktop Table Header */}
+                  <TableHeader className="hidden sm:table-header-group">
+                    <TableRow className="border-b border-primary-100 hover:bg-transparent">
+                      {Array.from({ length: 7 }).map((_, i) => (
+                        <TableHead key={i} className="bg-primary-50 h-10 px-2 py-0">
+                          <Skeleton className="h-3 w-16 bg-primary-200/50 mx-auto" />
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Desktop Rows */}
+                    {Array.from({ length: 5 }).map((_, rowIndex) => (
+                      <TableRow key={rowIndex} className="hidden sm:table-row divide-x border-b border-primary-50 divide-primary-50">
+                        {Array.from({ length: 7 }).map((_, cellIndex) => (
+                          <TableCell key={cellIndex} className="px-3 py-4 text-center">
+                            <Skeleton className={cn(
+                              "h-3 bg-primary-100/50 mx-auto",
+                              cellIndex === 0 && "w-24",
+                              cellIndex === 1 && "w-28",
+                              cellIndex === 2 && "w-28",
+                              cellIndex === 3 && "w-16",
+                              cellIndex === 4 && "w-24",
+                              cellIndex === 5 && "w-16",
+                              cellIndex === 6 && "w-8"
+                            )} />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                    {/* Mobile Cards Skeletons */}
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i} className="sm:hidden border-b border-primary-50">
+                        <TableCell className="px-3 py-3">
+                          <div className="flex items-center gap-3 w-full">
+                            <Skeleton className="h-14 w-14 bg-primary-100/50 rounded-lg flex-shrink-0" />
+                            <div className="flex-1 flex flex-col gap-2 min-w-0">
+                              <Skeleton className="h-4 w-2/3 bg-primary-100/50" />
+                              <Skeleton className="h-3 w-1/3 bg-primary-100/50" />
+                            </div>
+                            <Skeleton className="h-5 w-12 bg-primary-100/50 rounded-full flex-shrink-0" />
+                            <Skeleton className="h-5 w-5 bg-primary-100/50 rounded-full flex-shrink-0" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           ) : isError ? (
             <div className="py-20 text-center bg-white rounded-none border border-dashed border-red-200">
