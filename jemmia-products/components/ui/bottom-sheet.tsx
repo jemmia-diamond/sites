@@ -62,14 +62,14 @@ export function BottomSheet({ open, onOpenChange, title, children, className, co
             )}
             <DialogPrimitive.Close
               type="button"
-              className="inline-flex size-8 items-center justify-center rounded-md text-primary-400 transition-colors hover:bg-primary-50 hover:text-secondary-900"
+              className="inline-flex size-8 -mt-2 cursor-pointer rounded-full items-center justify-center text-primary-400 transition-colors hover:bg-primary-50 hover:text-secondary-900"
             >
               <X size={18} />
               <span className="sr-only">Đóng</span>
             </DialogPrimitive.Close>
           </div>
 
-          <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[max(1rem,env(safe-area-inset-bottom))]", contentClassName)}>
+          <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-23", contentClassName)}>
             {children}
           </div>
         </DialogPrimitive.Popup>

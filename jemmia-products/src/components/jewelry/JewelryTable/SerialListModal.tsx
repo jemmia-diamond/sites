@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { formatDateTime } from "./utils/formatters";
+import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect } from "react";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
@@ -59,32 +61,77 @@ function formatPolicy(val?: string, isMobile?: boolean) {
   return val;
 }
 
-function InventoryDiffWarning({ compact }: { compact?: boolean }) {
+interface UnclearDataWarningProps {
+  unclearSerials: any[];
+  compact?: boolean;
+}
+
+function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps) {
+  const [show, setShow] = useState(false);
+  const warningRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!show) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (warningRef.current && !warningRef.current.contains(e.target as Node)) {
+        setShow(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [show]);
+
+  // Check if device supports hover
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+    }
+  }, []);
+
+  if (unclearSerials.length === 0) return null;
+
+  const serialListStr = unclearSerials
+    .map((v) => v.attributes?.serialNumber || "Không rõ")
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <div
-      className={
-        compact
-          ? "flex items-start gap-1.5 bg-pending-50 text-pending-600 px-2 py-1.5 rounded-md border border-red-100"
-          : "relative group/warning cursor-help inline-flex w-full sm:w-fit items-center gap-1.5 bg-pending-50 text-pending-600 px-2 py-1.5 rounded-md border border-red-100"
-      }
+      ref={warningRef}
+      className="relative inline-flex items-center"
+      onMouseEnter={() => !isTouch && setShow(true)}
+      onMouseLeave={() => !isTouch && setShow(false)}
     >
-      <WarningCircle size={compact ? 14 : 16} className="shrink-0 mt-0.5" weight="bold" />
-      <div className="min-w-0">
-        <p className="text-[10px] sm:text-xs font-medium leading-snug">
-          Có chênh lệch giữa tồn kho Haravan và dữ liệu serial
-        </p>
-        {compact && (
-          <p className="text-[10px] font-medium leading-snug text-pending-600/90 mt-1">
-            Vui lòng liên hệ trực tiếp cửa hàng để xác nhận serial nào còn trong kho.
-          </p>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShow((prev) => !prev);
+        }}
+        className={cn(
+          "focus:outline-none inline-flex items-center gap-1 bg-amber-50 text-amber-600 hover:bg-amber-100/70 border border-amber-200/60 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-black shadow-sm transition-all cursor-pointer select-none leading-none w-fit"
         )}
-      </div>
-      {!compact && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-[280px] sm:w-[340px] opacity-0 group-hover/warning:opacity-100 pointer-events-none transition-opacity bg-secondary-900 text-white p-3 sm:p-4 rounded-md shadow-2xl z-50">
-          <p className="text-[10px] sm:text-[11px] font-medium leading-relaxed">
-            Vui lòng liên hệ trực tiếp cửa hàng để xác nhận chính xác serial nào hiện còn trong kho.
+      >
+        <WarningCircle size={compact ? 13 : 15} className="shrink-0" weight="bold" />
+        <span>Dữ liệu không rõ ({unclearSerials.length})</span>
+      </button>
+
+      {show && (
+        <div
+          className={cn(
+            "absolute top-[calc(100%+6px)] left-0 sm:left-1/2 sm:-translate-x-1/2 w-[280px] sm:w-[320px] bg-secondary-900 text-white p-3.5 rounded-lg shadow-2xl border border-secondary-800 z-[99999] animate-in fade-in zoom-in-95 duration-150 text-left normal-case tracking-normal"
+          )}
+        >
+          <p className="text-[10px] font-black text-amber-400 mb-1.5 uppercase tracking-wider">Danh sách serials không rõ:</p>
+          <p className="text-[11px] font-bold leading-relaxed break-words text-white font-mono max-h-[120px] overflow-y-auto pr-1">
+            {serialListStr}
           </p>
-          <div className="absolute -top-1.5 left-6 w-3 h-3 bg-secondary-900 rotate-45" />
+          <div className="absolute -top-1 w-2.5 h-2.5 bg-secondary-900 rotate-45 border-t border-l border-secondary-800 left-6 sm:left-1/2 sm:-translate-x-1/2" />
         </div>
       )}
     </div>
@@ -245,6 +292,20 @@ export function SerialListModal({
 }: SerialListModalProps) {
   const isMobile = useIsMobile();
   const activeSerials = variants.filter((v) => (v.quantity || 0) > 0);
+
+  // Filter: scan time after 00:00:00 12/05/2026 (local time UTC+7)
+  const threshold = new Date("2026-05-12T00:00:00+07:00").getTime();
+  const scannedAfterThreshold = activeSerials.filter((v) => {
+    if (!v.lastRfidScanTime) return false;
+    return new Date(v.lastRfidScanTime).getTime() > threshold;
+  });
+  const scannedBeforeOrNoScan = activeSerials.filter((v) => {
+    if (!v.lastRfidScanTime) return true;
+    return new Date(v.lastRfidScanTime).getTime() <= threshold;
+  });
+
+  const displaySerials = [...scannedAfterThreshold];
+
   const hasDiff =
     typeof totalQuantity === "number" &&
     typeof totalHaravanQuantity === "number" &&
@@ -259,17 +320,17 @@ export function SerialListModal({
       <BottomSheet
         open={open}
         onOpenChange={handleOpenChange}
-        className="max-h-[92vh]"
+        className="max-h-[92vh] bottom-[92px]"
         contentClassName="px-0"
         title={
           <div className="flex flex-col gap-2">
             <span>DANH SÁCH SERIALS</span>
-            {hasDiff && <InventoryDiffWarning compact />}
+            <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} compact />
           </div>
         }
       >
         <div className="px-3 py-2">
-          <SerialListMobileCards activeSerials={activeSerials} />
+          <SerialListMobileCards activeSerials={displaySerials} />
         </div>
       </BottomSheet>
     );
@@ -281,7 +342,7 @@ export function SerialListModal({
         <DialogHeader className="px-4 sm:px-8 py-3 sm:py-4 border-b border-gray-200 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
           <DialogTitle className="text-sm sm:text-[16px] flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center font-bold tracking-tight text-secondary-900 flex-1">
             <span>DANH SÁCH SERIALS</span>
-            {hasDiff && <InventoryDiffWarning />}
+            <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} />
           </DialogTitle>
           <DialogClose className="cursor-pointer shrink-0">
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -289,7 +350,7 @@ export function SerialListModal({
           </DialogClose>
         </DialogHeader>
         <div className="flex-1 overflow-auto bg-white pb-3 no-scrollbar">
-          <SerialListDesktopTable activeSerials={activeSerials} />
+          <SerialListDesktopTable activeSerials={displaySerials} />
         </div>
       </DialogContent>
     </Dialog>

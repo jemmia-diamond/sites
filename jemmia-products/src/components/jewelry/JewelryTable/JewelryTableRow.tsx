@@ -8,6 +8,89 @@ import { CompactGallery } from "./CompactGallery";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CaretDown, ArrowSquareOut } from "@phosphor-icons/react";
 import { formatPriceMillion, formatDateTime } from "./utils/formatters";
+import { Info } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+
+interface ReferencePriceTooltipProps {
+  isExpanded: boolean;
+  size?: number;
+}
+
+function ReferencePriceTooltip({ isExpanded, size = 12 }: ReferencePriceTooltipProps) {
+  const [show, setShow] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!show) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setShow(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [show]);
+
+  // Check if device supports hover (true if it's a touch screen without fine pointer hover)
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+    }
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (!isTouch) setShow(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isTouch) setShow(false);
+  };
+
+  return (
+    <div
+      ref={tooltipRef}
+      className="relative inline-flex items-center"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShow((prev) => !prev);
+        }}
+        className="focus:outline-none flex items-center justify-center p-0.5 cursor-help"
+      >
+        <Info
+          size={size}
+          className={cn(
+            "transition-colors",
+            isExpanded
+              ? "text-white/80 hover:text-white"
+              : "text-blue-500 hover:text-blue-600"
+          )}
+        />
+      </button>
+
+      {show && (
+        <div
+          className={cn(
+            "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 text-[9px] font-black text-white bg-secondary-900 rounded shadow-xl whitespace-nowrap z-[1000] border border-secondary-800 animate-in fade-in zoom-in-95 duration-100",
+            // Arrow indicator
+            "after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-secondary-900"
+          )}
+        >
+          Giá tham khảo
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface JewelryTableRowProps {
   product: ProductModel;
@@ -249,14 +332,19 @@ export function JewelryTableRow({
         </TableCell>
 
         <TableCell className="px-6 sm:px-2 py-2 text-center">
-          <span
-            className={cn(
-              "text-[10px] sm:text-[11px] font-black tracking-tight",
-              isExpanded ? "text-white" : "text-secondary-900",
+          <div className="flex items-center justify-center gap-1">
+            <span
+              className={cn(
+                "text-[10px] sm:text-[11px] font-black tracking-tight",
+                isExpanded ? "text-white" : "text-secondary-900",
+              )}
+            >
+              {priceDisplay}
+            </span>
+            {!product.showOnWebsite && (
+              <ReferencePriceTooltip isExpanded={isExpanded} size={12} />
             )}
-          >
-            {priceDisplay}
-          </span>
+          </div>
         </TableCell>
 
         <TableCell className="px-6 sm:px-2 py-2 text-center">
@@ -369,7 +457,7 @@ export function JewelryTableRow({
                   </div>
                 </div>
                 {/* Price */}
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
                   <span
                     className={cn(
                       "text-sm font-black tracking-tight",
@@ -378,6 +466,9 @@ export function JewelryTableRow({
                   >
                     {priceDisplay}
                   </span>
+                  {!product.showOnWebsite && (
+                    <ReferencePriceTooltip isExpanded={isExpanded} size={14} />
+                  )}
                 </div>
               </div>
               <Badge
