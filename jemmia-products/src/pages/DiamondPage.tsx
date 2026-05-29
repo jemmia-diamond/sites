@@ -235,7 +235,7 @@ export default function DiamondPage() {
         </div>
 
         {/* Sticky Mobile Filters & Active Chips Bar */}
-        <div className="lg:hidden sticky top-12 z-40 bg-white flex flex-col gap-2 w-full border-b border-primary-50 pb-2">
+        <div className="lg:hidden sticky top-12 z-40 bg-white flex flex-col gap-2 w-full border-b border-primary-50 py-2">
           <div
             className={cn(
               "flex items-center gap-3 w-full",
