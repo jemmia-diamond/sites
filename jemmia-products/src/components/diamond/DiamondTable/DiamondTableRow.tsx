@@ -59,14 +59,14 @@ export function DiamondTableRow({
         <TableCell className="px-2 sm:px-3 py-2">
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1.5">
-              <p className="text-xs font-bold text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
+              <p className="text-xs font-semibold text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
               {diamond.inCombo && (
-                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-bold rounded-sm tracking-tighter">
+                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-semibold rounded-sm tracking-tighter">
                   Không bán lẻ
                 </Badge>
               )}
             </div>
-            <p className="text-[10px] text-primary-400 font-medium uppercase tracking-wider leading-none mt-1">BC:{diamond.barcode}</p>
+            <p className="text-[10px] text-primary-500 font-semibold uppercase tracking-wider leading-none mt-1">Barcode: {diamond.barcode}</p>
           </div>
         </TableCell>
         <TableCell className="px-1 sm:px-2 py-2 text-center">
@@ -80,30 +80,30 @@ export function DiamondTableRow({
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-xs font-medium text-primary-500 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
+          <span className="text-xs font-semibold text-primary-500 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-xs font-medium text-primary-500 uppercase tracking-tight">{diamond.attributes.color}</span>
+          <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.color}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-xs font-medium text-primary-500 uppercase tracking-tight">{diamond.attributes.clarity}</span>
+          <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.clarity}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <p className="text-xs font-medium text-primary-500 tracking-tight">
+          <p className="text-xs font-semibold text-primary-500 tracking-tight">
             {diamond.attributes.fluorescence || "NONE"}
           </p>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-left">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <span className="text-[11px] font-semibold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
               {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
             </span>
             {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
-              <span className="text-[11px] font-medium text-secondary-900 tracking-tight">
+              <span className="text-[11px] font-semibold text-secondary-900 tracking-tight">
                 {diamond.attributes.diamondHistory.stage}
               </span>
             )}
@@ -112,32 +112,34 @@ export function DiamondTableRow({
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
           <div className="flex justify-center">
-            <CompactGallery
-              images={actualImages}
-              showUpload={true}
-              brokenImages={brokenImages}
-              onImageError={onImageError}
-              onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
-              designCode={`GIA${diamond.attributes.giaId}`}
-              onUploadSuccess={onUploadSuccess}
-              uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
-              displayCount={3}
-            />
+            {actualImages.length > 0 ? (
+              <CompactGallery
+                images={actualImages}
+                showUpload={false}
+                brokenImages={brokenImages}
+                onImageError={onImageError}
+                onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
+                designCode={`GIA${diamond.attributes.giaId}`}
+                onUploadSuccess={onUploadSuccess}
+                uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
+                displayCount={3}
+              />
+            ) : null}
           </div>
         </TableCell>
         <TableCell className="px-2 sm:px-3 py-2 text-right">
           <div className="flex flex-col items-end leading-none">
             {diamond.basePrice > diamond.salePrice && (
-              <p className="text-[10px] font-medium text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
+              <p className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
             )}
-            <p className="text-sm font-bold text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
+            <p className="text-sm font-semibold text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
           </div>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-bold tracking-widest border-none shadow-sm whitespace-nowrap",
+              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
               hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
@@ -150,7 +152,7 @@ export function DiamondTableRow({
         <TableCell className="px-1 sm:px-2 py-2 text-center">
           <div className="flex flex-wrap justify-center gap-1">
             {isIncoming || realWarehouses.length === 0 ? (
-              <span className="text-[8px] sm:text-[9px] font-bold text-primary-300 italic">N/A</span>
+              <span className="text-[8px] sm:text-[9px] font-semibold text-primary-300 italic">N/A</span>
             ) : (
               realWarehouses.map((wh, idx) => (
                 <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
@@ -177,7 +179,7 @@ export function DiamondTableRow({
                 GIA
               </Button>
             ) : (
-              <span className="text-[9px] sm:text-[10px] text-primary-200 font-bold uppercase italic opacity-50">N/A</span>
+              <span className="text-[9px] sm:text-[10px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
             )}
           </div>
         </TableCell>
@@ -214,19 +216,19 @@ export function DiamondTableRow({
               {/* Top Row: GIA ID and Badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={cn(
-                  "text-xs font-bold tracking-tight",
+                  "text-xs font-semibold tracking-tight",
                   isExpanded ? "text-white" : "text-secondary-900"
                 )}>
                   GIA{diamond.attributes.giaId}
                 </span>
                 {diamond.inCombo && (
-                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-bold rounded-sm tracking-tighter">
+                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
                     Không bán lẻ
                   </Badge>
                 )}
                 {realWarehouses.length > 0 && !isIncoming && realWarehouses.map((wh, idx) => (
                   <Badge key={idx} className={cn(
-                    "border-none rounded-none px-1 py-0 text-[8px] font-bold tracking-tight whitespace-nowrap",
+                    "border-none rounded-none px-1 py-0 text-[8px] font-semibold tracking-tight whitespace-nowrap",
                     isExpanded ? "bg-white/20 text-white" : "bg-primary-50 text-secondary-900"
                   )}>
                     {formatWarehouseName(wh.name)}
@@ -237,7 +239,7 @@ export function DiamondTableRow({
               {/* Bottom Row: 4Cs, Shape, Dimensions */}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className={cn(
-                  "text-xs font-medium tracking-tight",
+                  "text-xs font-semibold tracking-tight",
                   isExpanded ? "text-white/90" : "text-primary-500"
                 )}>
                   {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.shape}
@@ -256,12 +258,12 @@ export function DiamondTableRow({
             <div className="flex flex-col items-end gap-0.5 leading-none flex-shrink-0">
               {diamond.basePrice > diamond.salePrice && (
                 <p className={cn(
-                  "text-[10px] font-medium line-through",
+                  "text-[10px] font-semibold line-through",
                   isExpanded ? "text-white/60" : "text-primary-300 opacity-60"
                 )}>{formatPriceVND(diamond.basePrice)}</p>
               )}
               <p className={cn(
-                "text-sm font-bold tracking-tight",
+                "text-sm font-semibold tracking-tight",
                 isExpanded ? "text-white" : "text-secondary-900"
               )}>{formatPriceVND(diamond.salePrice)}</p>
             </div>
@@ -300,14 +302,13 @@ export function DiamondTableRow({
                 {/* Identification */}
                 <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-black text-secondary-900 tracking-tight uppercase">GIA{diamond.attributes.giaId}</span>
                     {diamond.inCombo && (
                       <Badge className="bg-amber-500 text-white text-[7px] px-1 py-0 h-3 leading-none border-none font-black rounded-sm tracking-tighter">
                         Không bán lẻ
                       </Badge>
                     )}
                   </div>
-                  <span className="text-[8px] text-primary-300 font-bold uppercase tracking-wider">BC:{diamond.barcode}</span>
+                  <span className="text-[10px] text-primary-500 font-semibold">Barcode: <span className="text-[10px] text-primary-700 font-semibold">{`${diamond.barcode}`}</span></span>
                 </div>
                 {/* Status */}
                 <Badge
@@ -325,24 +326,24 @@ export function DiamondTableRow({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase"
+                    className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       const url = diamond.attributes.giaPdfUrl;
                       if (url) onGiaPdfClick(url);
                     }}
                   >
-                    GIA
+                    Hình GIA
                   </Button>
                 ) : (
-                  <span className="text-[9px] text-primary-200 font-bold uppercase italic opacity-50">N/A</span>
+                  <span className="text-[9px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
                 )}
               </div>
               {/* Row 2: Diamond History */}
-              {diamond.attributes.diamondHistory  && (
+              {diamond.attributes.diamondHistory && (
                 <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-[8px] font-bold text-primary-300 tracking-wider">Ghi chú:</span>
-                  <span className="text-[8px] font-bold text-secondary-900">
+                  <span className="text-[8px] font-semibold text-primary-300 tracking-wider">Ghi chú:</span>
+                  <span className="text-[8px] font-semibold text-secondary-900">
                     {diamond.attributes.diamondHistory.errors}
                     {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
                     {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && `${diamond.attributes.diamondHistory.stage}`}
@@ -351,12 +352,12 @@ export function DiamondTableRow({
               )}
               {/* Actual Images */}
               {actualImages.length > 0 && (
-                <div>
-                  <p className="text-[8px] font-bold text-primary-300 tracking-wider mb-1">Ảnh/Video</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-[10px] font-semibold text-primary-500 mb-1">Ảnh/Video: </p>
                   <div className="flex justify-start">
                     <CompactGallery
                       images={actualImages}
-                      showUpload={true}
+                      showUpload={false}
                       brokenImages={brokenImages}
                       onImageError={onImageError}
                       onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}

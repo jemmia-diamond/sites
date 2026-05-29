@@ -30,41 +30,43 @@ export function PageHeader({
   className
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-1", className)}>
-      <div className="flex items-center gap-4">
-        {headerStart && <div>{headerStart}</div>}
-        <div className="space-y-0">
-          <h1 className="text-lg md:text-2xl font-bold tracking-tight text-primary-900">{title}</h1>
-          <div className="text-sm text-primary-500 max-w-2xl leading-relaxed font-medium">
-            {description}
+    <div className={cn("flex flex-col  justify-between gap-1", className)}>
+      {headerStart && <div>{headerStart}</div>}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="space-y-0">
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight text-primary-900">{title}</h1>
+            <div className="text-sm text-primary-500 max-w-2xl leading-relaxed font-medium">
+              {description}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-4 sm:gap-6 sm:pt-2 justify-between sm:justify-end">
-        {sortOptions && (
-          <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
-            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-widest pl-1">{sortLabel}</span>
-            <Select defaultValue={defaultSort} onValueChange={onSortChange}>
-              <SelectTrigger className="w-full sm:w-[200px] bg-white border border-primary-100 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-secondary-900">
-                <SelectValue placeholder={sortLabel} />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-xs font-medium">
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        <div className="flex items-center gap-4 sm:gap-6 sm:pt-2 justify-between sm:justify-end">
+          {sortOptions && (
+            <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
+              <span className="text-[10px] font-bold text-primary-400 uppercase tracking-widest pl-1">{sortLabel}</span>
+              <Select defaultValue={defaultSort} onValueChange={onSortChange}>
+                <SelectTrigger className="w-full sm:w-[200px] bg-white border border-primary-100 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-secondary-900">
+                  <SelectValue placeholder={sortLabel} />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs font-medium">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-        {actions && (
-          <div className="w-full flex items-center justify-between sm:justify-end">
-            {actions}
-          </div>
-        )}
+          {actions && (
+            <div className="w-full flex items-center justify-between sm:justify-end">
+              {actions}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

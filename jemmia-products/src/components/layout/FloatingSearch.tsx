@@ -145,7 +145,7 @@ export function FloatingSearch() {
                         key={`${item.category}-${item.id}-${index}`}
                         to={item.category === 'Jewelry'
                           ? `/jewelry?searchQuery=${encodeURIComponent(designCode || '')}`
-                          : `/diamonds?searchQuery=${encodeURIComponent(query)}`}
+                          : `/diamonds?searchQuery=${encodeURIComponent(designCode || '')}`}
                         onClick={handleClose}
                         className="flex items-center gap-4 px-4 py-3 hover:bg-primary-50/40 transition-all group"
                       >

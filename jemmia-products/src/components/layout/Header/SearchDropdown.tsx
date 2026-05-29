@@ -143,7 +143,7 @@ function SearchResults({ results, query, onClose }: SearchResultsProps) {
               key={`${item.category}-${item.id}-${index}`}
               to={item.category === 'Jewelry'
                 ? `/jewelry?searchQuery=${encodeURIComponent(designCode || '')}`
-                : `/diamonds?searchQuery=${encodeURIComponent(query)}`}
+                : `/diamonds?searchQuery=${encodeURIComponent(designCode || '')}`}
               onClick={onClose}
               className="flex items-center gap-6 px-4 py-4 hover:bg-gray-50/50 transition-all group relative"
             >

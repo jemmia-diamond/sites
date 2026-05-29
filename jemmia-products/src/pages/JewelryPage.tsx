@@ -159,15 +159,15 @@ export default function JewelryPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div
-        className={cn(
-          "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
-          isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0x z-[60]",
-          "w-full h-full",
-          !searchQueryParam && (isFilterCollapsed ? "lg:w-16" : "lg:w-80"),
-        )}
-      >
-        {!searchQueryParam && (
+      {!searchQueryParam && (
+        <div
+          className={cn(
+            "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
+            isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
+            "w-full h-full",
+            isFilterCollapsed ? "lg:w-16" : "lg:w-80"
+          )}
+        >
           <div className="h-full relative flex flex-col">
             <JewelryFilterSidebar
               onApply={handleApplyFilters}
@@ -179,10 +179,10 @@ export default function JewelryPage() {
               isOpen={isFilterOpen}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <main className="flex-1 flex flex-col gap-4 bg-white px-4 lg:px-6 pt-4 pb-6 w-full max-w-full min-w-0 overflow-hidden min-h-0">
+      <main className="flex-1 flex flex-col gap-2 md:gap-4 bg-white px-4 lg:px-6 pt-4 pb-6 w-full max-w-full min-w-0 overflow-hidden min-h-0">
         <div className="flex-shrink-0">
           <PageHeader
             title={
@@ -223,19 +223,26 @@ export default function JewelryPage() {
                   </Button>
                 </div>
 
-                <div className="lg:hidden flex items-center gap-3 justify-between w-full">
-                  <Button
-                    onClick={() => setIsFilterOpen(true)}
-                    variant="outline"
-                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
-                  >
-                    <Filter size={14} className="mr-2" />
-                    <span className="w-max">Bộ lọc</span>
-                  </Button>
+                <div
+                  className={cn(
+                    "lg:hidden flex items-center gap-3 w-full",
+                    searchQueryParam ? "justify-end" : "justify-between"
+                  )}
+                >
+                  {!searchQueryParam && (
+                    <Button
+                      onClick={() => setIsFilterOpen(true)}
+                      variant="outline"
+                      className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+                    >
+                      <Filter size={14} className="mr-2" />
+                      <span className="w-max">Bộ lọc</span>
+                    </Button>
+                  )}
                   <Button
                     onClick={toggleSort}
                     variant="outline"
-                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
                   >
                     {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
                     <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>

@@ -130,7 +130,7 @@ export function CompactGallery({
   return (
     <>
       <div className="flex items-center gap-2">
-        <div style={{ ...(isMobile ? {} : { width: `${43 * displayCount}px` }) }}>
+        <div style={{ ...((isMobile || !showUpload) ? {} : { width: `${43 * displayCount}px` }) }}>
           {validImages.length === 0 ? (
             <div
               className="h-10 w-full border border-dashed border-primary-100 flex items-center justify-center gap-2 bg-white cursor-pointer hover:bg-primary-50/50 transition-colors"

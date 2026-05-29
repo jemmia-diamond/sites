@@ -75,7 +75,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         <NavLinks items={NAV_ITEMS} />
       </div>
 
-      <div className="flex flex-1 justify-end ư">
+      <div className="flex flex-1 justify-end">
         <SearchDropdown
           query={query}
           isLoading={isLoading}

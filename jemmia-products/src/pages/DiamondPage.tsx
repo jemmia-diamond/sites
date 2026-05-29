@@ -135,9 +135,13 @@ export default function DiamondPage() {
 
   useEffect(() => {
     if (allDiamonds.length === 1) {
+      const isMobile = window.innerWidth < 640;
+      if (searchQueryParam && !isMobile) {
+        return;
+      }
       setExpandedId(allDiamonds[0].id);
     }
-  }, [allDiamonds]);
+  }, [allDiamonds, searchQueryParam]);
 
   const lastElementRef = useInfiniteScroll(
     () => {
@@ -155,17 +159,17 @@ export default function DiamondPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div
-        className={cn(
-          "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
-          isFilterOpen
-            ? "translate-x-0 z-[10000]"
-            : "-translate-x-full lg:translate-x-0 z-[60]",
-          "w-full h-full",
-          !searchQueryParam && (isFilterCollapsed ? "lg:w-16" : "lg:w-80"),
-        )}
-      >
-        {!searchQueryParam && (
+      {!searchQueryParam && (
+        <div
+          className={cn(
+            "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
+            isFilterOpen
+              ? "translate-x-0 z-[10000]"
+              : "-translate-x-full lg:translate-x-0 z-[60]",
+            "w-full h-full",
+            isFilterCollapsed ? "lg:w-16" : "lg:w-80"
+          )}
+        >
           <div className="h-full relative flex flex-col">
             <DiamondFilterSidebar
               onApply={handleApplyFilters}
@@ -177,8 +181,8 @@ export default function DiamondPage() {
               isOpen={isFilterOpen}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col bg-white px-4 lg:px-6 pt-4 pb-6 gap-4 w-full max-w-full min-w-0 overflow-hidden min-h-0">
         <div className="flex-shrink-0">
@@ -191,7 +195,7 @@ export default function DiamondPage() {
             description={`Hiển thị ${totalItems} kết quả`}
             headerStart={
               searchQueryParam ? (
-                <Button onClick={handleGoBack} className={"h-full"}>
+                <Button onClick={handleGoBack} className={"h-full w-max"}>
                   <ArrowLeft size={16} />
                   Quay về
                 </Button>
@@ -217,19 +221,26 @@ export default function DiamondPage() {
                     )}
                   </Button>
                 </div>
-                <div className="lg:hidden flex items-center gap-3 justify-between w-full">
-                  <Button
-                    onClick={() => setIsFilterOpen(true)}
-                    variant="outline"
-                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
-                  >
-                    <Filter size={14} className="mr-2" />
-                    <span className="w-max">Bộ lọc</span>
-                  </Button>
+                <div
+                  className={cn(
+                    "lg:hidden flex items-center gap-3 w-full",
+                    searchQueryParam ? "justify-end" : "justify-between"
+                  )}
+                >
+                  {!searchQueryParam && (
+                    <Button
+                      onClick={() => setIsFilterOpen(true)}
+                      variant="outline"
+                      className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+                    >
+                      <Filter size={14} className="mr-2" />
+                      <span className="w-max">Bộ lọc</span>
+                    </Button>
+                  )}
                   <Button
                     onClick={toggleSort}
                     variant="outline"
-                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
                   >
                     {filters.sortBySalePrice === "DESC" ? (
                       <ArrowDownWideNarrow size={14} className="mr-1" />
