@@ -229,6 +229,18 @@ export function JewelryTableRow({
         ? formatPriceMillion(minPrice)
         : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
 
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1280);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const galleryDisplayWeb = 3;
+  const galleryDisplayActual = isTablet ? 3 : 4;
+
   const firstImage =
     (webImages.length > 0 ? webImages[0] : actualImages[0]) || "";
 
@@ -266,6 +278,7 @@ export function JewelryTableRow({
                 });
               }}
               designCode={designCode || product.title}
+              displayCount={galleryDisplayWeb}
             />
           </div>
         </TableCell>
@@ -288,6 +301,7 @@ export function JewelryTableRow({
               }}
               designCode={designCode || product.title}
               onUploadSuccess={onUploadSuccess}
+              displayCount={galleryDisplayActual}
             />
           </div>
         </TableCell>

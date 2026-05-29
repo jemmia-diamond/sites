@@ -149,7 +149,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
     <>
       <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
         <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
-          <Table className="w-full md:min-w-[1200px] border-collapse">
+          <Table className="w-full xl:min-w-[1200px] border-collapse">
             <JewelryTableHeader />
 
             <TableBody>
