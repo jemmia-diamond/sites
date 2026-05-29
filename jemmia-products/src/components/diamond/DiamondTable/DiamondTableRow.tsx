@@ -123,6 +123,7 @@ export function DiamondTableRow({
                 onUploadSuccess={onUploadSuccess}
                 uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
                 displayCount={3}
+                fixedWidth={false}
               />
             ) : null}
           </div>
@@ -365,6 +366,7 @@ export function DiamondTableRow({
                       onUploadSuccess={onUploadSuccess}
                       uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
                       displayCount={3}
+                      fixedWidth={false}
                     />
                   </div>
                 </div>

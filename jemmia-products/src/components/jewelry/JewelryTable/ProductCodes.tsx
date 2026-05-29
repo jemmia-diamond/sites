@@ -95,7 +95,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
   const codesPanel = (
     <div className={cn(
       "flex flex-col gap-1 items-stretch",
-      isMobile ? "gap-2 pt-3 pb-2" : "p-1.5 min-w-[180px]"
+      isMobile ? "gap-2" : "p-1.5 min-w-[180px]"
     )}>
       {copyableItems.map((item, i) => (
         <div

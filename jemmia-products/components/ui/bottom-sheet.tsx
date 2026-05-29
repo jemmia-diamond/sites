@@ -69,7 +69,7 @@ export function BottomSheet({ open, onOpenChange, title, children, className, co
             </DialogPrimitive.Close>
           </div>
 
-          <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-23", contentClassName)}>
+          <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-3 pb-23", contentClassName)}>
             {children}
           </div>
         </DialogPrimitive.Popup>

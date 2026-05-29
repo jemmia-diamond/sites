@@ -28,7 +28,7 @@ export function PriceRangeFilter({
             value={filters.salePriceFrom ?? ""}
             onChange={(e) => onMinPriceChange(e.target.value ? Number(e.target.value) : undefined)}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-200 font-bold">triệu</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-300 font-bold uppercase">triệu</span>
         </div>
       </div>
 
@@ -44,7 +44,7 @@ export function PriceRangeFilter({
             value={filters.salePriceTo ?? ""}
             onChange={(e) => onMaxPriceChange(e.target.value ? Number(e.target.value) : undefined)}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-200 font-bold uppercase">triệu</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-300 font-bold uppercase">triệu</span>
         </div>
       </div>
       <div className="pt-6 hidden lg:block">
