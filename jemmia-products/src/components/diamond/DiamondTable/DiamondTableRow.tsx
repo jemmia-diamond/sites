@@ -1,11 +1,13 @@
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut, CaretDown } from "@phosphor-icons/react";
-import { DiamondModel } from "../../../types";
-import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
+import { DiamondModel, ProductModel } from "../../../types";
+import { cn, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
+import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
@@ -29,6 +31,17 @@ export function DiamondTableRow({
   onUploadSuccess,
   onToggleExpand
 }: DiamondTableRowProps) {
+  const codeProduct = {
+    id: diamond.id,
+    attributes: {
+      designCode: `GIA${diamond.attributes.giaId}`,
+      erpCode: diamond.barcode,
+    },
+    products: [],
+  } as unknown as ProductModel;
+
+  const [showBarcode, setShowBarcode] = useState(false);
+
   const realWarehouses = diamond.warehouses.filter(wh =>
     !wh.name.toLowerCase().includes("trung gian")
   );
@@ -56,50 +69,33 @@ export function DiamondTableRow({
           diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
         )}
       >
-        <TableCell className="px-2 md:px-3 py-2">
-          <div className="flex flex-col items-start">
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs font-semibold text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
-              {diamond.inCombo && (
-                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-semibold rounded-sm tracking-tighter">
-                  Không bán lẻ
-                </Badge>
-              )}
+        <TableCell className="px-2 md:px-6 py-2 text-center">
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-0">
+              <ProductCodes product={codeProduct} isExpanded={false} />
             </div>
-            <p className="text-[10px] text-primary-500 font-semibold uppercase tracking-wider leading-none mt-1">Barcode: {diamond.barcode}</p>
+            {showBarcode && (
+              <div className="flex items-center gap-1 animate-in fade-in duration-150">
+                {diamond.inCombo && (
+                  <Badge className="bg-amber-500 text-white text-[7px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
+                    Không bán lẻ
+                  </Badge>
+                )}
+                <span className="text-[9px] text-primary-400 font-semibold uppercase tracking-wider">Barcode: {diamond.barcode}</span>
+              </div>
+            )}
           </div>
         </TableCell>
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <p className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">
-            {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
-          </p>
+
+        <TableCell className="px-1 md:px-1 py-2 text-center">
+          <span className="text-[11px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
+            {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
+          </span>
         </TableCell>
 
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <span className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} ct</span>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <span className="text-xs font-semibold text-primary-500 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.color}</span>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.clarity}</span>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <p className="text-xs font-semibold text-primary-500 tracking-tight">
-            {diamond.attributes.fluorescence || "NONE"}
-          </p>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-left">
+        <TableCell className="px-1 md:px-1 py-2 text-left">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <span className="text-[11px] font-semibold text-secondary-900 tracking-tight" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
               {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
             </span>
             {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
@@ -110,7 +106,7 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 md:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-1 py-2 text-center">
           <div className="flex justify-center">
             {actualImages.length > 0 ? (
               <CompactGallery
@@ -128,7 +124,8 @@ export function DiamondTableRow({
             ) : null}
           </div>
         </TableCell>
-        <TableCell className="px-2 md:px-3 py-2 text-right">
+
+        <TableCell className="px-2 md:px-2 py-2 text-right">
           <div className="flex flex-col items-end leading-none">
             {diamond.basePrice > diamond.salePrice && (
               <p className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
@@ -137,10 +134,10 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 md:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-1 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-2 md:px-3 py-1 text-[8px] md:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
+              "rounded-full px-2 md:px-2 py-1 text-[8px] md:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
               hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
@@ -150,7 +147,7 @@ export function DiamondTableRow({
           </Badge>
         </TableCell>
 
-        <TableCell className="px-1 md:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-1 py-2 text-center">
           <div className="flex flex-wrap justify-center gap-1">
             {isIncoming || realWarehouses.length === 0 ? (
               <span className="text-[8px] md:text-[9px] font-semibold text-primary-300 italic">N/A</span>
@@ -164,13 +161,13 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <div className="flex justify-center">
+        <TableCell className="px-1 md:px-1 py-2 text-center">
+          <div className="flex items-center justify-center gap-1.5">
             {diamond.attributes.giaPdfUrl ? (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-2 md:px-3 rounded-none border-primary-100 text-[9px] md:text-[10px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
+                className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
                 onClick={(e) => {
                   e.stopPropagation();
                   const url = diamond.attributes.giaPdfUrl;
@@ -180,20 +177,15 @@ export function DiamondTableRow({
                 GIA
               </Button>
             ) : (
-              <span className="text-[9px] md:text-[10px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
+              <span className="text-[8px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
             )}
-          </div>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-2 py-2 text-center">
-          <div className="flex justify-center">
             <a
               href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center text-[8px] md:text-[9px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
+              className="flex items-center text-[8px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
             >
-              HRA <ArrowSquareOut size={10} className="ml-1 opacity-50 group-hover:opacity-100" />
+              HRA <ArrowSquareOut size={9} className="ml-0.5 opacity-50 group-hover:opacity-100" />
             </a>
           </div>
         </TableCell>
@@ -296,7 +288,7 @@ export function DiamondTableRow({
       {/* Expanded Panel */}
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <TableCell colSpan={15} className="p-0">
+          <TableCell colSpan={9} className="p-0">
             <div className="px-3 py-2 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200 space-y-1">
               {/* Row 1: Identification + Illustration + Shape */}
               <div className="flex items-center gap-3">

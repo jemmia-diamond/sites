@@ -473,7 +473,7 @@ export function JewelryTableRow({
                   </div>
                 </div>
                 {/* Price */}
-                <div className="inline-flex items-center relative">
+                <div className="inline-flex items-center relative w-fit">
                   <span
                     className={cn(
                       "text-sm font-bold tracking-tight",

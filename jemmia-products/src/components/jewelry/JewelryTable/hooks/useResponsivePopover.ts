@@ -1,13 +1,22 @@
-import { useCallback, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useRef, useState, useEffect, type MouseEvent } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 const DISMISS_LOCK_MS = 400;
 
 export function useResponsivePopover(delay = 120) {
   const isMobile = useIsMobile();
+  const [isTablet, setIsTablet] = useState(false);
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dismissLockUntil = useRef(0);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (max-width: 1279px)");
+    const update = () => setIsTablet(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const handleOpenChange = useCallback((nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -17,15 +26,15 @@ export function useResponsivePopover(delay = 120) {
   }, []);
 
   const onEnter = useCallback(() => {
-    if (isMobile) return;
+    if (isMobile || isTablet) return;
     if (timer.current) clearTimeout(timer.current);
     setOpen(true);
-  }, [isMobile]);
+  }, [isMobile, isTablet]);
 
   const onLeave = useCallback(() => {
-    if (isMobile) return;
+    if (isMobile || isTablet) return;
     timer.current = setTimeout(() => setOpen(false), delay);
-  }, [isMobile, delay]);
+  }, [isMobile, isTablet, delay]);
 
   const onTriggerClick = useCallback((e: MouseEvent) => {
     if (!isMobile) return;
@@ -41,6 +50,7 @@ export function useResponsivePopover(delay = 120) {
     setOpen: handleOpenChange,
     handleOpenChange,
     isMobile,
+    isTablet,
     onEnter,
     onLeave,
     onTriggerClick,

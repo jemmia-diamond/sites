@@ -127,25 +127,19 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, exp
   };
 return (
     <>
-      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+      <div className="relative border border-primary-100 bg-white shadow-none flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
         <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
-          <Table className="w-full md:min-w-[1200px] border-collapse">
+          <Table className="w-full border-collapse">
             <TableHeader className="hidden md:table-header-group">
               <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Định danh</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Kích thước</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Trọng lượng</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình dạng</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Nước màu</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Độ sạch</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Huỳnh quang</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Mã sản phẩm</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Thông số kỹ thuật</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-1 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal w-75">Ghi chú</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình thực tế</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình ảnh</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Giá (VND)</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Trạng thái</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Vị trí kho</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Chứng nhận GIA</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Haravan</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Tác vụ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

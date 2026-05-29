@@ -294,7 +294,7 @@ export function MediaGallery({
     <div className="flex flex-col h-full bg-white">
       {/* Mobile header */}
       <div className="xl:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
-        <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
+        <div className="flex items-start justify-between gap-2 px-3 md:px-4 pt-3 pb-2">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">
               Thư viện
@@ -321,7 +321,7 @@ export function MediaGallery({
         </div>
 
         {hasActions && (
-          <div className="flex items-center gap-1.5 px-3 pb-2.5 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 px-3 md:px-4 pb-2.5 overflow-x-auto no-scrollbar">
             {validPreviewList.length > 0 && (
               <>
                 <Button
@@ -486,7 +486,7 @@ export function MediaGallery({
                       onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                     />
                   ) : (
-                    <img src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
+                    <img src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                   )}
                   {isVid && (
                     <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">

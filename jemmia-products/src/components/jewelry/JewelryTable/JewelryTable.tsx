@@ -147,7 +147,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
 
   return (
     <>
-      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+      <div className="relative border border-primary-100 bg-white flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
         <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
           <Table className="w-full xl:min-w-[1200px] border-collapse">
             <JewelryTableHeader />
@@ -294,65 +294,154 @@ function MediaViewer({
   onDownloadSingle,
   isVideo,
 }: MediaViewerProps) {
-  const isVid = isVideo(selectedMedia);
   const currentIndex = validPreviewList.indexOf(selectedMedia);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const dragState = React.useRef({ startX: 0, isDragging: false });
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelectMedia(validPreviewList[(currentIndex + 1) % validPreviewList.length]);
+  const prevMedia = validPreviewList[(currentIndex - 1 + validPreviewList.length) % validPreviewList.length];
+  const nextMedia = validPreviewList[(currentIndex + 1) % validPreviewList.length];
+
+  React.useLayoutEffect(() => {
+    const track = trackRef.current;
+    const containerW = containerRef.current?.clientWidth;
+    if (track && containerW) {
+      track.style.transition = 'none';
+      track.style.transform = `translateX(${-containerW}px)`;
+    }
+  }, [selectedMedia]);
+
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    onSelectMedia(nextMedia);
   };
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelectMedia(validPreviewList[(currentIndex - 1 + validPreviewList.length) % validPreviewList.length]);
+  const handlePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    onSelectMedia(prevMedia);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    dragState.current = { startX: e.touches[0].clientX, isDragging: true };
+    const track = trackRef.current;
+    if (track) track.style.transition = 'none';
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragState.current.isDragging) return;
+    const deltaX = e.touches[0].clientX - dragState.current.startX;
+    const containerW = containerRef.current?.clientWidth || 1;
+    const track = trackRef.current;
+    if (track) {
+      track.style.transform = `translateX(${-containerW + deltaX}px)`;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!dragState.current.isDragging) return;
+    dragState.current.isDragging = false;
+
+    const deltaX = e.changedTouches[0].clientX - dragState.current.startX;
+    const containerW = containerRef.current?.clientWidth || 1;
+    const track = trackRef.current;
+    if (!track) return;
+
+    if (deltaX > containerW * 0.2) {
+      track.style.transition = 'transform 0.25s ease-out';
+      track.style.transform = 'translateX(0px)';
+      setTimeout(() => onSelectMedia(prevMedia), 250);
+    } else if (deltaX < -containerW * 0.2) {
+      track.style.transition = 'transform 0.25s ease-out';
+      track.style.transform = `translateX(${-2 * containerW}px)`;
+      setTimeout(() => onSelectMedia(nextMedia), 250);
+    } else {
+      track.style.transition = 'transform 0.3s ease-out';
+      track.style.transform = `translateX(${-containerW}px)`;
+    }
+  };
+
+  const renderSlide = (url: string, key: string) => {
+    const isV = isVideo(url);
+    return (
+      <div key={key} className="w-full h-full flex items-center justify-center select-none pointer-events-none p-3 md:p-4">
+        {isV ? (
+          <video src={url} muted preload="metadata" className="max-w-full max-h-full object-contain" />
+        ) : (
+          <img
+            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+            className="max-w-full max-h-full object-contain"
+            alt=""
+            draggable={false}
+          />
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="h-10 w-10 bg-white/10 text-white rounded-full hover:bg-white hover:text-secondary-700 transition-all" onClick={() => onSelectMedia(null)}>
-            <CaretLeft size={20} />
+      <div className="flex items-center justify-between px-4 md:px-4 py-4 md:py-4 bg-secondary-800 sticky top-0 z-50">
+        <div className="flex items-center gap-3 md:gap-4">
+          <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10 bg-white/10 text-white rounded-full hover:bg-white hover:text-secondary-700 transition-all" onClick={() => onSelectMedia(null)}>
+            <CaretLeft size={18} md:size={20} />
           </Button>
           <div>
-            <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
-              Chi tiết
-            </h3>
-            <p className="text-xs text-white/70 font-bold mt-1">Tệp {currentIndex + 1} trên tổng số {validPreviewList.length}</p>
+            <h3 className="text-sm md:text-lg font-black text-white uppercase tracking-tight">Chi tiết</h3>
+            <p className="text-[10px] md:text-xs text-white/70 font-bold mt-0.5 md:mt-1">Tệp {currentIndex + 1} / {validPreviewList.length}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onDownloadSingle(selectedMedia!)}
             disabled={!selectedMedia}
-            className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
+            className="h-8 md:h-10 px-3 md:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
           >
-            <DownloadSimple size={16} />
+            <DownloadSimple size={14} md:size={16} />
             <span className="hidden md:inline">Tải về</span>
           </Button>
-          <Button variant="ghost" size="icon" className="h-10 w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
-            <X size={20} />
+          <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
+            <X size={16} md:size={20} />
           </Button>
         </div>
       </div>
-      <div className="flex-1 relative flex items-center justify-center p-4 md:p-12 bg-primary-50/50 overflow-hidden group/viewer">
+      <div
+        ref={containerRef}
+        className="flex-1 relative overflow-hidden bg-primary-50/50 group/viewer"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {validPreviewList.length > 1 && (
           <>
-            <Button variant="ghost" size="icon" className="absolute left-6 top-1/2 -translate-y-1/2 h-14 w-14 bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-0 group-hover/viewer:opacity-100 transition-all shadow-md z-30" onClick={handlePrev}>
-              <CaretLeft size={24} weight="bold" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 h-10 w-10 md:h-14 md:w-14 bg-white/90 md:bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-100 xl:opacity-0 xl:group-hover/viewer:opacity-100 transition-all shadow-md z-30"
+              onClick={handlePrev}
+            >
+              <CaretLeft size={20} md:size={24} weight="bold" />
             </Button>
-            <Button variant="ghost" size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 h-14 w-14 bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-0 group-hover/viewer:opacity-100 transition-all shadow-md z-30" onClick={handleNext}>
-              <CaretRight size={24} weight="bold" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 h-10 w-10 md:h-14 md:w-14 bg-white/90 md:bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-100 xl:opacity-0 xl:group-hover/viewer:opacity-100 transition-all shadow-md z-30"
+              onClick={handleNext}
+            >
+              <CaretRight size={20} md:size={24} weight="bold" />
             </Button>
           </>
         )}
-        {isVid ? (
-          <video key={selectedMedia} src={selectedMedia} controls autoPlay className="max-w-full max-h-full object-contain rounded-none shadow-lg" />
-        ) : (
-          <img key={selectedMedia} src={selectedMedia.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(selectedMedia)}` : selectedMedia} className="max-w-full max-h-full object-contain rounded-none animate-in zoom-in-95 duration-500 shadow-lg" alt="Preview" />
-        )}
+        <div
+          ref={trackRef}
+          className="h-full grid grid-cols-3 grid-rows-1"
+          style={{ width: '300%' }}
+        >
+          {renderSlide(prevMedia, 'prev')}
+          {renderSlide(selectedMedia, 'current')}
+          {renderSlide(nextMedia, 'next')}
+        </div>
       </div>
     </div>
   );

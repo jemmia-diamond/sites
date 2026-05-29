@@ -4,6 +4,8 @@ import { ProductModel } from "../../../types";
 import { CaretDown, Copy, Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useResponsivePopover } from "./hooks/useResponsivePopover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 interface ProductCodesProps {
   product: ProductModel;
@@ -17,10 +19,11 @@ interface CopyableItem {
 }
 
 export function ProductCodes({ product, isExpanded, className }: ProductCodesProps) {
-  const { open, isMobile, onEnter, onLeave } = useResponsivePopover();
+  const { open, setOpen, isMobile, isTablet, onEnter, onLeave, handleOpenChange } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const isBundle = product.products && product.products.length > 0;
 
   const designCode = isBundle
@@ -66,6 +69,12 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
     });
   }
 
+  const allItems: CopyableItem[] = [];
+  if (designCode && !isBundle) {
+    allItems.push({ code: designCode, label: "Mã thiết kế" });
+  }
+  allItems.push(...copyableItems);
+
   const hasPopover = copyableItems.length > 0;
 
   useEffect(() => {
@@ -90,39 +99,31 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
 
   const shouldShowAbove = coords ? (coords.bottom + 160 > window.innerHeight) : false;
 
-  const codesPanel = (
-    <div className={cn(
-      "flex flex-col gap-1 items-stretch",
-      isMobile ? "gap-2" : "p-1.5 min-w-[180px]"
-    )}>
-      {copyableItems.map((item, i) => (
-        <div
-          key={i}
-          className={cn(
-            "group/item flex items-center justify-between gap-3 px-2.5 py-1.5 border transition-colors cursor-pointer",
-            isMobile
-              ? "bg-primary-50 border-primary-100 active:bg-primary-100/80 py-3"
-              : "bg-primary-50 border-primary-100 hover:bg-primary-100/80"
-          )}
-          onClick={(e) => handleCopy(e, item.code)}
-          title={`Copy ${item.label}`}
-        >
-          <div className="flex flex-col items-start gap-0.5">
-            <span className="text-secondary-900 text-[11px] md:text-[10px] font-black uppercase">
+  function CodesList({ items }: { items: CopyableItem[] }) {
+    return (
+      <div className="flex flex-col items-stretch gap-1">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="group/item flex items-center justify-between gap-3 px-2.5 py-1.5 border border-primary-100 bg-primary-50 cursor-pointer hover:bg-primary-100/80 transition-colors"
+            onClick={(e) => handleCopy(e, item.code)}
+            title={`Copy ${item.label}`}
+          >
+            <span className="text-secondary-900 text-[11px] font-black uppercase">
               {item.code}
             </span>
+            <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+              {copiedText === item.code ? (
+                <Check size={14} weight="bold" className="text-green-600" />
+              ) : (
+                <Copy size={14} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
+              )}
+            </div>
           </div>
-          <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
-            {copiedText === item.code ? (
-              <Check size={14} weight="bold" className="text-green-600" />
-            ) : (
-              <Copy size={14} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -150,16 +151,27 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
       </button>
 
       {hasPopover && (
-        <div className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-3 h-3">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isTablet) {
+              setDialogOpen(true);
+            } else if (isMobile) {
+              setOpen(true);
+            }
+          }}
+          className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-3 h-3 cursor-pointer"
+        >
           <CaretDown
             size={10}
             weight="bold"
             className="text-primary-400"
           />
-        </div>
+        </button>
       )}
 
-      {hasPopover && !isMobile && open && coords && createPortal(
+      {hasPopover && !isMobile && !isTablet && open && coords && createPortal(
         <div
           className="fixed z-[100] pointer-events-none"
           style={{
@@ -170,11 +182,37 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           onMouseEnter={onEnter}
           onMouseLeave={onLeave}
         >
-          <div className="bg-white border border-primary-100 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-            {codesPanel}
+          <div className="bg-white border border-primary-100 shadow-2xl p-1.5 min-w-[180px] flex flex-col animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+            <CodesList items={copyableItems} />
           </div>
         </div>,
         document.body
+      )}
+
+      {isMobile && hasPopover && createPortal(
+        <BottomSheet open={open} onOpenChange={handleOpenChange} title={`Mã sản phẩm`}>
+          <div className="pb-4">
+            <div className="px-4 pt-2">
+              <CodesList items={allItems} />
+            </div>
+          </div>
+        </BottomSheet>,
+        document.body
+      )}
+
+      {isTablet && (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="w-[95%] max-w-sm gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden">
+            <DialogHeader className="px-4 py-3 border-b border-primary-100 bg-white">
+              <DialogTitle className="text-sm font-bold text-secondary-900">
+                Mã sản phẩm
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+              <CodesList items={allItems} />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
