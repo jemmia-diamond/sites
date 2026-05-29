@@ -335,7 +335,7 @@ export function JewelryTableRow({
           <div className="flex items-center justify-center gap-1">
             <span
               className={cn(
-                "text-[10px] sm:text-[11px] font-black tracking-tight",
+                "text-xs sm:text-sm font-bold tracking-tight",
                 isExpanded ? "text-white" : "text-secondary-900",
               )}
             >
@@ -440,7 +440,7 @@ export function JewelryTableRow({
                             <Badge
                               key={idx}
                               className={cn(
-                                "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase w-fit",
+                                "flex items-center gap-1.5 rounded-full pl-2.5 pr-1.5 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase w-fit",
                                 "bg-secondary-900 text-white",
                               )}
                             >
@@ -460,7 +460,7 @@ export function JewelryTableRow({
                 <div className="flex items-center gap-1.5">
                   <span
                     className={cn(
-                      "text-sm font-black tracking-tight",
+                      "text-sm font-bold tracking-tight",
                       isExpanded ? "text-white" : "text-secondary-900",
                     )}
                   >
@@ -473,7 +473,7 @@ export function JewelryTableRow({
               </div>
               <Badge
                 className={cn(
-                  "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
+                  "rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
                   hasStock
                     ? "bg-emerald-50 text-emerald-600"
                     : "bg-primary-50 text-primary-300",

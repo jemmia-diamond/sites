@@ -22,11 +22,11 @@ export function NavLinks({ items, isMobile, onClose }: NavLinksProps) {
           to={item.path}
           onClick={onClose}
           className={cn(
-            "relative flex items-center text-[11px] font-bold uppercase tracking-[0.1em] transition-all",
+            "relative flex items-center nav-tab-item",
             isMobile ? "w-full py-2 text-sm justify-between" : "h-full",
             location.pathname === item.path
-              ? "text-secondary-900"
-              : "text-primary-300 hover:text-secondary-900"
+              ? "nav-tab-item-active"
+              : "nav-tab-item-inactive"
           )}
         >
           {item.name}

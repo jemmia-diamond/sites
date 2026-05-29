@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowSquareOut, CaretDown } from "@phosphor-icons/react";
 import { DiamondModel } from "../../../types";
-import { cn, getDiamondShapeImage } from "@/lib/utils";
+import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
@@ -59,51 +59,51 @@ export function DiamondTableRow({
         <TableCell className="px-2 sm:px-3 py-2">
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1.5">
-              <p className="text-[10px] sm:text-[11px] font-black text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
+              <p className="text-xs font-bold text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
               {diamond.inCombo && (
-                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-black rounded-sm tracking-tighter">
+                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3.5 leading-none border-none font-bold rounded-sm tracking-tighter">
                   Không bán lẻ
                 </Badge>
               )}
             </div>
-            <p className="text-[8px] sm:text-[9px] text-primary-300 font-bold uppercase tracking-wider leading-none mt-1">BC:{diamond.barcode}</p>
+            <p className="text-[10px] text-primary-400 font-medium uppercase tracking-wider leading-none mt-1">BC:{diamond.barcode}</p>
           </div>
         </TableCell>
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <p className="text-[10px] sm:text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">
+          <p className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">
             {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
           </p>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-[10px] sm:text-[11px] font-black text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} ct</span>
+          <span className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} ct</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-[10px] sm:text-[11px] font-bold text-primary-400 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
+          <span className="text-xs font-medium text-primary-500 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-[10px] sm:text-[11px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.color}</span>
+          <span className="text-xs font-medium text-primary-500 uppercase tracking-tight">{diamond.attributes.color}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <span className="text-[10px] sm:text-[11px] font-bold text-primary-400 uppercase tracking-tight">{diamond.attributes.clarity}</span>
+          <span className="text-xs font-medium text-primary-500 uppercase tracking-tight">{diamond.attributes.clarity}</span>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
-          <p className="text-[10px] sm:text-[11px] font-bold text-primary-400 tracking-tight">
+          <p className="text-xs font-medium text-primary-500 tracking-tight">
             {diamond.attributes.fluorescence || "NONE"}
           </p>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-left">
           <div className="flex flex-col gap-1">
-            <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <span className="text-[11px] font-medium text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
               {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
             </span>
             {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
-              <span className="text-[9px] sm:text-[10px] font-bold text-secondary-900 tracking-tight">
+              <span className="text-[11px] font-medium text-secondary-900 tracking-tight">
                 {diamond.attributes.diamondHistory.stage}
               </span>
             )}
@@ -128,16 +128,16 @@ export function DiamondTableRow({
         <TableCell className="px-2 sm:px-3 py-2 text-right">
           <div className="flex flex-col items-end leading-none">
             {diamond.basePrice > diamond.salePrice && (
-              <p className="text-[8px] sm:text-[9px] font-bold text-primary-200 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
+              <p className="text-[10px] font-medium text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
             )}
-            <p className="text-[11px] sm:text-[13px] font-black text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
+            <p className="text-sm font-bold text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
           </div>
         </TableCell>
 
         <TableCell className="px-1 sm:px-2 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
+              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-bold tracking-widest border-none shadow-sm whitespace-nowrap",
               hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
@@ -154,7 +154,7 @@ export function DiamondTableRow({
             ) : (
               realWarehouses.map((wh, idx) => (
                 <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
-                  {wh.name}
+                  {formatWarehouseName(wh.name)}
                 </Badge>
               ))
             )}
@@ -207,69 +207,45 @@ export function DiamondTableRow({
         )}
         onClick={() => onToggleExpand(diamond.id)}
       >
-        <TableCell className="px-3 py-1.5">
+        <TableCell className="px-3 py-2">
           <div className="flex items-center gap-3 w-full">
             {/* Left Section: All Info */}
             <div className="flex-1 min-w-0 flex flex-col gap-1">
-              {/* Top Row: In Combo Badge + Size */}
+              {/* Top Row: GIA ID and Badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-secondary-900"
+                  "text-xs font-bold tracking-tight",
+                  isExpanded ? "text-white" : "text-secondary-900"
                 )}>
-                  {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
+                  GIA{diamond.attributes.giaId}
                 </span>
                 {diamond.inCombo && (
-                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-black rounded-sm tracking-tighter">
+                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-bold rounded-sm tracking-tighter">
                     Không bán lẻ
                   </Badge>
                 )}
                 {realWarehouses.length > 0 && !isIncoming && realWarehouses.map((wh, idx) => (
                   <Badge key={idx} className={cn(
-                    "border-none rounded-none px-1 py-0 text-[8px] font-black tracking-tight whitespace-nowrap",
+                    "border-none rounded-none px-1 py-0 text-[8px] font-bold tracking-tight whitespace-nowrap",
                     isExpanded ? "bg-white/20 text-white" : "bg-primary-50 text-secondary-900"
                   )}>
-                    {wh.name}
+                    {formatWarehouseName(wh.name)}
                   </Badge>
                 ))}
               </div>
 
-              {/* Bottom Row: 4Cs, Shape, Warehouses */}
-              <div className="flex flex-wrap items-center gap-1">
+              {/* Bottom Row: 4Cs, Shape, Dimensions */}
+              <div className="flex flex-wrap items-center gap-1.5">
                 <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-primary-400"
+                  "text-xs font-medium tracking-tight",
+                  isExpanded ? "text-white/90" : "text-primary-500"
                 )}>
-                  {diamond.attributes.carat} ct
-                </span>
-                <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-primary-400"
-                )}>
-                  {diamond.attributes.color}
-                </span>
-                <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-primary-400"
-                )}>
-                  {diamond.attributes.clarity}
-                </span>
-                <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-primary-400"
-                )}>
-                  {diamond.attributes.fluorescence || "NONE"}
-                </span>
-                <span className={cn(
-                  "text-[9px] font-bold tracking-tight",
-                  isExpanded ? "text-white/90" : "text-primary-400"
-                )}>
-                  {diamond.attributes.shape}
+                  {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.shape}
                 </span>
 
                 {(isIncoming || realWarehouses.length === 0) && (
                   <span className={cn(
-                    "text-[9px] font-bold italic",
+                    "text-xs font-semibold italic",
                     isExpanded ? "text-white/60" : "text-primary-300"
                   )}>N/A</span>
                 )}
@@ -277,15 +253,15 @@ export function DiamondTableRow({
             </div>
 
             {/* Middle Section: Price Stack */}
-            <div className="flex flex-col items-end gap-1 leading-none flex-shrink-0">
+            <div className="flex flex-col items-end gap-0.5 leading-none flex-shrink-0">
               {diamond.basePrice > diamond.salePrice && (
                 <p className={cn(
-                  "text-[9px] font-bold line-through",
-                  isExpanded ? "text-white/60" : "text-primary-200 opacity-60"
+                  "text-[10px] font-medium line-through",
+                  isExpanded ? "text-white/60" : "text-primary-300 opacity-60"
                 )}>{formatPriceVND(diamond.basePrice)}</p>
               )}
               <p className={cn(
-                "text-[11px] font-black tracking-tight",
+                "text-sm font-bold tracking-tight",
                 isExpanded ? "text-white" : "text-secondary-900"
               )}>{formatPriceVND(diamond.salePrice)}</p>
             </div>

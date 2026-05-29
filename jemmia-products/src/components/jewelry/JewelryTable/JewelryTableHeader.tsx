@@ -31,9 +31,11 @@ export function JewelryTableHeader() {
               px-2
               py-0
               text-center
-              text-xs
-              font-black
-              text-secondary-900
+              text-[11px]
+              font-bold
+              uppercase
+              tracking-wider
+              text-primary-700
               whitespace-nowrap
             `,
               i === 5 && "w-12"

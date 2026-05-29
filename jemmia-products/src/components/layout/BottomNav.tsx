@@ -37,10 +37,10 @@ export function BottomNav() {
             
             <span
               className={cn(
-                "text-xs tracking-wide transition-all duration-300",
+                "nav-tab-item",
                 isActive
-                  ? "text-secondary-900 font-bold"
-                  : "text-primary-400 font-medium"
+                  ? "nav-tab-item-active"
+                  : "nav-tab-item-inactive"
               )}
             >
               {item.name}

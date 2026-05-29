@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { formatDateTime } from "./utils/formatters";
-import { cn } from "@/lib/utils";
+import { cn, formatWarehouseName } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
@@ -169,7 +169,7 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
                 </div>
                 <div className="w-[160px] shrink-0 text-center">
                   <Badge className="rounded-full bg-secondary-900/5 text-secondary-900 border-none text-[10px] px-3 py-1 font-bold h-6 tracking-wider">
-                    {v.stockAt || "Kho tổng"}
+                    {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
                   </Badge>
                 </div>
                 <div className="w-[130px] shrink-0 text-center flex flex-col justify-center items-center">
@@ -226,7 +226,7 @@ function SerialListMobileCards({ activeSerials }: { activeSerials: any[] }) {
                 )}
               </div>
               <Badge className="rounded-full bg-secondary-900/5 text-secondary-900 border-none text-[9px] px-2 py-0.5 font-bold h-5 tracking-wider shrink-0">
-                {v.stockAt || "Kho tổng"}
+                {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
               </Badge>
             </div>
             <div className="grid grid-cols-2 gap-1.5">

@@ -202,4 +202,19 @@ html {
   .animate-shine {
     animation: shine 2s infinite;
   }
+  .nav-tab-item {
+    @apply text-xs uppercase tracking-[0.08em] transition-all duration-300;
+  }
+  .nav-tab-item-active {
+    @apply text-secondary-900 font-bold;
+  }
+  .nav-tab-item-inactive {
+    @apply text-primary-400 font-medium hover:text-secondary-900;
+  }
+  .active-chip-badge {
+    @apply flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-primary-50 text-secondary-900 border border-primary-100/80 rounded-none shadow-sm text-xs font-medium hover:bg-primary-100/50 hover:text-secondary-900 transition-colors;
+  }
+  .clear-filters-btn {
+    @apply h-auto p-0 text-[10px] font-bold text-primary-400 hover:text-secondary-900 hover:bg-transparent uppercase tracking-wider transition-colors cursor-pointer;
+  }
 }

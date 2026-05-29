@@ -1,6 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DiamondFilter } from "../../../types";
+import { formatWarehouseName } from "@/lib/utils";
 
 interface Warehouse {
   id: string;
@@ -35,7 +36,7 @@ export function WarehouseFilter({
             htmlFor={wh.id}
             className={`text-xs text-primary-600 ${disabled ? "cursor-not-allowed" : "cursor-pointer group-hover:text-secondary-900"}`}
           >
-            {wh.name}
+            {formatWarehouseName(wh.name)}
           </Label>
         </div>
       ))}

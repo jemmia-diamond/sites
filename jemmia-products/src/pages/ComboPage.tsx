@@ -83,7 +83,7 @@ export default function ComboPage() {
   );
 }
 
-import { cn, getDiamondShapeImage } from "@/lib/utils";
+import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "-";
@@ -221,7 +221,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                     </div>
                     {product.variant?.stockAt && (
                       <div className="text-primary-400 col-span-2">
-                        Kho: <span className="text-primary-700 font-semibold">{product.variant.stockAt}</span>
+                        Kho: <span className="text-primary-700 font-semibold">{formatWarehouseName(product.variant.stockAt)}</span>
                       </div>
                     )}
                   </>
@@ -235,7 +235,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                     </div>
                     {product.product.warehouses?.[0]?.name && (
                       <div className="text-primary-400 col-span-2">
-                        Kho: <span className="text-primary-700 font-semibold">{product.product.warehouses[0].name}</span>
+                        Kho: <span className="text-primary-700 font-semibold">{formatWarehouseName(product.product.warehouses[0].name)}</span>
                       </div>
                     )}
                   </>
@@ -409,7 +409,7 @@ function ComboDetailsSheetContent({
               .filter(Boolean)
               .join(" · ")}
           />
-          <DetailRow label="Kho" value={variant?.stockAt} />
+          <DetailRow label="Kho" value={formatWarehouseName(variant?.stockAt)} />
         </div>
       </div>
 
@@ -438,7 +438,7 @@ function ComboDetailsSheetContent({
           {fourCs && <DetailRow label="4Cs" value={fourCs} />}
           <DetailRow label="Giác cắt" value={d?.cut} />
           <DetailRow label="Kích thước" value={diamondSize} />
-          <DetailRow label="Kho" value={diamond.warehouses?.[0]?.name} />
+          <DetailRow label="Kho" value={formatWarehouseName(diamond.warehouses?.[0]?.name)} />
         </div>
       </div>
 

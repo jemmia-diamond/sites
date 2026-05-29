@@ -107,7 +107,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
       )}>
         <span
           className={cn(
-            "text-[11px] font-semibold leading-none transition-colors",
+            "text-xs font-semibold leading-none transition-colors",
             isExpanded
               ? isMobile ? "text-secondary-900" : "text-white"
               : open ? "text-secondary-900" : "text-primary-400"

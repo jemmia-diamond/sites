@@ -255,9 +255,9 @@ export default function DiamondPage() {
                 <Badge
                   key={chip.key}
                   variant="default"
-                  className="flex items-center gap-1.5 pl-2 pr-1.5 py-1.5 bg-primary-100 text-primary-900 border-primary-200 hover:bg-primary-100 hover:text-primary-900"
+                  className="active-chip-badge"
                 >
-                  <span className="text-xs font-medium">{chip.label}</span>
+                  <span>{chip.label}</span>
                   <button
                     onClick={() => handleRemoveChip(chip.key)}
                     className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
@@ -271,7 +271,7 @@ export default function DiamondPage() {
               variant="ghost"
               size="sm"
               onClick={handleClearAllFilters}
-              className="h-auto p-0 text-[9px] font-black text-primary-400 hover:text-secondary-900 hover:bg-transparent uppercase tracking-wider flex-shrink-0"
+              className="clear-filters-btn flex-shrink-0"
             >
               Xóa bộ lọc
             </Button>

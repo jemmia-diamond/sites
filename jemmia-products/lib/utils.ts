@@ -54,3 +54,20 @@ export function getPaginationRange(currentPage: number, totalPages: number) {
 
   return rangeWithDots;
 }
+
+export function formatWarehouseName(name: string | null | undefined): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  const lower = trimmed.toLowerCase();
+  
+  if (lower.includes("hcm") || lower.includes("hồ chí minh")) {
+    return "Hồ Chí Minh";
+  }
+  if (lower.includes("hn") || lower.includes("hà nội")) {
+    return "Hà Nội";
+  }
+  if (lower.includes("ct") || lower.includes("cần thơ")) {
+    return "Cần Thơ";
+  }
+  return trimmed;
+}

@@ -136,7 +136,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
       style={hasPopover && isMobile && open ? { pointerEvents: "none" } : undefined}
     >
       <Badge className={cn(
-        "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase whitespace-nowrap",
+        "flex items-center gap-1.5 rounded-full pl-2.5 pr-1.5 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap",
         "bg-secondary-900 text-white",
         hasPopover && isMobile && "cursor-pointer active:opacity-90"
       )}>

@@ -486,7 +486,7 @@ export function JewelryFilterSidebar({
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="h-auto p-0 text-[9px] font-black text-blue-500 hover:text-blue-600 hover:bg-transparent tracking-wider uppercase cursor-pointer"
+                  className="clear-filters-btn"
                 >
                   Xóa bộ lọc
                 </Button>
@@ -496,7 +496,7 @@ export function JewelryFilterSidebar({
                   <Badge
                     key={chip.key}
                     variant="secondary"
-                    className="rounded-none bg-primary-50 text-secondary-900 border-none px-2 py-0.5 flex items-center shadow-sm text-[10px] font-medium"
+                    className="active-chip-badge"
                   >
                     <span>{chip.label}</span>
                     <button

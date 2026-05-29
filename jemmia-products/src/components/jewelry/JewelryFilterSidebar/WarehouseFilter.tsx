@@ -1,6 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { JewelryFilter } from "../../../types";
+import { formatWarehouseName } from "@/lib/utils";
 
 interface Warehouse {
   id: string;
@@ -32,7 +33,7 @@ export function WarehouseFilter({
             htmlFor={wh.id}
             className="text-xs text-primary-600 cursor-pointer group-hover:text-secondary-900 capitalize"
           >
-            {wh.name}
+            {formatWarehouseName(wh.name)}
           </Label>
         </div>
       ))}
