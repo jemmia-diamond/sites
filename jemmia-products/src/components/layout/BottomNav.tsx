@@ -6,12 +6,12 @@ export function BottomNav() {
 
   const navItems = [
     {
-      name: "Kim cương",
-      path: "/diamonds",
-    },
-    {
       name: "Trang sức",
       path: "/jewelry",
+    },
+    {
+      name: "Kim cương",
+      path: "/diamonds",
     },
     {
       name: "Nguyên chiếc",

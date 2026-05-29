@@ -22,6 +22,19 @@ axiosRetry(axios, {
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || (error.response?.status ?? 0) >= 500;
   }
 });
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("site_auth_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -52,6 +65,7 @@ export default function App() {
         setIsAuthenticated(true);
       } catch (error) {
         setIsAuthenticated(false);
+        localStorage.removeItem("site_auth_token");
       } finally {
         setIsChecking(false);
       }
@@ -61,6 +75,7 @@ export default function App() {
 
     const handleLogout = () => {
       setIsAuthenticated(false);
+      localStorage.removeItem("site_auth_token");
     };
 
     window.addEventListener("auth:logout", handleLogout);

@@ -22,7 +22,10 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
     setError(null);
 
     try {
-      await axios.post("/auth/login", { password });
+      const response = await axios.post("/auth/login", { password });
+      if (response.data && response.data.token) {
+        localStorage.setItem("site_auth_token", response.data.token);
+      }
       onSuccess();
     } catch (err: any) {
       if (err.response?.status === 401) {

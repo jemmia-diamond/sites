@@ -15,8 +15,8 @@ interface SearchResponse {
 }
 
 const NAV_ITEMS = [
-  { name: "Kim cương", path: "/diamonds" },
   { name: "Trang sức", path: "/jewelry" },
+  { name: "Kim cương", path: "/diamonds" },
   { name: "Nguyên chiếc", path: "/combos" },
 ];
 
