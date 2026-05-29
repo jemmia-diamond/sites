@@ -763,95 +763,85 @@ function ExpandedPanel({
   return (
     <div className="bg-white overflow-hidden">
       {/* Mobile Only: Additional Info Section */}
-      {(webImages.length > 0 ||
-        actualImages.length > 0 ||
-        hasSideStones ||
-        hasSideStonesNam ||
-        hasSideStonesNu) && (
-        <div
-          className={`${isBundle ? "pb-2" : "px-3 py-2"} sm:hidden border-b border-primary-100 space-y-2`}
-        >
-          {/* Product Codes */}
-          <div className="flex items-center justify-between">
-            {/* Side Stones */}
-            {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
-              <div className="h-full flex items-center mt-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
-                  Viên Tấm
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {isBundle ? (
-                    <>
-                      {hasSideStonesNam && (
-                        <SideStoneTooltip
-                          fourView={fourViewNam as any}
-                          isExpanded={true}
-                          label="Tấm Nam"
-                        />
-                      )}
-                      {hasSideStonesNu && (
-                        <SideStoneTooltip
-                          fourView={fourViewNu as any}
-                          isExpanded={true}
-                          label="Tấm Nữ"
-                        />
-                      )}
-                    </>
-                  ) : (
-                    fourView &&
-                    Array.isArray(fourView) &&
-                    fourView.length > 0 && (
+      <div
+        className={`px-3 ${isBundle ? "pb-2" : "py-2"} sm:hidden border-b border-primary-100 space-y-2`}
+      >
+        {/* Product Codes */}
+        <div className="flex items-center justify-between">
+          {/* Side Stones */}
+          {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
+            <div className="h-full flex items-center mt-1">
+              <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+                Viên Tấm
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {isBundle ? (
+                  <>
+                    {hasSideStonesNam && (
                       <SideStoneTooltip
-                        fourView={fourView as any}
+                        fourView={fourViewNam as any}
                         isExpanded={true}
+                        label="Tấm Nam"
                       />
-                    )
-                  )}
-                </div>
+                    )}
+                    {hasSideStonesNu && (
+                      <SideStoneTooltip
+                        fourView={fourViewNu as any}
+                        isExpanded={true}
+                        label="Tấm Nữ"
+                      />
+                    )}
+                  </>
+                ) : (
+                  fourView &&
+                  Array.isArray(fourView) &&
+                  fourView.length > 0 && (
+                    <SideStoneTooltip
+                      fourView={fourView as any}
+                      isExpanded={true}
+                    />
+                  )
+                )}
               </div>
-            )}
+            </div>
+          )}
+        </div>
+
+        {/* Galleries */}
+        <div className="space-y-2">
+          {/* Website Images */}
+          <div className="space-y-1">
+            <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+              Ảnh Website
+            </p>
+            <CompactGallery
+              images={webImages}
+              showUpload={false}
+              brokenImages={brokenImages || new Set()}
+              onImageError={onImageError || (() => {})}
+              onPreview={onPreview || (() => {})}
+              designCode={designCode || product.title}
+            />
           </div>
 
-          {/* Galleries */}
-          <div className="space-y-2">
-            {/* Website Images */}
-            {webImages.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
-                  Ảnh Website
-                </p>
-                <CompactGallery
-                  images={webImages}
-                  showUpload={false}
-                  brokenImages={brokenImages || new Set()}
-                  onImageError={onImageError || (() => {})}
-                  onPreview={onPreview || (() => {})}
-                  designCode={designCode || product.title}
-                />
-              </div>
-            )}
-
-            {/* Actual Images */}
-            {actualImages.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
-                  Ảnh/Video Thực Tế
-                </p>
-                <CompactGallery
-                  images={actualImages}
-                  showUpload={true}
-                  uploadOptions={uploadOptions}
-                  brokenImages={brokenImages || new Set()}
-                  onImageError={onImageError || (() => {})}
-                  onPreview={onPreview || (() => {})}
-                  designCode={designCode || product.title}
-                  onUploadSuccess={onUploadSuccess}
-                />
-              </div>
-            )}
+          {/* Actual Images */}
+          <div className="space-y-1">
+            <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+              Ảnh/Video Thực Tế
+            </p>
+            <CompactGallery
+              images={actualImages}
+              showUpload={true}
+              uploadOptions={uploadOptions}
+              brokenImages={brokenImages || new Set()}
+              onImageError={onImageError || (() => {})}
+              onPreview={onPreview || (() => {})}
+              designCode={designCode || product.title}
+              onUploadSuccess={onUploadSuccess}
+            />
           </div>
         </div>
-      )}
+      </div>
 
       <div className="divide-y divide-secondary-600">
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
@@ -911,7 +901,7 @@ function ExpandedPanel({
 
                 <div className="px-4 py-2 sm:py-3.5 flex items-center gap-2">
                   <Badge className="rounded-full bg-secondary-800 text-white text-[10px] sm:text-[11px] font-black shadow-sm px-2 py-0.5">
-                    Khả dụng Haravan: {group.totalHaravanQuantity}
+                    Khả dụng: {group.totalHaravanQuantity}
                   </Badge>
                   <a
                     href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
@@ -1001,7 +991,7 @@ function ExpandedPanel({
                       </p>
                       <div className="flex items-center gap-1 mt-0.5">
                         <Badge className="rounded-full bg-secondary-800 text-white text-[8px] font-black shadow-sm px-1.5 py-0">
-                          Khả dụng Haravan: {group.totalHaravanQuantity}
+                          Khả dụng: {group.totalHaravanQuantity}
                         </Badge>
                       </div>
                     </div>

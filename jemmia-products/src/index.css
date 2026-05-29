@@ -191,7 +191,13 @@
 }
 
 html {
-  overflow: hidden;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  html {
+    overflow: hidden;
+  }
 }
 
 @layer utilities {

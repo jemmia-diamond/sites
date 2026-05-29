@@ -45,14 +45,14 @@ export default function ComboPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className="flex flex-col h-full bg-white w-full px-4 lg:px-6 pt-4 pb-6 gap-2 min-w-0 overflow-hidden min-h-0">
+      <div className="flex flex-col lg:h-full bg-white w-full px-4 lg:px-6 pt-4 pb-6 gap-2 min-w-0 lg:overflow-hidden min-h-0">
         <PageHeader
           title="Sản phẩm nguyên chiếc"
           description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
         />
 
-        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full overflow-hidden">
-          <div className="flex-1 overflow-y-auto min-w-0 w-full">
+        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full lg:overflow-hidden">
+          <div className="flex-1 lg:overflow-y-auto min-w-0 w-full">
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.from({ length: 4 }).map((_, i) => (

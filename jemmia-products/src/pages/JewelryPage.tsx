@@ -190,7 +190,7 @@ export default function JewelryPage() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col gap-2 md:gap-4 bg-white px-4 lg:px-6 pt-4 pb-6 w-full max-w-full min-w-0 overflow-hidden min-h-0">
+      <main className="flex-1 flex flex-col gap-2 md:gap-4 bg-white px-4 lg:px-6 pt-4 pb-6 w-full max-w-full min-w-0 lg:overflow-hidden min-h-0">
         <div className="flex-shrink-0">
           <PageHeader
             title={
@@ -230,71 +230,74 @@ export default function JewelryPage() {
                     )}
                   </Button>
                 </div>
-
-                <div
-                  className={cn(
-                    "lg:hidden flex items-center gap-3 w-full",
-                    searchQueryParam ? "justify-end" : "justify-between"
-                  )}
-                >
-                  {!searchQueryParam && (
-                    <Button
-                      onClick={() => setIsFilterOpen(true)}
-                      variant="outline"
-                      className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
-                    >
-                      <Filter size={14} className="mr-2" />
-                      <span className="w-max">Bộ lọc</span>
-                    </Button>
-                  )}
-                  <Button
-                    onClick={toggleSort}
-                    variant="outline"
-                    className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
-                  >
-                    {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
-                    <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>
-                  </Button>
-                </div>
               </div>
             }
           />
         </div>
 
-        {activeChips.length > 0 && (
-          <div className="lg:hidden flex flex-wrap gap-2 flex-shrink-0 pb-1 items-center">
-            <div className="flex flex-wrap gap-2 flex-1">
-              {activeChips.map((chip) => (
-                <Badge
-                  key={chip.key}
-                  variant="default"
-                  className="active-chip-badge"
-                >
-                  <span>{chip.label}</span>
-                  <button
-                    onClick={() => handleRemoveChip(chip.key)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
+        {/* Sticky Mobile Filters & Active Chips Bar */}
+        <div className="lg:hidden sticky top-12 z-40 bg-white flex flex-col gap-2 w-full border-b border-primary-50 pb-2">
+          <div
+            className={cn(
+              "flex items-center gap-3 w-full",
+              searchQueryParam ? "justify-end" : "justify-between"
+            )}
+          >
+            {!searchQueryParam && (
+              <Button
+                onClick={() => setIsFilterOpen(true)}
+                variant="outline"
+                className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+              >
+                <Filter size={14} className="mr-2" />
+                <span className="w-max">Bộ lọc</span>
+              </Button>
+            )}
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearAllFilters}
-              className="clear-filters-btn flex-shrink-0"
+              onClick={toggleSort}
+              variant="outline"
+              className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
             >
-              Xóa bộ lọc
+              {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
+              <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>
             </Button>
           </div>
-        )}
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {activeChips.length > 0 && (
+            <div className="flex flex-wrap gap-2 flex-shrink-0 pt-1 items-center">
+              <div className="flex flex-wrap gap-2 flex-1">
+                {activeChips.map((chip) => (
+                  <Badge
+                    key={chip.key}
+                    variant="default"
+                    className="active-chip-badge"
+                  >
+                    <span>{chip.label}</span>
+                    <button
+                      onClick={() => handleRemoveChip(chip.key)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAllFilters}
+                className="clear-filters-btn flex-shrink-0"
+              >
+                Xóa bộ lọc
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 flex flex-col min-h-0 lg:overflow-hidden">
           {isLoading ? (
-            <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full overflow-hidden">
-              <div className="flex-1 overflow-y-auto min-w-0 w-full relative">
+            <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full lg:overflow-hidden">
+              <div className="flex-1 lg:overflow-y-auto min-w-0 w-full relative">
                 <Table className="w-full sm:min-w-[1200px] border-collapse">
                   {/* Desktop Table Header */}
                   <TableHeader className="hidden sm:table-header-group">

@@ -1,0 +1,21 @@
+{
+  "short_name": "Jemmia",
+  "name": "Jemmia Products",
+  "icons": [
+    {
+      "src": "https://theme.hstatic.net/200000355853/1001327175/14/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://theme.hstatic.net/200000355853/1001327175/14/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#013A40",
+  "display": "standalone",
+  "orientation": "portrait"
+}
