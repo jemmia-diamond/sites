@@ -32,7 +32,7 @@ export function PageHeader({
   return (
     <div className={cn("flex flex-col  justify-between gap-1", className)}>
       {headerStart && <div>{headerStart}</div>}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
         <div className="flex items-center gap-4">
           <div className="space-y-0">
             <h1 className="text-lg md:text-2xl font-bold tracking-tight text-primary-900">{title}</h1>
