@@ -60,15 +60,15 @@ export function SearchDropdown({
   }, [onClose]);
 
   return (
-    <div className="w-full w-full sm:max-w-[300px] md:max-w-lg lg:w-[400px] flex items-center relative group" ref={dropdownRef}>
-      <MagnifyingGlass className="absolute left-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-300 group-hover:text-secondary-900 transition-colors z-10" />
+    <div className="w-full w-full md:max-w-[300px] md:max-w-lg xl:w-[400px] flex items-center relative group" ref={dropdownRef}>
+      <MagnifyingGlass className="absolute left-3 h-3.5 w-3.5 md:h-4 md:w-4 text-primary-300 group-hover:text-secondary-900 transition-colors z-10" />
       <Input
         placeholder={searchPlaceholder}
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim() && onClose()}
-        className="bg-gray-50/50 border rounded-full border-primary-200 pl-8 sm:pl-10 pr-4 h-8 text-[10px] sm:text-xs font-black focus-visible:ring-0 focus-visible:bg-white focus-visible:border-secondary-900 placeholder:text-primary-200 transition-all duration-500"
+        className="bg-gray-50/50 border rounded-full border-primary-200 pl-8 md:pl-10 pr-4 h-8 text-[10px] md:text-xs font-black focus-visible:ring-0 focus-visible:bg-white focus-visible:border-secondary-900 placeholder:text-primary-200 transition-all duration-500"
       />
       {query && (
         <button
@@ -83,7 +83,7 @@ export function SearchDropdown({
       )}
 
       {isOpen && (query.trim() || isLoading) && (
-        <div className="absolute top-[calc(100%+8px)] right-0 w-[85vw] sm:w-[400px] md:w-full bg-white shadow-[0_30px_60px_-12px_rgba(0,0,0,0.18)] border border-primary-50 max-h-[520px] overflow-y-auto no-scrollbar z-50 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="absolute top-[calc(100%+8px)] right-0 w-[85vw] md:w-[400px] md:w-full bg-white shadow-[0_30px_60px_-12px_rgba(0,0,0,0.18)] border border-primary-50 max-h-[520px] overflow-y-auto no-scrollbar z-50 animate-in fade-in slide-in-from-top-4 duration-500">
           {isLoading ? (
             <LoadingState />
           ) : results && (results.diamonds.data.length > 0 || results.jewelries.data.length > 0) ? (

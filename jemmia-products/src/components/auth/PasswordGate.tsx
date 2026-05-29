@@ -39,7 +39,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md p-4 md:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -47,19 +47,19 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
         className="w-full max-w-[440px]"
       >
         <Card className="w-full overflow-hidden border-primary-100 shadow-2xl">
-          <CardHeader className="bg-white pb-6 sm:pb-8 pt-8 sm:pt-10 text-center">
+          <CardHeader className="bg-white pb-6 md:pb-8 pt-8 md:pt-10 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary-900 shadow-lg shadow-secondary-900/20">
               <Lock className="h-6 w-6 text-white" />
             </div>
-            <CardTitle className="font-sans text-lg sm:text-2xl font-black uppercase tracking-wide sm:tracking-wider text-secondary-900">
+            <CardTitle className="font-sans text-lg md:text-2xl font-black uppercase tracking-wide md:tracking-wider text-secondary-900">
               TRUY CẬP HỆ THỐNG
             </CardTitle>
-            <CardDescription className="font-sans text-[10px] sm:text-xs font-bold uppercase tracking-wide sm:tracking-wider text-primary-300">
+            <CardDescription className="font-sans text-[10px] md:text-xs font-bold uppercase tracking-wide md:tracking-wider text-primary-300">
               Vui lòng nhập mật khẩu để tiếp tục
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
+          <CardContent className="px-5 md:px-8 pb-6 md:pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <Input

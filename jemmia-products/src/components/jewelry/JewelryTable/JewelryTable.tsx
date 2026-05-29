@@ -147,9 +147,9 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
 
   return (
     <>
-      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full lg:overflow-hidden">
-        <div className="flex-1 lg:overflow-y-auto overflow-x-hidden sm:overflow-x-auto min-w-0 w-full relative">
-          <Table className="w-full sm:min-w-[1200px] border-collapse">
+      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+        <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
+          <Table className="w-full md:min-w-[1200px] border-collapse">
             <JewelryTableHeader />
 
             <TableBody>
@@ -249,7 +249,7 @@ export function MediaPreviewDialog({
 
   return (
     <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[90%] sm:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
+      <DialogContent className="w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
         {selectedMedia ? (
           <MediaViewer
             selectedMedia={selectedMedia}
@@ -330,14 +330,14 @@ function MediaViewer({
             className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
           >
             <DownloadSimple size={16} />
-            <span className="hidden sm:inline">Tải về</span>
+            <span className="hidden md:inline">Tải về</span>
           </Button>
           <Button variant="ghost" size="icon" className="h-10 w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
             <X size={20} />
           </Button>
         </div>
       </div>
-      <div className="flex-1 relative flex items-center justify-center p-4 sm:p-12 bg-primary-50/50 overflow-hidden group/viewer">
+      <div className="flex-1 relative flex items-center justify-center p-4 md:p-12 bg-primary-50/50 overflow-hidden group/viewer">
         {validPreviewList.length > 1 && (
           <>
             <Button variant="ghost" size="icon" className="absolute left-6 top-1/2 -translate-y-1/2 h-14 w-14 bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-0 group-hover/viewer:opacity-100 transition-all shadow-md z-30" onClick={handlePrev}>

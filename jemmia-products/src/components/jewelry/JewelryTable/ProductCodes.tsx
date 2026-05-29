@@ -110,7 +110,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           title={`Copy ${item.label}`}
         >
           <div className="flex flex-col items-start gap-0.5">
-            <span className="text-secondary-900 text-[11px] sm:text-[10px] font-black uppercase">
+            <span className="text-secondary-900 text-[11px] md:text-[10px] font-black uppercase">
               {item.code}
             </span>
           </div>

@@ -70,7 +70,7 @@ export function FloatingSearch() {
       {/* Floating Action Button (FAB) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed bottom-16 right-4 z-[9998] w-12 h-12 bg-secondary-900 text-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(1,58,64,0.35)] hover:bg-secondary-800 active:scale-95 transition-all duration-300 border border-secondary-800"
+        className="xl:hidden fixed bottom-16 right-4 z-[9998] w-12 h-12 bg-secondary-900 text-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(1,58,64,0.35)] hover:bg-secondary-800 active:scale-95 transition-all duration-300 border border-secondary-800"
         aria-label="Search products"
       >
         <MagnifyingGlass size={22} weight="bold" />
@@ -78,7 +78,7 @@ export function FloatingSearch() {
 
       {/* Modern Full-Screen Search Dialog */}
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="w-[95%] sm:max-w-md bg-white gap-1 p-0 rounded-md overflow-hidden border-none shadow-2xl z-[9999] top-[20%] translate-y-0">
+        <DialogContent className="w-[95%] md:max-w-md bg-white gap-1 p-0 rounded-md overflow-hidden border-none shadow-2xl z-[9999] top-[20%] translate-y-0">
 
           {/* Search Input Bar */}
           <div className="relative border-b border-primary-50 p-4 flex items-center">

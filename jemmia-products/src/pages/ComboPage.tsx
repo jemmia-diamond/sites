@@ -45,54 +45,54 @@ export default function ComboPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className="flex flex-col lg:h-full bg-white w-full px-4 lg:px-6 pt-4 pb-6 gap-2 min-w-0 lg:overflow-hidden min-h-0">
+      <div className="flex flex-col xl:h-full bg-white w-full px-4 xl:px-6 pt-4 pb-6 gap-2 min-w-0 xl:overflow-hidden min-h-0">
         <PageHeader
           title="Sản phẩm nguyên chiếc"
           description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
         />
 
-        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full lg:overflow-hidden">
-          <div className="flex-1 lg:overflow-y-auto min-w-0 w-full">
+        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full xl:overflow-hidden">
+          <div className="flex-1 xl:overflow-y-auto min-w-0 w-full">
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm">
                     {/* Item 1: Jewelry Skeleton */}
-                    <div className="flex items-center p-2 sm:p-4 border-b border-primary-50">
-                      <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100/50 flex-shrink-0" />
-                      <div className="flex-1 ml-2 sm:ml-3 min-w-0">
+                    <div className="flex items-center p-2 md:p-4 border-b border-primary-50">
+                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0" />
+                      <div className="flex-1 ml-2 md:ml-3 min-w-0">
                         <Skeleton className="h-4 w-1/3 bg-primary-100/50 mb-2" />
-                        <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-2">
+                        <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
                           <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
                           <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
                           <Skeleton className="h-3 w-1/2 bg-primary-100/50" />
                           <Skeleton className="h-3 w-5/6 bg-primary-100/50" />
                         </div>
-                        <div className="sm:hidden mt-1">
+                        <div className="md:hidden mt-1">
                           <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
                         </div>
                       </div>
-                      <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                      <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
                         <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
                         <Skeleton className="h-4 w-20 bg-primary-100/50" />
                       </div>
                     </div>
 
                     {/* Item 2: Diamond Skeleton */}
-                    <div className="flex items-center p-2 sm:p-4">
-                      <Skeleton className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-100/50 flex-shrink-0 rounded-full" />
-                      <div className="flex-1 ml-2 sm:ml-3 min-w-0">
+                    <div className="flex items-center p-2 md:p-4">
+                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0 rounded-full" />
+                      <div className="flex-1 ml-2 md:ml-3 min-w-0">
                         <Skeleton className="h-4 w-1/4 bg-primary-100/50 mb-2" />
-                        <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-2">
+                        <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
                           <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
                           <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
                           <Skeleton className="h-3 w-1/2 bg-primary-100/50 col-span-2" />
                         </div>
-                        <div className="sm:hidden mt-1">
+                        <div className="md:hidden mt-1">
                           <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
                         </div>
                       </div>
-                      <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                      <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
                         <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
                         <Skeleton className="h-4 w-20 bg-primary-100/50" />
                       </div>
@@ -216,18 +216,18 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       >
         {products.map((product, idx) => (
           <div key={idx} className={cn(
-            "flex items-center p-2 sm:p-4",
+            "flex items-center p-2 md:p-4",
             idx !== products.length - 1 && "border-b border-primary-50"
           )}>
             {/* Product thumbnail */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 border border-primary-100 overflow-hidden bg-primary-50/40 flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 border border-primary-100 overflow-hidden bg-primary-50/40 flex items-center justify-center">
               {product.image ? (
                 <img
                   src={product.image}
                   alt={product.title}
                   className={cn(
                     "w-full h-full object-cover",
-                    product.type === "diamond" && "object-contain w-8 h-8 sm:w-9 sm:h-9"
+                    product.type === "diamond" && "object-contain w-8 h-8 md:w-9 md:h-9"
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -235,13 +235,13 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
             </div>
 
             {/* Product info */}
-            <div className="flex-1 ml-2 sm:ml-3 min-w-0">
+            <div className="flex-1 ml-2 md:ml-3 min-w-0">
               <div className="font-medium text-xs text-primary-900 leading-tight flex items-center gap-2">
                 {product.title}
               </div>
 
               {/* Additional info - only visible on desktop */}
-              <div className="mt-1 hidden sm:grid sm:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+              <div className="mt-1 hidden md:grid md:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
                 {product.sku && (
                   <div className="text-primary-400">
                     SKU: <span className="text-primary-700 font-semibold">{product.sku}</span>
@@ -317,9 +317,9 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
             </div>
 
             {/* Price */}
-            <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+            <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
               {product.originalPrice > product.price && (
-                <div className="text-[10px] sm:text-xs text-primary-300 line-through truncate w-full text-right">
+                <div className="text-[10px] md:text-xs text-primary-300 line-through truncate w-full text-right">
                   {formatPrice(product.originalPrice)}
                 </div>
               )}

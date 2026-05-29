@@ -237,7 +237,7 @@ export function JewelryTableRow({
       {/* Desktop Table View - Only visible on desktop */}
       <TableRow
         className={cn(
-          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative hidden sm:table-row",
+          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative hidden md:table-row",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
@@ -245,13 +245,13 @@ export function JewelryTableRow({
         )}
         onClick={() => onToggleExpand(product.id)}
       >
-        <TableCell className="px-6 sm:px-3 py-2 text-center">
+        <TableCell className="px-6 md:px-3 py-2 text-center">
           <div className="flex flex-col items-center justify-center gap-1">
             <ProductCodes product={product} isExpanded={isExpanded} />
           </div>
         </TableCell>
 
-        <TableCell className="px-6 sm:px-2 py-2">
+        <TableCell className="px-6 md:px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={webImages}
@@ -270,7 +270,7 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-6 sm:px-2 py-2">
+        <TableCell className="px-6 md:px-2 py-2">
           <div className="flex justify-center">
             <CompactGallery
               images={actualImages}
@@ -292,7 +292,7 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-6 sm:px-2 py-2 text-center">
+        <TableCell className="px-6 md:px-2 py-2 text-center">
           <div className="flex flex-col items-center gap-1 justify-center">
             {isBundle ? (
               <>
@@ -311,7 +311,7 @@ export function JewelryTableRow({
                   />
                 )}
                 {!hasSideStonesNam && !hasSideStonesNu && (
-                  <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">
+                  <span className="text-primary-100 text-[9px] md:text-[10px] font-black italic">
                     --
                   </span>
                 )}
@@ -324,18 +324,18 @@ export function JewelryTableRow({
                 />
               </div>
             ) : (
-              <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">
+              <span className="text-primary-100 text-[9px] md:text-[10px] font-black italic">
                 --
               </span>
             )}
           </div>
         </TableCell>
 
-        <TableCell className="px-6 sm:px-2 py-2 text-center">
+        <TableCell className="px-6 md:px-2 py-2 text-center">
           <div className="flex items-center justify-center gap-1">
             <span
               className={cn(
-                "text-xs sm:text-sm font-bold tracking-tight",
+                "text-xs md:text-sm font-bold tracking-tight",
                 isExpanded ? "text-white" : "text-secondary-900",
               )}
             >
@@ -347,10 +347,10 @@ export function JewelryTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-6 sm:px-2 py-2 text-center">
+        <TableCell className="px-6 md:px-2 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-black tracking-widest border-none shadow-sm",
+              "rounded-full px-2 md:px-3 py-1 text-[8px] md:text-[10px] font-black tracking-widest border-none shadow-sm",
               hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : "bg-primary-50 text-primary-300",
@@ -359,7 +359,7 @@ export function JewelryTableRow({
             {hasStock ? "Có hàng" : "Hết hàng"}
           </Badge>
         </TableCell>
-        <TableCell className="px-6 sm:px-2 text-center">
+        <TableCell className="px-6 md:px-2 text-center">
           <div className="flex justify-center">
             <Button
               size="icon"
@@ -386,7 +386,7 @@ export function JewelryTableRow({
       {/* Mobile Card View - Only visible on mobile */}
       <TableRow
         className={cn(
-          "transition-all cursor-pointer group relative sm:hidden",
+          "transition-all cursor-pointer group relative md:hidden",
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30",
@@ -531,9 +531,9 @@ export function JewelryTableRow({
                     const subHasSideStones =
                       Array.isArray(subFourView) && subFourView.length > 0;
                     return (
-                      <div key={subProduct.id} className="p-3 sm:p-4">
+                      <div key={subProduct.id} className="p-3 md:p-4">
                         <div className="flex items-center gap-3 mb-0 overflow-hidden">
-                          <span className="text-xs sm:text-sm font-bold text-secondary-800 flex-shrink-0">
+                          <span className="text-xs md:text-sm font-bold text-secondary-800 flex-shrink-0">
                             {genderTitle}
                           </span>
                           <div className="flex-1 min-w-0">
@@ -764,7 +764,7 @@ function ExpandedPanel({
     <div className="bg-white overflow-hidden">
       {/* Mobile Only: Additional Info Section */}
       <div
-        className={`px-3 ${isBundle ? "pb-2" : "py-2"} sm:hidden border-b border-primary-100 space-y-2`}
+        className={`px-3 ${isBundle ? "pb-2" : "py-2"} md:hidden border-b border-primary-100 space-y-2`}
       >
         {/* Product Codes */}
         <div className="flex items-center justify-between">
@@ -860,21 +860,21 @@ function ExpandedPanel({
               )}
             >
               {/* Desktop Grid View */}
-              <div className="hidden sm:grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center">
-                <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 flex flex-col gap-0.5">
-                  <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">
+              <div className="hidden md:grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center">
+                <div className="px-4 md:px-5 py-2.5 md:py-3.5 flex flex-col gap-0.5">
+                  <p className="text-[10px] md:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">
                     SKU: {sku}
                   </p>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
+                  <p className="text-[9px] md:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
                     Barcode: {variant.barcode || "No Barcode"}
                   </p>
                 </div>
 
-                <div className="px-4 py-2 sm:py-3.5 flex items-center justify-start sm:justify-center gap-1.5 flex-wrap">
+                <div className="px-4 py-2 md:py-3.5 flex items-center justify-start md:justify-center gap-1.5 flex-wrap">
                   {variant.attributes?.fineness && (
                     <Badge
                       variant="outline"
-                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] md:text-[10px] font-black px-2 py-0.5 md:py-1 shadow-sm"
                     >
                       {variant.attributes.fineness}
                     </Badge>
@@ -883,7 +883,7 @@ function ExpandedPanel({
                   {variant.attributes?.materialColor && (
                     <Badge
                       variant="outline"
-                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] md:text-[10px] font-black px-2 py-0.5 md:py-1 shadow-sm"
                     >
                       {variant.attributes.materialColor}
                     </Badge>
@@ -892,39 +892,39 @@ function ExpandedPanel({
                   {variant.attributes?.ringSize !== 0 && (
                     <Badge
                       variant="outline"
-                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] sm:text-[10px] font-black px-2 py-0.5 sm:py-1 shadow-sm"
+                      className="rounded-full border-primary-100 bg-white text-secondary-900 text-[9px] md:text-[10px] font-black px-2 py-0.5 md:py-1 shadow-sm"
                     >
                       Ni {variant.attributes?.ringSize}
                     </Badge>
                   )}
                 </div>
 
-                <div className="px-4 py-2 sm:py-3.5 flex items-center gap-2">
-                  <Badge className="rounded-full bg-secondary-800 text-white text-[10px] sm:text-[11px] font-black shadow-sm px-2 py-0.5">
+                <div className="px-4 py-2 md:py-3.5 flex items-center gap-2">
+                  <Badge className="rounded-full bg-secondary-800 text-white text-[10px] md:text-[11px] font-black shadow-sm px-2 py-0.5">
                     Khả dụng: {group.totalHaravanQuantity}
                   </Badge>
                   <a
                     href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center text-[9px] sm:text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
+                    className="flex items-center text-[9px] md:text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-1 tracking-tight"
                   >
                     <span>Haravan</span>
                     <ArrowSquareOut size={10} />
                   </a>
                 </div>
 
-                <div className="px-4 py-2 sm:py-3.5 text-left sm:text-right">
-                  <div className="flex flex-col items-start sm:items-end gap-0.5">
+                <div className="px-4 py-2 md:py-3.5 text-left md:text-right">
+                  <div className="flex flex-col items-start md:items-end gap-0.5">
                     {hasSale && (
-                      <p className="text-[9px] sm:text-[10px] font-bold text-primary-200 line-through leading-none">
+                      <p className="text-[9px] md:text-[10px] font-bold text-primary-200 line-through leading-none">
                         {formatPrice(
                           isEarring ? variant.basePrice * 2 : variant.basePrice,
                         )}
                       </p>
                     )}
 
-                    <p className="text-xs sm:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
+                    <p className="text-xs md:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
                       {formatPrice(
                         isEarring
                           ? (variant.salePrice || 0) * 2
@@ -941,14 +941,14 @@ function ExpandedPanel({
                 </div>
 
                 <div
-                  className="px-4 py-3 sm:py-3.5 flex justify-start sm:justify-center"
+                  className="px-4 py-3 md:py-3.5 flex justify-start md:justify-center"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={group.totalQuantity === 0}
-                    className="text-[9px] sm:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
+                    className="text-[9px] md:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
                     onClick={() =>
                       onOpenSerialModal(
                         group.variants,
@@ -961,7 +961,7 @@ function ExpandedPanel({
                     <span>Xem Serials</span>
                     <span
                       className={cn(
-                        "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
+                        "flex items-center justify-center h-4 w-4 rounded-full text-[8px] md:text-[9px] font-black transition-all duration-300",
                         group.totalQuantity === 0
                           ? "bg-primary-50 text-primary-200"
                           : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white",
@@ -976,7 +976,7 @@ function ExpandedPanel({
               {/* Mobile Compact View */}
               <div
                 className={
-                  isBundle ? "py-2 sm:hidden" : "px-3 py-2.5 sm:hidden"
+                  isBundle ? "py-2 md:hidden" : "px-3 py-2.5 md:hidden"
                 }
               >
                 <div className="flex flex-col gap-1.5 w-full">

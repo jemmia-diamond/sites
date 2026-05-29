@@ -431,7 +431,7 @@ export function JewelryFilterSidebar({
   return (
     <div className="flex h-full">
       {isCollapsed && (
-        <aside className="hidden lg:flex w-16 h-full border-r border-primary-100 bg-white flex-col items-center sticky top-0 shrink-0">
+        <aside className="hidden xl:flex w-16 h-full border-r border-primary-100 bg-white flex-col items-center sticky top-0 shrink-0">
           <Button
             variant="outline"
             size="icon"
@@ -445,11 +445,11 @@ export function JewelryFilterSidebar({
       )}
 
       <aside
-        className={`w-full lg:w-80 h-full border-r border-primary-100 bg-white flex flex-col overflow-y-auto no-scrollbar ${isCollapsed ? "lg:hidden" : "flex"}`}
+        className={`w-full xl:w-80 h-full border-r border-primary-100 bg-white flex flex-col overflow-y-auto no-scrollbar ${isCollapsed ? "xl:hidden" : "flex"}`}
       >
         {/* Sticky Header & Active Chips Block */}
         <div className="sticky top-0 bg-white z-30 border-b border-primary-50 shrink-0">
-          <div className="px-6 lg:px-8 flex items-center justify-between py-4">
+          <div className="px-6 xl:px-8 flex items-center justify-between py-4">
             <h2 className="text-sm font-bold tracking-widest text-secondary-900 uppercase">
               Bộ lọc
             </h2>
@@ -459,7 +459,7 @@ export function JewelryFilterSidebar({
                   variant="outline"
                   size="icon"
                   onClick={onToggleCollapse}
-                  className="hidden lg:inline-flex h-8 w-8 text-secondary-900 border-primary-200 hover:bg-primary-50 cursor-pointer rounded-full items-center justify-center"
+                  className="hidden xl:inline-flex h-8 w-8 text-secondary-900 border-primary-200 hover:bg-primary-50 cursor-pointer rounded-full items-center justify-center"
                   title="Ẩn bộ lọc"
                 >
                   <ChevronLeft size={16} />
@@ -470,7 +470,7 @@ export function JewelryFilterSidebar({
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  className="h-8 w-8 lg:hidden -mr-2 text-primary-900 cursor-pointer rounded-full items-center justify-center"
+                  className="h-8 w-8 xl:hidden -mr-2 text-primary-900 cursor-pointer rounded-full items-center justify-center"
                 >
                   <X size={18} />
                 </Button>
@@ -480,7 +480,7 @@ export function JewelryFilterSidebar({
 
           {/* Active Chips & Clear Filters Block inside the same sticky container */}
           {appliedChips.length > 0 && (
-            <div className="px-6 lg:px-8 pb-4 flex flex-col gap-2 animate-in fade-in duration-200">
+            <div className="px-6 xl:px-8 pb-4 flex flex-col gap-2 animate-in fade-in duration-200">
               <div className="flex items-center justify-end">
                 <Button
                   variant="ghost"
@@ -512,7 +512,7 @@ export function JewelryFilterSidebar({
           )}
         </div>
 
-        <div className="flex-1 px-6 lg:px-8 space-y-9 py-6">
+        <div className="flex-1 px-6 xl:px-8 space-y-9 py-6">
 
           <FilterSection label="KHOẢNG GIÁ">
             <PriceRangeFilter
@@ -588,7 +588,7 @@ export function JewelryFilterSidebar({
           )}
         </div>
 
-        <div className="lg:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
+        <div className="xl:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
           <Button
             onClick={() => {
               applyFilters(filters);

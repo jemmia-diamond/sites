@@ -18,7 +18,7 @@ const HEADERS = [
 
 export function JewelryTableHeader() {
   return (
-    <TableHeader className="hidden sm:table-header-group">
+    <TableHeader className="hidden md:table-header-group">
       <TableRow className="border-b border-primary-100 hover:bg-transparent">
         {HEADERS.map((h, i) => (
           <TableHead

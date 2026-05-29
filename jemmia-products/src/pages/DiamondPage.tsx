@@ -168,146 +168,159 @@ export default function DiamondPage() {
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
       {!searchQueryParam && (
-        <div
-          className={cn(
-            "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
-            isFilterOpen
-              ? "translate-x-0 z-[10000]"
-              : "-translate-x-full lg:translate-x-0 z-[60]",
-            "w-full h-full",
-            isFilterCollapsed ? "lg:w-16" : "lg:w-80"
-          )}
-        >
-          <div className="h-full relative flex flex-col">
-            <DiamondFilterSidebar
-              onApply={handleApplyFilters}
-              currentFilters={filters as DiamondFilter}
-              onClose={() => setIsFilterOpen(false)}
-              onToggleCollapse={toggleFilterCollapsed}
-              onChipsChange={setActiveChips}
-              isCollapsed={isFilterCollapsed}
-              isOpen={isFilterOpen}
+        <>
+          {/* Backdrop overlay for mobile/tablet filter drawer */}
+          {isFilterOpen && (
+            <div
+              className="xl:hidden fixed inset-0 bg-black/40 z-[9999] animate-in fade-in duration-200"
+              onClick={() => setIsFilterOpen(false)}
             />
-          </div>
-        </div>
-      )}
+          )}
 
-      <main className="flex-1 flex flex-col bg-white px-4 lg:px-6 pt-4 pb-6 gap-0 md:gap-4 w-full max-w-full min-w-0 lg:overflow-hidden min-h-0">
-        <div className="flex-shrink-0">
-          <PageHeader
-            title={
-              filters.searchQuery
-                ? `Tìm kiếm kim cương: ${filters.searchQuery}`
-                : "Danh sách kim cương"
-            }
-            description={`Hiển thị ${totalItems} kết quả`}
-            headerStart={
-              searchQueryParam ? (
-                <Button onClick={handleGoBack} className={"h-full w-max"}>
-                  <ArrowLeft size={16} />
-                  Quay về
-                </Button>
-              ) : null
-            }
-            actions={
-              <div className="flex items-center gap-2 w-full">
-                <div className="hidden lg:flex items-center gap-2">
-                  <Button
-                    onClick={toggleSort}
-                    variant="outline"
-                    className="flex items-center justify-between group h-10 px-4 rounded-none border-primary-100 font-bold text-xs"
-                  >
-                    <span className="uppercase tracking-tight">
-                      {filters.sortBySalePrice === "DESC"
-                        ? "Giá giảm dần"
-                        : "Giá tăng dần"}
-                    </span>
-                    {filters.sortBySalePrice === "DESC" ? (
-                      <ArrowDownWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
-                    ) : (
-                      <ArrowUpWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            }
-          />
-        </div>
-
-        {/* Sticky Mobile Filters & Active Chips Bar */}
-        <div className="lg:hidden sticky top-12 z-40 bg-white flex flex-col md:gap-4 w-full border-b border-primary-50 py-2">
           <div
             className={cn(
-              "flex items-center gap-3 w-full",
-              searchQueryParam ? "justify-end" : "justify-between"
+              // Desktop: relative sidebar
+              "xl:relative xl:inset-auto xl:bg-transparent xl:translate-x-0 shrink-0",
+              // Mobile/Tablet: right-side fixed drawer
+              "fixed inset-y-0 right-0 bg-white transition-all duration-300 ease-out",
+              isFilterOpen ? "translate-x-0 z-[10000]" : "translate-x-full xl:translate-x-0 z-[60]",
+              // Width: full on phone, 380px on tablet, collapsed/expanded on desktop
+              "w-full md:w-[380px] h-full",
+              isFilterCollapsed ? "xl:w-16" : "xl:w-80"
             )}
           >
-            {!searchQueryParam && (
-              <Button
-                onClick={() => setIsFilterOpen(true)}
-                variant="outline"
-                className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
-              >
-                <Filter size={14} className="mr-2" />
-                <span className="w-max">Bộ lọc</span>
-              </Button>
-            )}
-            <Button
-              onClick={toggleSort}
-              variant="outline"
-              className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
-            >
-              {filters.sortBySalePrice === "DESC" ? (
-                <ArrowDownWideNarrow size={14} className="mr-1" />
-              ) : (
-                <ArrowUpWideNarrow size={14} className="mr-1" />
-              )}
-              <span className="w-max">
-                {filters.sortBySalePrice === "DESC"
-                  ? "Giá giảm dần"
-                  : "Giá tăng dần"}
-              </span>
-            </Button>
+            <div className="h-full relative flex flex-col">
+              <DiamondFilterSidebar
+                onApply={handleApplyFilters}
+                currentFilters={filters as DiamondFilter}
+                onClose={() => setIsFilterOpen(false)}
+                onToggleCollapse={toggleFilterCollapsed}
+                onChipsChange={setActiveChips}
+                isCollapsed={isFilterCollapsed}
+                isOpen={isFilterOpen}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      <main className="flex-1 flex flex-col bg-white px-4 xl:px-6 pt-4 pb-6 md:gap-4 w-full max-w-full min-w-0 xl:overflow-hidden min-h-0">
+        <div className="flex justify-between gap-4">
+          <div className="flex-shrink-0">
+            <PageHeader
+              title={
+                filters.searchQuery
+                  ? `Tìm kiếm kim cương: ${filters.searchQuery}`
+                  : "Danh sách kim cương"
+              }
+              description={`Hiển thị ${totalItems} kết quả`}
+              headerStart={
+                searchQueryParam ? (
+                  <Button onClick={handleGoBack} className={"h-full w-max"}>
+                    <ArrowLeft size={16} />
+                    Quay về
+                  </Button>
+                ) : null
+              }
+              actions={
+                <div className="flex items-center gap-2 w-full">
+                  <div className="hidden xl:flex items-center gap-2">
+                    <Button
+                      onClick={toggleSort}
+                      variant="outline"
+                      className="flex items-center justify-between group h-10 px-4 rounded-none border-primary-100 font-bold text-xs"
+                    >
+                      <span className="uppercase tracking-tight">
+                        {filters.sortBySalePrice === "DESC"
+                          ? "Giá giảm dần"
+                          : "Giá tăng dần"}
+                      </span>
+                      {filters.sortBySalePrice === "DESC" ? (
+                        <ArrowDownWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
+                      ) : (
+                        <ArrowUpWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              }
+            />
           </div>
 
-          {activeChips.length > 0 && (
-            <div className="flex flex-wrap gap-2 flex-shrink-0 pt-1 items-center">
-              <div className="flex flex-wrap gap-2 flex-1">
-                {activeChips.map((chip) => (
-                  <Badge
-                    key={chip.key}
-                    variant="default"
-                    className="active-chip-badge"
-                  >
-                    <span>{chip.label}</span>
-                    <button
-                      onClick={() => handleRemoveChip(chip.key)}
-                      className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+          {/* Sticky Mobile Filters & Active Chips Bar */}
+          <div className="xl:hidden sticky top-12 z-40 bg-white flex flex-col md:gap-4 w-full border-b border-primary-50 md:border-none py-2">
+            <div
+              className={cn(
+                "flex items-center gap-3 w-full",
+                searchQueryParam ? "justify-end" : "justify-end"
+              )}
+            >
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearAllFilters}
-                className="clear-filters-btn flex-shrink-0"
+                onClick={toggleSort}
+                variant="outline"
+                className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center w-max"
               >
-                Xóa bộ lọc
+                {filters.sortBySalePrice === "DESC" ? (
+                  <ArrowDownWideNarrow size={14} className="mr-1" />
+                ) : (
+                  <ArrowUpWideNarrow size={14} className="mr-1" />
+                )}
+                <span className="w-max">
+                  {filters.sortBySalePrice === "DESC"
+                    ? "Giá giảm dần"
+                    : "Giá tăng dần"}
+                </span>
               </Button>
+              {!searchQueryParam && (
+                <Button
+                  onClick={() => setIsFilterOpen(true)}
+                  variant="outline"
+                  className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+                >
+                  <Filter size={14} className="mr-2" />
+                  <span className="w-max">Bộ lọc</span>
+                </Button>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="flex-1 flex flex-col min-h-0 lg:overflow-hidden">
+            {activeChips.length > 0 && (
+              <div className="flex flex-wrap gap-2 flex-shrink-0 pt-1 items-center">
+                <div className="flex flex-wrap gap-2 flex-1">
+                  {activeChips.map((chip) => (
+                    <Badge
+                      key={chip.key}
+                      variant="default"
+                      className="active-chip-badge"
+                    >
+                      <span>{chip.label}</span>
+                      <button
+                        onClick={() => handleRemoveChip(chip.key)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearAllFilters}
+                  className="clear-filters-btn flex-shrink-0"
+                >
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col min-h-0 xl:overflow-hidden">
           {isLoading ? (
-            <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full lg:overflow-hidden">
-              <div className="flex-1 lg:overflow-y-auto min-w-0 w-full relative">
-                <Table className="w-full sm:min-w-[1200px] border-collapse">
+            <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+              <div className="flex-1 xl:overflow-y-auto min-w-0 w-full relative">
+                <Table className="w-full md:min-w-[1200px] border-collapse">
                   {/* Desktop Table Header */}
-                  <TableHeader className="hidden sm:table-header-group">
+                  <TableHeader className="hidden md:table-header-group">
                     <TableRow className="border-b border-primary-100 hover:bg-transparent">
                       {Array.from({ length: 14 }).map((_, i) => (
                         <TableHead key={i} className="bg-primary-50 h-10 px-2 py-0">
@@ -319,7 +332,7 @@ export default function DiamondPage() {
                   <TableBody>
                     {/* Desktop Rows */}
                     {Array.from({ length: 5 }).map((_, rowIndex) => (
-                      <TableRow key={rowIndex} className="hidden sm:table-row divide-x border-b border-primary-50 divide-primary-50">
+                      <TableRow key={rowIndex} className="hidden md:table-row divide-x border-b border-primary-50 divide-primary-50">
                         {Array.from({ length: 14 }).map((_, cellIndex) => (
                           <TableCell key={cellIndex} className="px-3 py-4 text-center">
                             <Skeleton className={cn(
@@ -345,7 +358,7 @@ export default function DiamondPage() {
                     ))}
                     {/* Mobile Cards Skeletons */}
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <TableRow key={i} className="sm:hidden border-b border-primary-50">
+                      <TableRow key={i} className="md:hidden border-b border-primary-50">
                         <TableCell className="px-3 py-3">
                           <div className="flex items-center gap-3 w-full">
                             <div className="flex-1 flex flex-col gap-2">

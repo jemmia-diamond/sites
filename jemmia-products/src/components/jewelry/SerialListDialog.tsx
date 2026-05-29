@@ -60,7 +60,7 @@ export function SerialListDialog() {
           <Tag size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none">
+      <DialogContent className="md:max-w-[480px] bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none">
         <DialogHeader className="p-8 pb-6 border-b border-primary-100 bg-primary-50">
           <DialogTitle className="text-2xl font-bold tracking-tight text-secondary-900 uppercase">Số Serial</DialogTitle>
         </DialogHeader>
@@ -71,13 +71,13 @@ export function SerialListDialog() {
             Lưu ý: Danh sách serial mang tính chất tham khảo, cần kiểm tra thực tế tại kho.
           </p>
         </div>
-        
+
         <div className="p-2 space-y-1">
           {MOCK_SERIALS.map((serial, index) => {
             const config = getStatusConfig(serial.status);
             return (
-              <div 
-                key={serial.id} 
+              <div
+                key={serial.id}
                 className={cn(
                   "flex items-center justify-between p-6 rounded-none transition-colors hover:bg-primary-50 group",
                   index !== MOCK_SERIALS.length - 1 && "border-b border-primary-100"
@@ -96,7 +96,7 @@ export function SerialListDialog() {
                     </p>
                   )}
                 </div>
-                
+
                 <Badge className={cn("px-4 py-2 rounded-none text-xs tracking-wider", config.className)}>
                   {config.label}
                 </Badge>

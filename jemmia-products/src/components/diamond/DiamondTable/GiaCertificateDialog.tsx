@@ -14,7 +14,7 @@ interface GiaCertificateDialogProps {
 export function GiaCertificateDialog({ previewUrl, onClose }: GiaCertificateDialogProps) {
   return (
     <Dialog open={!!previewUrl} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] sm:w-[80vw]! max-w-[1200px]! h-[90vh] sm:h-[80vh] p-0 overflow-hidden border-none bg-white shadow-2xl rounded-none outline-none">
+      <DialogContent className="w-[95vw] md:w-[80vw]! max-w-[1200px]! h-[90vh] md:h-[80vh] p-0 overflow-hidden border-none bg-white shadow-2xl rounded-none outline-none">
         <div className="w-full h-full flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 bg-white border-b shrink-0">
             <DialogTitle className="text-sm font-bold uppercase tracking-widest text-secondary-900">

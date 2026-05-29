@@ -114,7 +114,7 @@ function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps
           setShow((prev) => !prev);
         }}
         className={cn(
-          "focus:outline-none inline-flex items-center gap-1 bg-amber-50 text-amber-600 hover:bg-amber-100/70 border border-amber-200/60 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-black shadow-sm transition-all cursor-pointer select-none leading-none w-fit"
+          "focus:outline-none inline-flex items-center gap-1 bg-amber-50 text-amber-600 hover:bg-amber-100/70 border border-amber-200/60 rounded-full px-2.5 py-1 text-[10px] md:text-xs font-black shadow-sm transition-all cursor-pointer select-none leading-none w-fit"
         )}
       >
         <WarningCircle size={compact ? 13 : 15} className="shrink-0" weight="bold" />
@@ -124,14 +124,14 @@ function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps
       {show && (
         <div
           className={cn(
-            "absolute top-[calc(100%+6px)] left-0 sm:left-1/2 sm:-translate-x-1/2 w-[280px] sm:w-[320px] bg-secondary-900 text-white p-3.5 rounded-lg shadow-2xl border border-secondary-800 z-[99999] animate-in fade-in zoom-in-95 duration-150 text-left normal-case tracking-normal"
+            "absolute top-[calc(100%+6px)] left-0 md:left-1/2 md:-translate-x-1/2 w-[280px] md:w-[320px] bg-secondary-900 text-white p-3.5 rounded-lg shadow-2xl border border-secondary-800 z-[99999] animate-in fade-in zoom-in-95 duration-150 text-left normal-case tracking-normal"
           )}
         >
           <p className="text-[10px] font-black text-amber-400 mb-1.5 uppercase tracking-wider">Danh sách serials không rõ:</p>
           <p className="text-[11px] font-bold leading-relaxed break-words text-white font-mono max-h-[120px] overflow-y-auto pr-1">
             {serialListStr}
           </p>
-          <div className="absolute -top-1 w-2.5 h-2.5 bg-secondary-900 rotate-45 border-t border-l border-secondary-800 left-6 sm:left-1/2 sm:-translate-x-1/2" />
+          <div className="absolute -top-1 w-2.5 h-2.5 bg-secondary-900 rotate-45 border-t border-l border-secondary-800 left-6 md:left-1/2 md:-translate-x-1/2" />
         </div>
       )}
     </div>
@@ -140,7 +140,7 @@ function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps
 
 function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
   return (
-    <div className="hidden sm:block">
+    <div className="hidden md:block">
       <div className="min-w-[800px]">
         <div className="flex items-center px-8 py-3 border-b border-primary-100 bg-primary-50/20">
           <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider">Serial</span>
@@ -338,14 +338,14 @@ export function SerialListModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[95%] sm:w-full sm:max-w-[900px] gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none flex flex-col max-h-[90vh] sm:max-h-[75vh]">
-        <DialogHeader className="px-4 sm:px-8 py-3 sm:py-4 border-b border-primary-100 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
-          <DialogTitle className="text-sm sm:text-[16px] flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center font-bold tracking-tight text-secondary-900 flex-1">
+      <DialogContent className="w-[95%] md:w-full md:max-w-[900px] gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none flex flex-col max-h-[90vh] md:max-h-[75vh]">
+        <DialogHeader className="px-4 md:px-8 py-3 md:py-4 border-b border-primary-100 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
+          <DialogTitle className="text-sm md:text-[16px] flex flex-col md:flex-row gap-2 md:gap-4 items-start md:items-center font-bold tracking-tight text-secondary-900 flex-1">
             <span>DANH SÁCH SERIALS</span>
             <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} />
           </DialogTitle>
           <DialogClose className="cursor-pointer shrink-0">
-            <X className="h-4 w-4 sm:h-5 sm:w-5" />
+            <X className="h-4 w-4 md:h-5 md:w-5" />
             <span className="sr-only">Close</span>
           </DialogClose>
         </DialogHeader>

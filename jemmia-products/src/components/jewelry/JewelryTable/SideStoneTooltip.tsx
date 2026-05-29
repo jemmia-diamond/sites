@@ -80,10 +80,10 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
                 : "rounded-lg hover:bg-primary-50"
             )}
           >
-            <span className="text-[12px] sm:text-[11px] font-semibold text-secondary-900 whitespace-nowrap">
+            <span className="text-[12px] md:text-[11px] font-semibold text-secondary-900 whitespace-nowrap">
               {formatLySize(stone.round)}
             </span>
-            <span className="text-[12px] sm:text-[11px] text-primary-400 font-medium flex-1 text-right whitespace-nowrap">
+            <span className="text-[12px] md:text-[11px] text-primary-400 font-medium flex-1 text-right whitespace-nowrap">
               {stone.diamondCount} viên
             </span>
           </div>

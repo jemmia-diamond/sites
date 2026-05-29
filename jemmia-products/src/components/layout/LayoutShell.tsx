@@ -20,12 +20,12 @@ export function LayoutShell({ children, searchPlaceholder }: LayoutShellProps) {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen lg:h-screen w-full font-sans antialiased bg-white text-primary-900 selection:bg-secondary-200 selection:text-secondary-900 flex flex-col lg:overflow-hidden">
+    <div className="min-h-screen xl:h-screen w-full font-sans antialiased bg-white text-primary-900 selection:bg-secondary-200 selection:text-secondary-900 flex flex-col xl:overflow-hidden">
       <Header searchPlaceholder={searchPlaceholder} />
       <div
         className={cn(
-          "flex flex-col lg:flex-row flex-1 w-full max-w-full lg:overflow-hidden relative min-h-0",
-          isSearchActive ? "pb-0" : "pb-12 lg:pb-0"
+          "flex flex-col xl:flex-row flex-1 w-full max-w-full xl:overflow-hidden relative min-h-0",
+          isSearchActive ? "pb-0" : "pb-12 xl:pb-0"
         )}
       >
         {children}

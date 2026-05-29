@@ -293,7 +293,7 @@ export function MediaGallery({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Mobile header */}
-      <div className="lg:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
+      <div className="xl:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
         <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">
@@ -370,7 +370,7 @@ export function MediaGallery({
       </div>
 
       {/* Desktop header */}
-      <div className="hidden lg:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
+      <div className="hidden xl:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
         <div>
           <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
             Thư viện
@@ -445,17 +445,17 @@ export function MediaGallery({
         accept="image/*,video/*"
         onChange={handleFileChange}
       />
-      <div className="flex-1 overflow-y-auto p-4 lg:p-8 pt-2 lg:pt-4">
+      <div className="flex-1 overflow-y-auto p-4 xl:p-8 pt-2 xl:pt-4">
         {validPreviewList.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">
-            <UploadSimple size={40} lg:size={48} weight="thin" />
+            <UploadSimple size={40} xl:size={48} weight="thin" />
             <p className="text-sm font-bold">Chưa có tệp tin nào</p>
             {uploadConfig?.showUpload && (
               <p className="text-xs">Nhấn "Tải lên" để thêm tệp tin mới</p>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 xl:gap-4">
             {validPreviewList.map((url, i) => {
               const isVid = isVideo(url);
               const isHeicImg = !!url.match(/\.(heic|heif)(?:\?|$)/i);
@@ -472,11 +472,11 @@ export function MediaGallery({
                     className="absolute top-2 right-2 z-30 transition-opacity duration-300 opacity-100"
                     onClick={(e) => handleToggleSelect(url, e)}
                   >
-                    <div className={`w-5 h-5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected
+                    <div className={`w-5 h-5 xl:w-6 xl:h-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected
                       ? 'bg-secondary-700 border-secondary-700 text-white'
                       : 'bg-white border-primary-200 text-transparent'
                       }`}>
-                      {isSelected && <Checks size={12} lg:size={14} weight="bold" />}
+                      {isSelected && <Checks size={12} xl:size={14} weight="bold" />}
                     </div>
                   </div>
 
@@ -490,16 +490,16 @@ export function MediaGallery({
                   )}
                   {isVid && (
                     <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">
-                      <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-[8px] lg:text-[10px] font-black text-white uppercase tracking-wider">Video</span>
+                      <div className="w-1 h-1 xl:w-1.5 xl:h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[8px] xl:text-[10px] font-black text-white uppercase tracking-wider">Video</span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-secondary-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
-                    <div className="h-10 w-10 lg:h-12 lg:w-12 bg-white/20 rounded-full flex items-center justify-center border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
+                    <div className="h-10 w-10 xl:h-12 xl:w-12 bg-white/20 rounded-full flex items-center justify-center border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
                       {isVid ? (
-                        <div className="w-0 h-0 border-t-[6px] lg:border-t-[8px] border-t-transparent border-l-[10px] lg:border-l-[12px] border-l-white border-b-[6px] lg:border-b-[8px] border-b-transparent ml-0.5" />
+                        <div className="w-0 h-0 border-t-[6px] xl:border-t-[8px] border-t-transparent border-l-[10px] xl:border-l-[12px] border-l-white border-b-[6px] xl:border-b-[8px] border-b-transparent ml-0.5" />
                       ) : (
-                        <Eye size={20} lg:size={24} className="text-white" />
+                        <Eye size={20} xl:size={24} className="text-white" />
                       )}
                     </div>
                   </div>
@@ -507,15 +507,15 @@ export function MediaGallery({
                     <button
                       onClick={(e) => { e.stopPropagation(); handleCopyImage(url, e); }}
                       disabled={copyingUrl === url}
-                      className="absolute bottom-2 right-2 lg:bottom-3 lg:right-3 h-8 w-8 lg:h-9 lg:w-9 bg-white/90 hover:bg-secondary-900 rounded-full flex items-center justify-center border border-primary-200 hover:border-transparent z-30 transition-colors duration-200 group/copy disabled:opacity-50 shadow-sm"
+                      className="absolute bottom-2 right-2 xl:bottom-3 xl:right-3 h-8 w-8 xl:h-9 xl:w-9 bg-white/90 hover:bg-secondary-900 rounded-full flex items-center justify-center border border-primary-200 hover:border-transparent z-30 transition-colors duration-200 group/copy disabled:opacity-50 shadow-sm"
                       title="Copy image"
                     >
                       {copyingUrl === url ? (
-                        <CircleNotch size={16} lg:size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
+                        <CircleNotch size={16} xl:size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
                       ) : copiedUrl === url ? (
-                        <Checks size={16} lg:size={18} className="text-green-600" />
+                        <Checks size={16} xl:size={18} className="text-green-600" />
                       ) : (
-                        <Copy size={16} lg:size={18} className="text-secondary-900 group-hover/copy:text-white" />
+                        <Copy size={16} xl:size={18} className="text-secondary-900 group-hover/copy:text-white" />
                       )}
                     </button>
                   )}
@@ -527,20 +527,20 @@ export function MediaGallery({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={(open) => !open && handleCancelUpload()}>
-        <DialogContent className="w-[95%] sm:w-[90%] sm:max-w-2xl gap-0 bg-white border-none shadow-2xl p-0 rounded-none! overflow-hidden" showCloseButton={false}>
-          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 bg-primary-50/50 border-b border-primary-50">
-            <DialogTitle className="text-sm sm:text-base text-secondary-900 font-black tracking-tight flex items-center justify-between">
+        <DialogContent className="w-[95%] md:w-[90%] md:max-w-2xl gap-0 bg-white border-none shadow-2xl p-0 rounded-none! overflow-hidden" showCloseButton={false}>
+          <DialogHeader className="px-4 md:px-6 py-3 md:py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-sm md:text-base text-secondary-900 font-black tracking-tight flex items-center justify-between">
               Xác nhận tải lên
-              <span className="bg-secondary-900 text-white text-[9px] sm:text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
+              <span className="bg-secondary-900 text-white text-[9px] md:text-[10px] px-2 py-1 rounded-full uppercase tracking-widest">
                 {activeLabel ? `${activeLabel} - ${activeDesignCode}` : (activeDesignCode || uploadConfig?.designCode)}
               </span>
             </DialogTitle>
           </DialogHeader>
-          <div className="px-4 sm:px-6 py-3 sm:py-4">
-            <p className="text-xs sm:text-sm text-secondary-600 font-medium mb-3 sm:mb-4">
+          <div className="px-4 md:px-6 py-3 md:py-4">
+            <p className="text-xs md:text-sm text-secondary-600 font-medium mb-3 md:mb-4">
               Bạn có chắc chắn muốn tải lên <span className="font-bold text-secondary-900">{selectedFiles.length} tệp</span> không?
             </p>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-1 sm:pr-2">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-1 md:pr-2">
               {previewUrls.map((url, idx) => {
                 const fileName = selectedFiles[idx].name;
                 const isVid = isVideo(fileName);
@@ -551,12 +551,12 @@ export function MediaGallery({
                       <div className="h-full w-full bg-secondary-900 flex items-center justify-center relative group">
                         <video src={url} className="h-full w-full object-cover opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <PlayCircle size={20} sm:size={24} weight="fill" className="text-white/80" />
+                          <PlayCircle size={20} md:size={24} weight="fill" className="text-white/80" />
                         </div>
                       </div>
                     ) : isHeicFile ? (
                       <div className="h-full w-full bg-primary-50 flex items-center justify-center flex-col">
-                        <span className="text-[10px] sm:text-[12px] font-black text-primary-300">HEIC</span>
+                        <span className="text-[10px] md:text-[12px] font-black text-primary-300">HEIC</span>
                       </div>
                     ) : (
                       <img src={url} className="h-full w-full object-cover" alt="Preview" />
@@ -566,24 +566,24 @@ export function MediaGallery({
               })}
             </div>
           </div>
-          <DialogFooter className="px-4 sm:px-6 py-3 sm:py-4 m-0 bg-primary-50/30 border-t border-primary-50">
+          <DialogFooter className="px-4 md:px-6 py-3 md:py-4 m-0 bg-primary-50/30 border-t border-primary-50">
             <div className="flex w-full justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={handleCancelUpload}
                 disabled={uploading}
-                className="border-primary-100 font-bold text-xs rounded-full px-4 sm:px-6 h-8 sm:h-auto"
+                className="border-primary-100 font-bold text-xs rounded-full px-4 md:px-6 h-8 md:h-auto"
               >
                 Hủy
               </Button>
               <Button
                 onClick={handleConfirmUpload}
                 disabled={uploading}
-                className="bg-secondary-900 text-white hover:bg-secondary-800 font-bold text-xs rounded-full px-4 sm:px-6 h-8 sm:h-auto"
+                className="bg-secondary-900 text-white hover:bg-secondary-800 font-bold text-xs rounded-full px-4 md:px-6 h-8 md:h-auto"
               >
                 {uploading ? (
                   <>
-                    <CircleNotch size={12} sm:size={14} className="animate-spin mr-1 sm:mr-2" weight="bold" />
+                    <CircleNotch size={12} md:size={14} className="animate-spin mr-1 md:mr-2" weight="bold" />
                     Đang tải...
                   </>
                 ) : (
@@ -596,21 +596,21 @@ export function MediaGallery({
       </Dialog>
 
       <Dialog open={isSelectionDialogOpen} onOpenChange={(open) => !open && setIsSelectionDialogOpen(false)}>
-        <DialogContent className="w-[95%] sm:w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
-          <DialogHeader className="px-4 py-3 sm:py-4 bg-primary-50/50 border-b border-primary-50">
-            <DialogTitle className="text-secondary-900 font-black tracking-tight text-[10px] sm:text-xs uppercase">
+        <DialogContent className="w-[95%] md:w-full max-w-sm gap-4 bg-white border-none shadow-2xl p-0 rounded-none overflow-hidden" showCloseButton={true}>
+          <DialogHeader className="px-4 py-3 md:py-4 bg-primary-50/50 border-b border-primary-50">
+            <DialogTitle className="text-secondary-900 font-black tracking-tight text-[10px] md:text-xs uppercase">
               Chọn nhẫn cần tải lên tệp
             </DialogTitle>
           </DialogHeader>
-          <div className="px-4 pb-3 sm:pb-4 flex flex-col gap-2">
+          <div className="px-4 pb-3 md:pb-4 flex flex-col gap-2">
             {uploadConfig?.uploadOptions?.map((option, idx) => (
               <Button
                 key={idx}
                 onClick={() => handleSelectOption(option)}
-                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-10 sm:h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
+                className="w-full flex justify-between items-center bg-primary-50 hover:bg-secondary-900 hover:text-white text-secondary-900 font-bold text-xs h-10 md:h-12 rounded-none px-4 border border-primary-100 transition-all duration-300"
               >
-                <span className="text-xs sm:text-sm">{option.label}</span>
-                <span className="text-[9px] sm:text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
+                <span className="text-xs md:text-sm">{option.label}</span>
+                <span className="text-[9px] md:text-[10px] font-black uppercase font-mono tracking-wider opacity-80">
                   {option.designCode}
                 </span>
               </Button>

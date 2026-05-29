@@ -61,17 +61,17 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   }, [query]);
 
   return (
-    <header className="h-12 border-b border-primary-50 bg-white/80 backdrop-blur-md sticky top-0 z-50 flex items-center px-4 lg:px-8 gap-4 lg:gap-16 transition-all duration-300">
-      <Link to="/" className="flex-shrink-0 mx-auto lg:mx-0">
+    <header className="h-12 border-b border-primary-50 bg-white/80 backdrop-blur-md sticky top-0 z-50 flex items-center px-4 xl:px-8 gap-4 xl:gap-16 transition-all duration-300">
+      <Link to="/" className="flex-shrink-0 mx-auto xl:mx-0">
         <img
           src="https://file.hstatic.net/200000355853/file/logo.svg"
           alt="Jemmia Logo"
-          className="h-5 lg:h-7 w-auto"
+          className="h-5 xl:h-7 w-auto"
           referrerPolicy="no-referrer"
         />
       </Link>
 
-      <div className="hidden lg:flex h-full">
+      <div className="hidden xl:flex h-full">
         <NavLinks items={NAV_ITEMS} />
       </div>
 

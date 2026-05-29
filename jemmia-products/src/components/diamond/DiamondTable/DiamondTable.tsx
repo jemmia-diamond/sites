@@ -127,10 +127,10 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, exp
   };
 return (
     <>
-      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full lg:overflow-hidden">
-        <div className="flex-1 lg:overflow-y-auto overflow-x-hidden sm:overflow-x-auto min-w-0 w-full relative">
-          <Table className="w-full sm:min-w-[1200px] border-collapse">
-            <TableHeader className="hidden sm:table-header-group">
+      <div className="relative border border-primary-100 bg-white shadow-sm flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+        <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
+          <Table className="w-full md:min-w-[1200px] border-collapse">
+            <TableHeader className="hidden md:table-header-group">
               <TableRow className="border-b border-primary-100 hover:bg-transparent">
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Định danh</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Kích thước</TableHead>

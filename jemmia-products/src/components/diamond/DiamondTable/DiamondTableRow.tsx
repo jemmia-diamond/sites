@@ -52,11 +52,11 @@ export function DiamondTableRow({
       {/* Desktop Table View */}
       <TableRow
         className={cn(
-          "divide-x transition-all group min-h-[3.5rem] relative hidden sm:table-row border-primary-50 hover:bg-primary-50/30 divide-primary-50",
+          "divide-x transition-all group min-h-[3.5rem] relative hidden md:table-row border-primary-50 hover:bg-primary-50/30 divide-primary-50",
           diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
         )}
       >
-        <TableCell className="px-2 sm:px-3 py-2">
+        <TableCell className="px-2 md:px-3 py-2">
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-1.5">
               <p className="text-xs font-semibold text-secondary-900 tracking-tight uppercase leading-none">GIA{diamond.attributes.giaId}</p>
@@ -69,35 +69,35 @@ export function DiamondTableRow({
             <p className="text-[10px] text-primary-500 font-semibold uppercase tracking-wider leading-none mt-1">Barcode: {diamond.barcode}</p>
           </div>
         </TableCell>
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <p className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">
             {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)}
           </p>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <span className="text-xs font-semibold text-secondary-900 tracking-tight whitespace-nowrap">{diamond.attributes.carat} ct</span>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <span className="text-xs font-semibold text-primary-500 tracking-tight whitespace-nowrap">{diamond.attributes.shape}</span>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.color}</span>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <span className="text-xs font-semibold text-primary-500 uppercase tracking-tight">{diamond.attributes.clarity}</span>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <p className="text-xs font-semibold text-primary-500 tracking-tight">
             {diamond.attributes.fluorescence || "NONE"}
           </p>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-left">
+        <TableCell className="px-1 md:px-2 py-2 text-left">
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-semibold text-secondary-900 tracking-tight block w-40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
               {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
@@ -110,7 +110,7 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <div className="flex justify-center">
             {actualImages.length > 0 ? (
               <CompactGallery
@@ -128,7 +128,7 @@ export function DiamondTableRow({
             ) : null}
           </div>
         </TableCell>
-        <TableCell className="px-2 sm:px-3 py-2 text-right">
+        <TableCell className="px-2 md:px-3 py-2 text-right">
           <div className="flex flex-col items-end leading-none">
             {diamond.basePrice > diamond.salePrice && (
               <p className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
@@ -137,10 +137,10 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <Badge
             className={cn(
-              "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
+              "rounded-full px-2 md:px-3 py-1 text-[8px] md:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
               hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
@@ -150,13 +150,13 @@ export function DiamondTableRow({
           </Badge>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <div className="flex flex-wrap justify-center gap-1">
             {isIncoming || realWarehouses.length === 0 ? (
-              <span className="text-[8px] sm:text-[9px] font-semibold text-primary-300 italic">N/A</span>
+              <span className="text-[8px] md:text-[9px] font-semibold text-primary-300 italic">N/A</span>
             ) : (
               realWarehouses.map((wh, idx) => (
-                <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
+                <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[8px] md:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
                   {formatWarehouseName(wh.name)}
                 </Badge>
               ))
@@ -164,13 +164,13 @@ export function DiamondTableRow({
           </div>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <div className="flex justify-center">
             {diamond.attributes.giaPdfUrl ? (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-2 sm:px-3 rounded-none border-primary-100 text-[9px] sm:text-[10px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
+                className="h-7 px-2 md:px-3 rounded-none border-primary-100 text-[9px] md:text-[10px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
                 onClick={(e) => {
                   e.stopPropagation();
                   const url = diamond.attributes.giaPdfUrl;
@@ -180,18 +180,18 @@ export function DiamondTableRow({
                 GIA
               </Button>
             ) : (
-              <span className="text-[9px] sm:text-[10px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
+              <span className="text-[9px] md:text-[10px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
             )}
           </div>
         </TableCell>
 
-        <TableCell className="px-1 sm:px-2 py-2 text-center">
+        <TableCell className="px-1 md:px-2 py-2 text-center">
           <div className="flex justify-center">
             <a
               href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center text-[8px] sm:text-[9px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
+              className="flex items-center text-[8px] md:text-[9px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
             >
               HRA <ArrowSquareOut size={10} className="ml-1 opacity-50 group-hover:opacity-100" />
             </a>
@@ -202,7 +202,7 @@ export function DiamondTableRow({
       {/* Mobile Card View */}
       <TableRow
         className={cn(
-          "transition-all cursor-pointer group relative sm:hidden",
+          "transition-all cursor-pointer group relative md:hidden",
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30",

@@ -32,7 +32,7 @@ export function PageHeader({
   return (
     <div className={cn("flex flex-col  justify-between gap-1", className)}>
       {headerStart && <div>{headerStart}</div>}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between md:gap-4">
         <div className="flex items-center gap-4">
           <div className="space-y-0">
             <h1 className="text-lg md:text-2xl font-bold tracking-tight text-primary-900">{title}</h1>
@@ -42,12 +42,12 @@ export function PageHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-6 sm:pt-2 justify-between sm:justify-end">
+        <div className="flex items-center gap-4 md:gap-6 md:pt-2 justify-between md:justify-end">
           {sortOptions && (
-            <div className="flex flex-col gap-1.5 flex-1 sm:flex-initial">
+            <div className="flex flex-col gap-1.5 flex-1 md:flex-initial">
               <span className="text-[10px] font-bold text-primary-400 uppercase tracking-widest pl-1">{sortLabel}</span>
               <Select defaultValue={defaultSort} onValueChange={onSortChange}>
-                <SelectTrigger className="w-full sm:w-[200px] bg-white border border-primary-100 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-secondary-900">
+                <SelectTrigger className="w-full md:w-[200px] bg-white border border-primary-100 h-10 font-bold text-xs ring-offset-white focus:ring-1 focus:ring-secondary-900">
                   <SelectValue placeholder={sortLabel} />
                 </SelectTrigger>
                 <SelectContent>
@@ -62,7 +62,7 @@ export function PageHeader({
           )}
 
           {actions && (
-            <div className="w-full flex items-center justify-between sm:justify-end">
+            <div className="w-full flex items-center justify-between md:justify-end">
               {actions}
             </div>
           )}

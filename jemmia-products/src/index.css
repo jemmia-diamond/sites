@@ -194,7 +194,7 @@ html {
   overflow-y: auto;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   html {
     overflow: hidden;
   }
