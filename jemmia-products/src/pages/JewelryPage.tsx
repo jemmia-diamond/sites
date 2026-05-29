@@ -162,7 +162,7 @@ export default function JewelryPage() {
       <div
         className={cn(
           "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
-          isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
+          isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0x z-[60]",
           "w-full h-full",
           !searchQueryParam && (isFilterCollapsed ? "lg:w-16" : "lg:w-80"),
         )}
