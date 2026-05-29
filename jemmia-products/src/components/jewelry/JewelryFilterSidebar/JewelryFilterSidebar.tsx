@@ -102,7 +102,7 @@ export function JewelryFilterSidebar({
   >([]);
   const initialFilters: JewelryFilter = {
     type: undefined,
-    stockStatus: "all",
+    stockStatus: "IN_STOCK",
     warehouseIds: [],
     storageSize1: [],
     salePriceFrom: undefined,
@@ -269,7 +269,7 @@ export function JewelryFilterSidebar({
     ): { key: string; value: any; label: string }[] => {
       const chips: { key: string; value: any; label: string }[] = [];
 
-      if (currentFilters.stockStatus && currentFilters.stockStatus !== "all") {
+      if (currentFilters.stockStatus && currentFilters.stockStatus !== "IN_STOCK") {
         chips.push({
           key: "stockStatus",
           value: currentFilters.stockStatus,
@@ -394,7 +394,7 @@ export function JewelryFilterSidebar({
   const removeChip = (key: string) => {
     const getResetValue = (k: string): any => {
       if (k === "salePrice") return undefined;
-      if (k === "stockStatus") return "all";
+      if (k === "stockStatus") return "IN_STOCK";
       if (
         k === "warehouseIds" ||
         k === "storageSize1" ||

@@ -8,7 +8,6 @@ interface StockStatusFilterProps {
 }
 
 const STOCK_OPTIONS: { label: string; value: StockStatusFilterType }[] = [
-  { label: "Tất cả", value: "all" },
   { label: "Có hàng", value: "IN_STOCK" },
   { label: "Hết hàng", value: "OUT_OF_STOCK" },
 ];

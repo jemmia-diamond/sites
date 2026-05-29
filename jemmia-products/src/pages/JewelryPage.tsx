@@ -39,7 +39,7 @@ export default function JewelryPage() {
   // We omit `page` from the local state since react-query handles it for infinite scroll
   const [filters, setFilters] = useState<Omit<JewelryFilter, 'page'>>({
     sortBySalePrice: "DESC",
-    stockStatus: "all",
+    stockStatus: "IN_STOCK",
     designCode: designCodeParam || undefined,
     searchQuery: searchQueryParam || undefined,
     type: searchQueryParam ? undefined : (searchParams.get("type") || undefined)
@@ -106,7 +106,7 @@ export default function JewelryPage() {
   const handleClearAllFilters = () => {
     const resetFilters: Omit<JewelryFilter, 'page'> = {
       sortBySalePrice: "DESC",
-      stockStatus: "all",
+      stockStatus: "IN_STOCK",
       designCode: designCodeParam || undefined,
       searchQuery: searchQueryParam || undefined,
       type: searchQueryParam ? undefined : (searchParams.get("type") || undefined),
