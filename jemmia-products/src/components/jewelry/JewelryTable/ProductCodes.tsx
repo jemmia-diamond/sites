@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ProductModel } from "../../../types";
-import { Badge } from "@/components/ui/badge";
-import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { CaretDown, Copy, Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useResponsivePopover } from "./hooks/useResponsivePopover";
@@ -19,7 +17,7 @@ interface CopyableItem {
 }
 
 export function ProductCodes({ product, isExpanded, className }: ProductCodesProps) {
-  const { open, isMobile, onEnter, onLeave, onTriggerClick, handleOpenChange } = useResponsivePopover();
+  const { open, isMobile, onEnter, onLeave } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -131,58 +129,34 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
       className={cn("relative flex items-center justify-center w-fit", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      onClick={hasPopover && isMobile ? onTriggerClick : undefined}
       ref={triggerRef}
-      style={hasPopover && isMobile && open ? { pointerEvents: "none" } : undefined}
     >
-      <Badge className={cn(
-        "flex items-center gap-1.5 rounded-full pl-2.5 pr-1.5 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap",
-        "bg-secondary-900 text-white",
-        hasPopover && isMobile && "cursor-pointer active:opacity-90"
-      )}>
-        <span>{designCode || "N/A"}</span>
-        {!isBundle && designCode && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCopy(e, designCode);
-            }}
-            className="text-white/60 hover:text-white transition-colors focus:outline-none flex items-center justify-center animate-in fade-in duration-300"
-            title="Copy mã sản phẩm"
-          >
-            {copiedText === designCode ? (
-              <Check size={11} weight="bold" className="text-green-400" />
-            ) : (
-              <Copy size={11} weight="bold" />
-            )}
-          </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (designCode) handleCopy(e, designCode);
+        }}
+        className={cn(
+          "flex items-center gap-1.5 rounded-full pl-2.5 pr-2 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+          "bg-secondary-900 text-white active:opacity-90"
         )}
-      </Badge>
+      >
+        <span>{designCode || "N/A"}</span>
+        {copiedText === designCode ? (
+          <Check size={11} weight="bold" className="text-green-400" />
+        ) : (
+          <Copy size={11} weight="bold" />
+        )}
+      </button>
 
       {hasPopover && (
         <div className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-3 h-3">
           <CaretDown
             size={10}
             weight="bold"
-            className={cn(
-              "transition-all duration-200",
-              isExpanded
-                ? open ? "text-white rotate-180" : "text-white"
-                : open ? "text-secondary-900 rotate-180" : "text-primary-400"
-            )}
+            className="text-primary-400"
           />
         </div>
-      )}
-
-      {hasPopover && isMobile && createPortal(
-        <BottomSheet
-          open={open}
-          onOpenChange={handleOpenChange}
-          title={isBundle ? "Mã thiết kế" : "Mã sản phẩm"}
-        >
-          {codesPanel}
-        </BottomSheet>,
-        document.body
       )}
 
       {hasPopover && !isMobile && open && coords && createPortal(

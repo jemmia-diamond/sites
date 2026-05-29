@@ -332,7 +332,7 @@ export function JewelryTableRow({
         </TableCell>
 
         <TableCell className="px-6 md:px-2 py-2 text-center">
-          <div className="flex items-center justify-center gap-1">
+          <div className="inline-flex items-center relative">
             <span
               className={cn(
                 "text-xs md:text-sm font-bold tracking-tight",
@@ -342,7 +342,9 @@ export function JewelryTableRow({
               {priceDisplay}
             </span>
             {!product.showOnWebsite && (
-              <ReferencePriceTooltip isExpanded={isExpanded} size={12} />
+              <div className="absolute left-full ml-1 top-1/2 -translate-y-1/2">
+                <ReferencePriceTooltip isExpanded={isExpanded} size={12} />
+              </div>
             )}
           </div>
         </TableCell>
@@ -457,7 +459,7 @@ export function JewelryTableRow({
                   </div>
                 </div>
                 {/* Price */}
-                <div className="flex items-center gap-1.5">
+                <div className="inline-flex items-center relative">
                   <span
                     className={cn(
                       "text-sm font-bold tracking-tight",
@@ -467,7 +469,9 @@ export function JewelryTableRow({
                     {priceDisplay}
                   </span>
                   {!product.showOnWebsite && (
-                    <ReferencePriceTooltip isExpanded={isExpanded} size={14} />
+                    <div className="absolute left-full ml-1 top-1/2 -translate-y-1/2">
+                      <ReferencePriceTooltip isExpanded={isExpanded} size={14} />
+                    </div>
                   )}
                 </div>
               </div>
