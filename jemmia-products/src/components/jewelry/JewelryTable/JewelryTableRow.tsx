@@ -912,15 +912,6 @@ function ExpandedPanel({
                         <Badge className="rounded-full bg-secondary-800 text-white text-[8px] font-black shadow-sm px-1.5 py-0">
                           Khả dụng Haravan: {group.totalHaravanQuantity}
                         </Badge>
-                        <a
-                          href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center text-[7px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-0.5 tracking-tight"
-                        >
-                          <span>Haravan</span>
-                          <ArrowSquareOut size={8} />
-                        </a>
                       </div>
                     </div>
 

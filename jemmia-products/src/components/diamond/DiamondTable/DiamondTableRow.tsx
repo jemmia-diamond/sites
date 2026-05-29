@@ -361,16 +361,6 @@ export function DiamondTableRow({
                 ) : (
                   <span className="text-[9px] text-primary-200 font-bold uppercase italic opacity-50">N/A</span>
                 )}
-                {/* Haravan */}
-                <a
-                  href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center text-[7px] font-bold text-blue-500 hover:text-blue-600 transition-colors gap-0.5 tracking-tight"
-                >
-                  <span>Haravan</span>
-                  <ArrowSquareOut size={8} />
-                </a>
               </div>
               {/* Row 2: Diamond History */}
               {diamond.attributes.diamondHistory  && (
