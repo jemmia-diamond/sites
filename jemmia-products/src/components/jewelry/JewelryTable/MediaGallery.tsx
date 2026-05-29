@@ -276,38 +276,130 @@ export function MediaGallery({
     };
   }, [previewUrls]);
 
+  const allSelected =
+    validPreviewList.length > 0 && selectedMediaUrls.length === validPreviewList.length;
+  const hasActions = validPreviewList.length > 0 || uploadConfig?.showUpload;
+
+  const openFilePicker = () => {
+    if (uploadConfig?.uploadOptions && uploadConfig.uploadOptions.length > 1) {
+      setIsSelectionDialogOpen(true);
+    } else {
+      setActiveDesignCode(uploadConfig?.designCode || null);
+      setActiveLabel(null);
+      fileInputRef.current?.click();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-8 py-4 lg:py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
+      {/* Mobile header */}
+      <div className="lg:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
+        <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">
+              Thư viện
+            </h3>
+            <p className="mt-1 text-[10px] text-white/60 font-medium leading-snug truncate">
+              {uploadConfig?.designCode && (
+                <span className="text-white/90 font-bold">{uploadConfig.designCode}</span>
+              )}
+              {uploadConfig?.designCode && " · "}
+              {validPreviewList.length} tệp
+              {selectedMediaUrls.length > 0 && (
+                <span className="text-white/80"> · đã chọn {selectedMediaUrls.length}</span>
+              )}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white"
+            onClick={onClose}
+          >
+            <X size={16} />
+          </Button>
+        </div>
+
+        {hasActions && (
+          <div className="flex items-center gap-1.5 px-3 pb-2.5 overflow-x-auto no-scrollbar">
+            {validPreviewList.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleSelectAll}
+                  className="h-7 shrink-0 px-2.5 border-white/20 bg-transparent text-white font-bold text-[10px] hover:bg-white hover:text-secondary-700 flex items-center gap-1"
+                >
+                  <Checks size={13} weight="bold" />
+                  {allSelected ? "Bỏ chọn" : "Chọn hết"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadSelected}
+                  disabled={isDownloading || selectedMediaUrls.length === 0}
+                  className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-700 hover:text-white flex items-center gap-1 disabled:opacity-40"
+                >
+                  {isDownloading ? (
+                    <CircleNotch size={13} className="animate-spin" />
+                  ) : (
+                    <DownloadSimple size={13} weight="bold" />
+                  )}
+                  Tải ({selectedMediaUrls.length})
+                </Button>
+              </>
+            )}
+            {uploadConfig?.showUpload && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={openFilePicker}
+                className="h-7 shrink-0 px-2.5 border-white/20 bg-transparent text-white font-bold text-[10px] hover:bg-white hover:text-secondary-700 flex items-center gap-1 disabled:opacity-40"
+              >
+                {uploading ? (
+                  <CircleNotch size={13} className="animate-spin" />
+                ) : (
+                  <UploadSimple size={13} weight="bold" />
+                )}
+                Tải lên
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
         <div>
-          <h3 className="text-base lg:text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+          <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
             Thư viện
             {uploadConfig?.designCode && (
-              <span className="bg-white/20 text-white text-[9px] lg:text-[10px] px-2 py-1 rounded-full tracking-widest uppercase">
+              <span className="bg-white/20 text-white text-[10px] px-2 py-1 rounded-full tracking-widest uppercase">
                 {uploadConfig.designCode}
               </span>
             )}
           </h3>
-          <p className="text-[10px] lg:text-xs text-white/70 font-bold mt-1">Tổng cộng {validPreviewList.length} tệp tin</p>
+          <p className="text-xs text-white/70 font-bold mt-1">Tổng cộng {validPreviewList.length} tệp tin</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+        <div className="flex items-center gap-3">
           {validPreviewList.length > 0 && (
             <>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleToggleSelectAll}
-                className="h-8 lg:h-10 px-3 lg:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] lg:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1 lg:gap-2"
+                className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2"
               >
                 <Checks size={14} />
-                {selectedMediaUrls.length === validPreviewList.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownloadSelected}
                 disabled={isDownloading || selectedMediaUrls.length === 0}
-                className="h-8 lg:h-10 px-3 lg:px-4 border-white font-bold text-[10px] lg:text-xs uppercase tracking-widest bg-white text-secondary-700 hover:bg-secondary-700 hover:text-white transition-all flex items-center gap-1 lg:gap-2 disabled:bg-white/50 disabled:text-secondary-700/50 disabled:border-transparent"
+                className="h-10 px-4 border-white font-bold text-xs uppercase tracking-widest bg-white text-secondary-700 hover:bg-secondary-700 hover:text-white transition-all flex items-center gap-2 disabled:bg-white/50 disabled:text-secondary-700/50 disabled:border-transparent"
               >
                 {isDownloading ? (
                   <CircleNotch size={14} className="animate-spin" />
@@ -319,44 +411,40 @@ export function MediaGallery({
             </>
           )}
           {uploadConfig?.showUpload && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={uploading}
-                className="h-8 lg:h-10 px-3 lg:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] lg:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1 lg:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
-                onClick={() => {
-                  if (uploadConfig.uploadOptions && uploadConfig.uploadOptions.length > 1) {
-                    setIsSelectionDialogOpen(true);
-                  } else {
-                    setActiveDesignCode(uploadConfig.designCode || null);
-                    setActiveLabel(null);
-                    fileInputRef.current?.click();
-                  }
-                }}
-              >
-                {uploading ? (
-                  <CircleNotch size={14} className="animate-spin" />
-                ) : (
-                  <UploadSimple size={14} />
-                )}
-                Tải lên
-              </Button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                multiple
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-              />
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
+              onClick={openFilePicker}
+            >
+              {uploading ? (
+                <CircleNotch size={14} className="animate-spin" />
+              ) : (
+                <UploadSimple size={14} />
+              )}
+              Tải lên
+            </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8 lg:h-10 lg:w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all"
+            onClick={onClose}
+          >
             <X size={16} />
           </Button>
         </div>
       </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        multiple
+        accept="image/*,video/*"
+        onChange={handleFileChange}
+      />
       <div className="flex-1 overflow-y-auto p-4 lg:p-8 pt-2 lg:pt-4">
         {validPreviewList.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">

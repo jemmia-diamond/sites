@@ -18,7 +18,12 @@ interface JewelryTableRowProps {
   onImageError: (url: string) => void;
   onPreview: (images: string[], index: number, config?: any) => void;
   onToggleExpand: (id: string) => void;
-  onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
+  onOpenSerialModal: (
+    variants: any[],
+    sku: string,
+    totalQuantity?: number,
+    totalHaravanQuantity?: number,
+  ) => void;
   onUploadSuccess?: () => void;
   key?: string | number;
 }
@@ -53,46 +58,83 @@ export function JewelryTableRow({
 
   const actualImages = isBundle
     ? product.products!.flatMap((p) => [
-      ...(p.images?.map((img) => img.url) || []),
-      ...(p.videos?.map((v) => v.url) || []),
-    ])
+        ...(p.images?.map((img) => img.url) || []),
+        ...(p.videos?.map((v) => v.url) || []),
+      ])
     : [
-      ...(product.images?.map((img) => img.url) || []),
-      ...(product.videos?.map((v) => v.url) || []),
-    ];
+        ...(product.images?.map((img) => img.url) || []),
+        ...(product.videos?.map((v) => v.url) || []),
+      ];
 
   const designCode = isBundle
-    ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
+    ? product.products
+        ?.map((p) => p.attributes.designCode)
+        .filter(Boolean)
+        .join(" / ")
     : product.attributes?.designCode;
 
   const stockBySKU = !isBundle ? getGroupedStock(product, warehouseIds) : {};
 
   const totalStockCount = isBundle
     ? product.products!.reduce((acc, p) => {
-      const subProductStockBySKU = getGroupedStock(p, warehouseIds);
-      const subProductStockCount = Object.values(subProductStockBySKU).reduce((subAcc, curr) => subAcc + curr.totalHaravanQuantity, 0);
-      return acc + subProductStockCount;
-    }, 0)
-    : Object.values(stockBySKU).reduce((acc, curr) => acc + curr.totalHaravanQuantity, 0);
+        const subProductStockBySKU = getGroupedStock(p, warehouseIds);
+        const subProductStockCount = Object.values(subProductStockBySKU).reduce(
+          (subAcc, curr) => subAcc + curr.totalHaravanQuantity,
+          0,
+        );
+        return acc + subProductStockCount;
+      }, 0)
+    : Object.values(stockBySKU).reduce(
+        (acc, curr) => acc + curr.totalHaravanQuantity,
+        0,
+      );
 
   const allVariants = (product.variants || []) as any[];
-  const allPrices = allVariants.map(v => isEarring ? (v.salePrice || 0) * 2 : (v.salePrice || 0)).filter(p => p > 0);
+  const allPrices = allVariants
+    .map((v) => (isEarring ? (v.salePrice || 0) * 2 : v.salePrice || 0))
+    .filter((p) => p > 0);
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
   const hasStock = totalStockCount > 0;
   const fourView = !isBundle && product.attributes?.["4view"];
-  const subProductNam = isBundle ? (product.products?.find(p => p.attributes?.gender === 'Nam') || product.products?.[0]) : null;
-  const subProductNu = isBundle ? (product.products?.find(p => p.attributes?.gender === 'Nữ') || (product.products && product.products.length > 1 ? product.products[1] : null)) : null;
+  const subProductNam = isBundle
+    ? product.products?.find((p) => p.attributes?.gender === "Nam") ||
+      product.products?.[0]
+    : null;
+  const subProductNu = isBundle
+    ? product.products?.find((p) => p.attributes?.gender === "Nữ") ||
+      (product.products && product.products.length > 1
+        ? product.products[1]
+        : null)
+    : null;
   const fourViewNam = subProductNam?.attributes?.["4view"];
   const fourViewNu = subProductNu?.attributes?.["4view"];
-  const hasSideStonesNam = fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
-  const hasSideStonesNu = fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
+  const hasSideStonesNam =
+    fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
+  const hasSideStonesNu =
+    fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
 
-  const uploadOptions = isBundle ? [
-    ...(subProductNam?.attributes?.designCode ? [{ label: "Nhẫn Nam", designCode: subProductNam.attributes.designCode }] : []),
-    ...(subProductNu?.attributes?.designCode ? [{ label: "Nhẫn Nữ", designCode: subProductNu.attributes.designCode }] : []),
-  ] : undefined;
+  const uploadOptions = isBundle
+    ? [
+        ...(subProductNam?.attributes?.designCode
+          ? [
+              {
+                label: "Nhẫn Nam",
+                designCode: subProductNam.attributes.designCode,
+              },
+            ]
+          : []),
+        ...(subProductNu?.attributes?.designCode
+          ? [
+              {
+                label: "Nhẫn Nữ",
+                designCode: subProductNu.attributes.designCode,
+              },
+            ]
+          : []),
+      ]
+    : undefined;
 
   const priceDisplay = isBundle
     ? product.salePrice && product.salePrice > 0
@@ -104,7 +146,8 @@ export function JewelryTableRow({
         ? formatPriceMillion(minPrice)
         : `${formatPriceMillion(minPrice)} - ${formatPriceMillion(maxPrice)}`;
 
-  const firstImage = (webImages.length > 0 ? webImages[0] : actualImages[0]) || "";
+  const firstImage =
+    (webImages.length > 0 ? webImages[0] : actualImages[0]) || "";
 
   return (
     <>
@@ -115,7 +158,7 @@ export function JewelryTableRow({
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
-          isBundle && !isExpanded && "bg-amber-50/20"
+          isBundle && !isExpanded && "bg-amber-50/20",
         )}
         onClick={() => onToggleExpand(product.id)}
       >
@@ -133,7 +176,11 @@ export function JewelryTableRow({
               brokenImages={brokenImages}
               onImageError={onImageError}
               onPreview={(images, index, config) => {
-                onPreview(images, index, { ...config, productId: product.id, isActual: false });
+                onPreview(images, index, {
+                  ...config,
+                  productId: product.id,
+                  isActual: false,
+                });
               }}
               designCode={designCode || product.title}
             />
@@ -149,7 +196,12 @@ export function JewelryTableRow({
               brokenImages={brokenImages}
               onImageError={onImageError}
               onPreview={(images, index, config) => {
-                onPreview(images, index, { ...config, productId: product.id, isActual: true, uploadOptions });
+                onPreview(images, index, {
+                  ...config,
+                  productId: product.id,
+                  isActual: true,
+                  uploadOptions,
+                });
               }}
               designCode={designCode || product.title}
               onUploadSuccess={onUploadSuccess}
@@ -162,32 +214,47 @@ export function JewelryTableRow({
             {isBundle ? (
               <>
                 {hasSideStonesNam && (
-                  <SideStoneTooltip fourView={fourViewNam as any} isExpanded={isExpanded} label="Tấm Nam" />
+                  <SideStoneTooltip
+                    fourView={fourViewNam as any}
+                    isExpanded={isExpanded}
+                    label="Tấm Nam"
+                  />
                 )}
                 {hasSideStonesNu && (
-                  <SideStoneTooltip fourView={fourViewNu as any} isExpanded={isExpanded} label="Tấm Nữ" />
+                  <SideStoneTooltip
+                    fourView={fourViewNu as any}
+                    isExpanded={isExpanded}
+                    label="Tấm Nữ"
+                  />
                 )}
                 {!hasSideStonesNam && !hasSideStonesNu && (
-                  <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">--</span>
+                  <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">
+                    --
+                  </span>
                 )}
               </>
+            ) : fourView && Array.isArray(fourView) && fourView.length > 0 ? (
+              <div className="flex justify-center">
+                <SideStoneTooltip
+                  fourView={fourView as any}
+                  isExpanded={isExpanded}
+                />
+              </div>
             ) : (
-              fourView && Array.isArray(fourView) && fourView.length > 0 ? (
-                <div className="flex justify-center">
-                  <SideStoneTooltip fourView={fourView as any} isExpanded={isExpanded} />
-                </div>
-              ) : (
-                <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">--</span>
-              )
+              <span className="text-primary-100 text-[9px] sm:text-[10px] font-black italic">
+                --
+              </span>
             )}
           </div>
         </TableCell>
 
         <TableCell className="px-6 sm:px-2 py-2 text-center">
-          <span className={cn(
-            "text-[10px] sm:text-[11px] font-black tracking-tight",
-            isExpanded ? "text-white" : "text-secondary-900"
-          )}>
+          <span
+            className={cn(
+              "text-[10px] sm:text-[11px] font-black tracking-tight",
+              isExpanded ? "text-white" : "text-secondary-900",
+            )}
+          >
             {priceDisplay}
           </span>
         </TableCell>
@@ -196,7 +263,9 @@ export function JewelryTableRow({
           <Badge
             className={cn(
               "rounded-full px-2 sm:px-3 py-1 text-[8px] sm:text-[10px] font-black tracking-widest border-none shadow-sm",
-              hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
+              hasStock
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-primary-50 text-primary-300",
             )}
           >
             {hasStock ? "Có hàng" : "Hết hàng"}
@@ -210,13 +279,16 @@ export function JewelryTableRow({
                 "h-5 w-5 rounded-full transition-all duration-300",
                 isExpanded
                   ? "bg-secondary-900 text-white"
-                  : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
+                  : "bg-primary-50 text-secondary-900 hover:bg-primary-100",
               )}
             >
               <CaretDown
                 size={10}
                 weight="bold"
-                className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
+                className={cn(
+                  "transition-transform duration-300",
+                  isExpanded && "rotate-180",
+                )}
               />
             </Button>
           </div>
@@ -230,7 +302,7 @@ export function JewelryTableRow({
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
             : "border-primary-50 hover:bg-primary-50/30",
-          isBundle && !isExpanded && "bg-amber-50/20"
+          isBundle && !isExpanded && "bg-amber-50/20",
         )}
         onClick={() => onToggleExpand(product.id)}
       >
@@ -247,8 +319,18 @@ export function JewelryTableRow({
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-primary-300">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                   <span className="text-[8px] mt-0.5">No image</span>
                 </div>
@@ -267,11 +349,16 @@ export function JewelryTableRow({
                           const code = subProduct.attributes?.designCode;
                           if (!code) return null;
                           return (
-                            <Badge key={idx} className={cn(
-                              "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase w-fit",
-                              "bg-secondary-900 text-white"
-                            )}>
-                              <span className="truncate overflow-hidden whitespace-nowrap">{code}</span>
+                            <Badge
+                              key={idx}
+                              className={cn(
+                                "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase w-fit",
+                                "bg-secondary-900 text-white",
+                              )}
+                            >
+                              <span className="truncate overflow-hidden whitespace-nowrap">
+                                {code}
+                              </span>
                             </Badge>
                           );
                         })}
@@ -280,36 +367,36 @@ export function JewelryTableRow({
                       <ProductCodes product={product} isExpanded={isExpanded} />
                     )}
                   </div>
-
-                  <Badge
-                    className={cn(
-                      "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
-                      hasStock ? "bg-emerald-50 text-emerald-600" : "bg-primary-50 text-primary-300"
-                    )}
-                  >
-                    {hasStock ? "Có hàng" : "Hết hàng"}
-                  </Badge>
                 </div>
                 {/* Price */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className={cn(
-                    "text-sm font-black tracking-tight",
-                    isExpanded ? "text-white" : "text-secondary-900"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-sm font-black tracking-tight",
+                      isExpanded ? "text-white" : "text-secondary-900",
+                    )}
+                  >
                     {priceDisplay}
                   </span>
-
-
                 </div>
               </div>
-
+              <Badge
+                className={cn(
+                  "rounded-full px-1.5 py-0 text-[8px] font-black tracking-widest border-none shadow-sm",
+                  hasStock
+                    ? "bg-emerald-50 text-emerald-600"
+                    : "bg-primary-50 text-primary-300",
+                )}
+              >
+                {hasStock ? "Có hàng" : "Hết hàng"}
+              </Badge>
               <Button
                 size="icon"
                 className={cn(
                   "h-6 w-6 rounded-full transition-all duration-300 flex-shrink-0 flex items-center justify-center",
                   isExpanded
                     ? "bg-white text-secondary-900"
-                    : "bg-primary-50 text-secondary-900 hover:bg-primary-100"
+                    : "bg-primary-50 text-secondary-900 hover:bg-primary-100",
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -319,7 +406,10 @@ export function JewelryTableRow({
                 <CaretDown
                   size={12}
                   weight="bold"
-                  className={cn("transition-transform duration-300", isExpanded && "rotate-180")}
+                  className={cn(
+                    "transition-transform duration-300",
+                    isExpanded && "rotate-180",
+                  )}
                 />
               </Button>
             </div>
@@ -334,25 +424,41 @@ export function JewelryTableRow({
               {isBundle ? (
                 <div className="bg-white divide-y divide-primary-100">
                   {product.products!.map((subProduct, idx) => {
-                    const genderTitle = subProduct.attributes?.gender === 'Nam' ? 'Nhẫn Nam' : subProduct.attributes?.gender === 'Nữ' ? 'Nhẫn Nữ' : `Món ${idx + 1}`;
-                    const subWebImages = subProduct.thumbnails?.map((t) => t.url) || [];
+                    const genderTitle =
+                      subProduct.attributes?.gender === "Nam"
+                        ? "Nhẫn Nam"
+                        : subProduct.attributes?.gender === "Nữ"
+                          ? "Nhẫn Nữ"
+                          : `Món ${idx + 1}`;
+                    const subWebImages =
+                      subProduct.thumbnails?.map((t) => t.url) || [];
                     const subActualImages = [
                       ...(subProduct.images?.map((img) => img.url) || []),
                       ...(subProduct.videos?.map((v) => v.url) || []),
                     ];
                     const subFourView = subProduct.attributes?.["4view"];
-                    const subHasSideStones = Array.isArray(subFourView) && subFourView.length > 0;
+                    const subHasSideStones =
+                      Array.isArray(subFourView) && subFourView.length > 0;
                     return (
                       <div key={subProduct.id} className="p-3 sm:p-4">
                         <div className="flex items-center gap-3 mb-0 overflow-hidden">
-                          <span className="text-xs sm:text-sm font-bold text-secondary-800 flex-shrink-0">{genderTitle}</span>
+                          <span className="text-xs sm:text-sm font-bold text-secondary-800 flex-shrink-0">
+                            {genderTitle}
+                          </span>
                           <div className="flex-1 min-w-0">
-                            <ProductCodes product={subProduct} isExpanded={false} />
+                            <ProductCodes
+                              product={subProduct}
+                              isExpanded={false}
+                            />
                           </div>
                         </div>
                         <ExpandedPanel
                           stockBySKU={getGroupedStock(subProduct, warehouseIds)}
-                          isEarring={subProduct.type?.toLowerCase().includes("bông tai") || false}
+                          isEarring={
+                            subProduct.type
+                              ?.toLowerCase()
+                              .includes("bông tai") || false
+                          }
                           product={subProduct}
                           onOpenSerialModal={onOpenSerialModal}
                           webImages={subWebImages}
@@ -407,22 +513,38 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
   const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
 
   if (hasWarehouseFilter) {
-    const selectedWarehouseNames = warehouseIds.flatMap(id => WAREHOUSE_ID_TO_NAMES[id] || []).filter(Boolean);
+    const selectedWarehouseNames = warehouseIds
+      .flatMap((id) => WAREHOUSE_ID_TO_NAMES[id] || [])
+      .filter(Boolean);
     if (selectedWarehouseNames.length > 0) {
-      const normalizedSelectedNames = selectedWarehouseNames.map(name => name.trim().toLowerCase());
-      variants = variants.filter(v => {
+      const normalizedSelectedNames = selectedWarehouseNames.map((name) =>
+        name.trim().toLowerCase(),
+      );
+      variants = variants.filter((v) => {
         if (!v.stockAt) return false;
         const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
-        return normalizedSelectedNames.some(selectedName => normalizedStockAt.includes(selectedName));
+        return normalizedSelectedNames.some((selectedName) =>
+          normalizedStockAt.includes(selectedName),
+        );
       });
     }
   }
 
-  const stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }> = {};
+  const stockBySKU: Record<
+    string,
+    {
+      variants: any[];
+      totalQuantity: number;
+      totalHaravanQuantity: number;
+      firstVariant: any;
+    }
+  > = {};
 
   // Step 1: Group variants by SKU and sum internal quantities.
   variants.forEach((v) => {
-    const hv = product.haravanVariants?.find(h => String(h.variant_id) === String(v.id));
+    const hv = product.haravanVariants?.find(
+      (h) => String(h.variant_id) === String(v.id),
+    );
     const vWithHv = { ...v, haravanVariant: hv };
     const sku = v.sku || "N/A";
 
@@ -431,40 +553,51 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
         variants: [],
         totalQuantity: 0,
         totalHaravanQuantity: 0, // Will calculate in step 2
-        firstVariant: vWithHv
+        firstVariant: vWithHv,
       };
     }
 
     stockBySKU[sku].variants.push(vWithHv);
-    stockBySKU[sku].totalQuantity += (v.quantity || 0);
+    stockBySKU[sku].totalQuantity += v.quantity || 0;
   });
 
   // Step 2: Calculate Haravan quantity for each SKU.
   for (const sku in stockBySKU) {
     if (hasWarehouseFilter) {
       // Calculate the sum of physical internal stock (serials quantity)
-      const sumOfSerials = stockBySKU[sku].variants.reduce((acc, v) => acc + (v.quantity || 0), 0);
+      const sumOfSerials = stockBySKU[sku].variants.reduce(
+        (acc, v) => acc + (v.quantity || 0),
+        0,
+      );
 
       if (sumOfSerials > 0) {
         // If sum of serials > 0, take sum of serials
         stockBySKU[sku].totalHaravanQuantity = sumOfSerials;
       } else {
         // If sum of serials is 0, display the Haravan quantity
-        const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
+        const uniqueVariantIds = new Set(
+          stockBySKU[sku].variants.map((v) => v.id),
+        );
         uniqueVariantIds.forEach((variantId) => {
-          const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
+          const hv = product.haravanVariants?.find(
+            (h) => String(h.variant_id) === String(variantId),
+          );
           if (hv) {
-            stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+            stockBySKU[sku].totalHaravanQuantity += hv.qty_available || 0;
           }
         });
       }
     } else {
       // If not filtering, sum from the main haravanVariants source, ensuring uniqueness.
-      const uniqueVariantIds = new Set(stockBySKU[sku].variants.map((v) => v.id));
+      const uniqueVariantIds = new Set(
+        stockBySKU[sku].variants.map((v) => v.id),
+      );
       uniqueVariantIds.forEach((variantId) => {
-        const hv = product.haravanVariants?.find((h) => String(h.variant_id) === String(variantId));
+        const hv = product.haravanVariants?.find(
+          (h) => String(h.variant_id) === String(variantId),
+        );
         if (hv) {
-          stockBySKU[sku].totalHaravanQuantity += (hv.qty_available || 0);
+          stockBySKU[sku].totalHaravanQuantity += hv.qty_available || 0;
         }
       });
     }
@@ -474,10 +607,23 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
 }
 
 interface ExpandedPanelProps {
-  stockBySKU: Record<string, { variants: any[]; totalQuantity: number; totalHaravanQuantity: number; firstVariant: any }>;
+  stockBySKU: Record<
+    string,
+    {
+      variants: any[];
+      totalQuantity: number;
+      totalHaravanQuantity: number;
+      firstVariant: any;
+    }
+  >;
   isEarring: boolean;
   product: ProductModel;
-  onOpenSerialModal: (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => void;
+  onOpenSerialModal: (
+    variants: any[],
+    sku: string,
+    totalQuantity?: number,
+    totalHaravanQuantity?: number,
+  ) => void;
   webImages?: string[];
   actualImages?: string[];
   fourView?: any;
@@ -514,37 +660,61 @@ function ExpandedPanel({
   onPreview,
   designCode,
   uploadOptions,
-  onUploadSuccess
+  onUploadSuccess,
 }: ExpandedPanelProps) {
   const formatPrice = (price: number | null) => {
     if (!price) return "N/A";
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
   };
   console.log(isBundle);
   return (
     <div className="bg-white overflow-hidden">
       {/* Mobile Only: Additional Info Section */}
-      {(webImages.length > 0 || actualImages.length > 0 || hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
-        <div className={`${isBundle ? 'pb-2' : 'px-3 py-2'} sm:hidden border-b border-primary-100 space-y-2`}>
+      {(webImages.length > 0 ||
+        actualImages.length > 0 ||
+        hasSideStones ||
+        hasSideStonesNam ||
+        hasSideStonesNu) && (
+        <div
+          className={`${isBundle ? "pb-2" : "px-3 py-2"} sm:hidden border-b border-primary-100 space-y-2`}
+        >
           {/* Product Codes */}
           <div className="flex items-center justify-between">
             {/* Side Stones */}
             {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
               <div className="h-full flex items-center mt-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Viên Tấm</p>
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+                  Viên Tấm
+                </p>
                 <div className="flex flex-wrap gap-1">
                   {isBundle ? (
                     <>
                       {hasSideStonesNam && (
-                        <SideStoneTooltip fourView={fourViewNam as any} isExpanded={true} label="Tấm Nam" />
+                        <SideStoneTooltip
+                          fourView={fourViewNam as any}
+                          isExpanded={true}
+                          label="Tấm Nam"
+                        />
                       )}
                       {hasSideStonesNu && (
-                        <SideStoneTooltip fourView={fourViewNu as any} isExpanded={true} label="Tấm Nữ" />
+                        <SideStoneTooltip
+                          fourView={fourViewNu as any}
+                          isExpanded={true}
+                          label="Tấm Nữ"
+                        />
                       )}
                     </>
                   ) : (
-                    fourView && Array.isArray(fourView) && fourView.length > 0 && (
-                      <SideStoneTooltip fourView={fourView as any} isExpanded={true} />
+                    fourView &&
+                    Array.isArray(fourView) &&
+                    fourView.length > 0 && (
+                      <SideStoneTooltip
+                        fourView={fourView as any}
+                        isExpanded={true}
+                      />
                     )
                   )}
                 </div>
@@ -557,13 +727,15 @@ function ExpandedPanel({
             {/* Website Images */}
             {webImages.length > 0 && (
               <div className="space-y-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Ảnh Website</p>
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+                  Ảnh Website
+                </p>
                 <CompactGallery
                   images={webImages}
                   showUpload={false}
                   brokenImages={brokenImages || new Set()}
-                  onImageError={onImageError || (() => { })}
-                  onPreview={onPreview || (() => { })}
+                  onImageError={onImageError || (() => {})}
+                  onPreview={onPreview || (() => {})}
                   designCode={designCode || product.title}
                 />
               </div>
@@ -572,14 +744,16 @@ function ExpandedPanel({
             {/* Actual Images */}
             {actualImages.length > 0 && (
               <div className="space-y-1">
-                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">Ảnh/Video Thực Tế</p>
+                <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
+                  Ảnh/Video Thực Tế
+                </p>
                 <CompactGallery
                   images={actualImages}
                   showUpload={true}
                   uploadOptions={uploadOptions}
                   brokenImages={brokenImages || new Set()}
-                  onImageError={onImageError || (() => { })}
-                  onPreview={onPreview || (() => { })}
+                  onImageError={onImageError || (() => {})}
+                  onPreview={onPreview || (() => {})}
                   designCode={designCode || product.title}
                   onUploadSuccess={onUploadSuccess}
                 />
@@ -592,18 +766,25 @@ function ExpandedPanel({
       <div className="divide-y divide-secondary-600">
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
           const variant = group.firstVariant;
-          const hasSale = variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
+          const hasSale =
+            variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
 
           return (
-            <div key={sku} className={cn(
-              idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
-              "hover:bg-primary-50/50 transition-all",
-              group.totalHaravanQuantity === 0 && "opacity-50 hover:opacity-80"
-            )}>
+            <div
+              key={sku}
+              className={cn(
+                idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
+                "hover:bg-primary-50/50 transition-all",
+                group.totalHaravanQuantity === 0 &&
+                  "opacity-50 hover:opacity-80",
+              )}
+            >
               {/* Desktop Grid View */}
               <div className="hidden sm:grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center">
                 <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 flex flex-col gap-0.5">
-                  <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
+                  <p className="text-[10px] sm:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">
+                    SKU: {sku}
+                  </p>
                   <p className="text-[9px] sm:text-[10px] font-bold text-primary-400 font-mono tracking-tighter">
                     Barcode: {variant.barcode || "No Barcode"}
                   </p>
@@ -657,13 +838,17 @@ function ExpandedPanel({
                   <div className="flex flex-col items-start sm:items-end gap-0.5">
                     {hasSale && (
                       <p className="text-[9px] sm:text-[10px] font-bold text-primary-200 line-through leading-none">
-                        {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
+                        {formatPrice(
+                          isEarring ? variant.basePrice * 2 : variant.basePrice,
+                        )}
                       </p>
                     )}
 
                     <p className="text-xs sm:text-sm font-black text-secondary-900 tracking-tight leading-none group-hover/sku:text-primary-600 transition-colors">
                       {formatPrice(
-                        isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
+                        isEarring
+                          ? (variant.salePrice || 0) * 2
+                          : variant.salePrice || 0,
                       )}
                     </p>
 
@@ -684,15 +869,24 @@ function ExpandedPanel({
                     size="sm"
                     disabled={group.totalQuantity === 0}
                     className="text-[9px] sm:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
-                    onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
+                    onClick={() =>
+                      onOpenSerialModal(
+                        group.variants,
+                        sku,
+                        group.totalQuantity,
+                        group.totalHaravanQuantity,
+                      )
+                    }
                   >
                     <span>Xem Serials</span>
-                    <span className={cn(
-                      "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
-                      group.totalQuantity === 0
-                        ? "bg-primary-50 text-primary-200"
-                        : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
-                    )}>
+                    <span
+                      className={cn(
+                        "flex items-center justify-center h-4 w-4 rounded-full text-[8px] sm:text-[9px] font-black transition-all duration-300",
+                        group.totalQuantity === 0
+                          ? "bg-primary-50 text-primary-200"
+                          : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white",
+                      )}
+                    >
                       {group.totalQuantity}
                     </span>
                   </Button>
@@ -700,12 +894,18 @@ function ExpandedPanel({
               </div>
 
               {/* Mobile Compact View */}
-              <div className={isBundle ? 'py-2 sm:hidden' : 'px-3 py-2.5 sm:hidden'}>
+              <div
+                className={
+                  isBundle ? "py-2 sm:hidden" : "px-3 py-2.5 sm:hidden"
+                }
+              >
                 <div className="flex flex-col gap-1.5 w-full">
                   {/* SKU + Barcode + Price + Haravan */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-0.5">
-                      <p className="text-[10px] font-black text-secondary-900 tracking-tight leading-none uppercase">SKU: {sku}</p>
+                      <p className="text-[10px] font-black text-secondary-900 tracking-tight leading-none uppercase">
+                        SKU: {sku}
+                      </p>
                       <p className="text-[8px] font-bold text-primary-400 font-mono tracking-tighter">
                         Barcode: {variant.barcode || "No Barcode"}
                       </p>
@@ -728,12 +928,18 @@ function ExpandedPanel({
                     <div className="flex flex-col items-end gap-0.5">
                       {hasSale && (
                         <p className="text-[8px] font-bold text-primary-200 line-through leading-none">
-                          {formatPrice(isEarring ? variant.basePrice * 2 : variant.basePrice)}
+                          {formatPrice(
+                            isEarring
+                              ? variant.basePrice * 2
+                              : variant.basePrice,
+                          )}
                         </p>
                       )}
                       <p className="text-[11px] font-black text-secondary-900 tracking-tight leading-none">
                         {formatPrice(
-                          isEarring ? (variant.salePrice || 0) * 2 : variant.salePrice || 0
+                          isEarring
+                            ? (variant.salePrice || 0) * 2
+                            : variant.salePrice || 0,
                         )}
                       </p>
                       {!product.showOnWebsite && (
@@ -783,15 +989,24 @@ function ExpandedPanel({
                         size="sm"
                         disabled={group.totalQuantity === 0}
                         className="text-[8px] font-bold h-6 px-2 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1"
-                        onClick={() => onOpenSerialModal(group.variants, sku, group.totalQuantity, group.totalHaravanQuantity)}
+                        onClick={() =>
+                          onOpenSerialModal(
+                            group.variants,
+                            sku,
+                            group.totalQuantity,
+                            group.totalHaravanQuantity,
+                          )
+                        }
                       >
                         <span>Xem Serials</span>
-                        <span className={cn(
-                          "flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300",
-                          group.totalQuantity === 0
-                            ? "bg-primary-50 text-primary-200"
-                            : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white"
-                        )}>
+                        <span
+                          className={cn(
+                            "flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300",
+                            group.totalQuantity === 0
+                              ? "bg-primary-50 text-primary-200"
+                              : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white",
+                          )}
+                        >
                           {group.totalQuantity}
                         </span>
                       </Button>

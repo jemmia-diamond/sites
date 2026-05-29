@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
-import { FloatingSearch } from "./FloatingSearch";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -17,7 +16,6 @@ export function LayoutShell({ children, searchPlaceholder }: LayoutShellProps) {
         {children}
       </div>
       <BottomNav />
-      <FloatingSearch />
     </div>
   );
 }

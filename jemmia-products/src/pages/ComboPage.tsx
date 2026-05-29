@@ -5,18 +5,11 @@ import { fetchCombos, ComboFilter } from "../services/comboService";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { PageHeader } from "../components/layout/PageHeader";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { DiamondModel, ProductModel } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
-import { X } from "lucide-react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export default function ComboPage() {
   const [filters, setFilters] = useState<Omit<ComboFilter, 'page'>>({ limit: 100 });
@@ -110,18 +103,12 @@ function formatGoldWeight(weightInChi: number | null | undefined): string {
   }
 }
 
-interface ProductDetails {
-  product: ProductModel | DiamondModel;
-  type: 'jewelry' | 'diamond';
-  variant?: any;
-}
-
 function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
   const jewelry: ProductModel = combo.jewelry;
   const diamond: DiamondModel = combo.diamond;
   const variant: any = jewelry.variants?.[0] || {};
-  const vAttributes = variant.attributes || {};
-  const [detailsDialog, setDetailsDialog] = useState<ProductDetails | null>(null);
+  const isMobile = useIsMobile();
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const totalBasePrice = (variant?.basePrice || jewelry.basePrice || 0) + (diamond.basePrice || 0);
   const totalSalePrice = (variant?.salePrice || jewelry.salePrice || 0) + (diamond.salePrice || 0);
@@ -134,10 +121,9 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
   const jewelryOriginalPrice = variant?.basePrice || jewelry.basePrice || 0;
   const diamondPrice = diamond.salePrice || 0;
   const diamondOriginalPrice = diamond.basePrice || 0;
-  const isMobile = window.innerWidth <= 768;
   const products = [
     {
-      type: "jewelry",
+      type: "jewelry" as const,
       product: jewelry,
       variant: variant,
       image: jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url,
@@ -148,7 +134,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       originalPrice: jewelryOriginalPrice
     },
     {
-      type: "diamond",
+      type: "diamond" as const,
       product: diamond,
       variant: undefined,
       image: getDiamondShapeImage(diamond.attributes?.shape || "Round"),
@@ -160,12 +146,16 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
     }
   ];
 
+  const handleDetailsOpenChange = (open: boolean) => {
+    setDetailsOpen(open);
+  };
+
   return (
     <>
       <div className="border border-gray-200 bg-white flex flex-col overflow-hidden">
         {products.map((product, idx) => (
           <div key={idx} className={cn(
-            "flex items-start p-2 sm:p-4",
+            "flex items-center p-2 sm:p-4",
             idx !== products.length - 1 && "border-b border-gray-100"
           )}>
             {/* Product thumbnail */}
@@ -245,252 +235,203 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
               </div>
             </div>
 
-            {/* Price and button section */}
-            <div className="ml-2 sm:ml-3 text-right flex flex-col items-end gap-1">
-              <div className="flex flex-col items-end min-w-[100px]">
-                {product.originalPrice > product.price && (
-                  <div className="text-[10px] sm:text-xs text-gray-400 line-through truncate w-full text-right">
-                    {formatPrice(product.originalPrice)}
-                  </div>
-                )}
-                <div className="text-sm font-bold text-gray-900">
-                  {formatPrice(product.price)}
+            {/* Price */}
+            <div className="ml-2 sm:ml-3 text-right flex flex-col items-end min-w-[100px]">
+              {product.originalPrice > product.price && (
+                <div className="text-[10px] sm:text-xs text-gray-400 line-through truncate w-full text-right">
+                  {formatPrice(product.originalPrice)}
                 </div>
+              )}
+              <div className="text-sm font-bold text-gray-900">
+                {formatPrice(product.price)}
               </div>
-              {/* Button only visible on mobile */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="sm:hidden h-6 px-2 text-[10px] font-bold text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-                onClick={() => setDetailsDialog({
-                  product: product.product,
-                  type: product.type as 'jewelry' | 'diamond',
-                  variant: product.variant
-                })}
-              >
-                Xem chi tiết
-              </Button>
             </div>
           </div>
         ))}
+
+        {isMobile && (
+          <div className="px-2 pb-1 sm:hidden border-b border-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-8 text-[11px] font-bold text-secondary-900 hover:bg-primary-50"
+              onClick={() => setDetailsOpen(true)}
+            >
+              Xem chi tiết
+            </Button>
+          </div>
+        )}
 
         {/* Total section */}
         <div className="flex justify-between items-center px-3 py-2 border-t border-gray-100">
           <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">TỔNG CỘNG</span>
           <div className="flex flex-col items-end">
-            <div className="text-xs text-gray-400 line-through">
+            <div className="text-[10px] text-gray-400 line-through">
               {formatPrice(totalBasePrice)}
             </div>
-            <span className="text-base font-bold text-gray-900">
+            <span className="text-sm font-bold text-gray-900">
               {formatPrice(totalSalePrice)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Details Dialog */}
-      <Dialog open={!!detailsDialog} onOpenChange={() => setDetailsDialog(null)}>
-        <DialogContent className="sm:max-w-[500px] p-0">
-          <DialogHeader className="px-4 py-3 border-b border-gray-100">
-            <DialogTitle className="text-base font-bold">
-              {detailsDialog?.type === 'jewelry' ? 'Chi tiết trang sức' : 'Chi tiết kim cương'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="p-4 space-y-4">
-            {detailsDialog && (
-              <ProductDetailsContent
-                product={detailsDialog.product}
-                type={detailsDialog.type}
-                variant={detailsDialog.variant}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isMobile && (
+        <BottomSheet
+          open={detailsOpen}
+          onOpenChange={handleDetailsOpenChange}
+          title="Chi tiết nguyên chiếc"
+          className="max-h-[92vh]"
+          contentClassName="px-0"
+        >
+          <ComboDetailsSheetContent
+            jewelry={jewelry}
+            diamond={diamond}
+            variant={variant}
+            totalBasePrice={totalBasePrice}
+            totalSalePrice={totalSalePrice}
+            formatPrice={formatPrice}
+          />
+        </BottomSheet>
+      )}
     </>
   );
 }
 
-function ProductDetailsContent({ product, type, variant }: ProductDetails) {
-  const formatPrice = (price: number) => {
-    return `${price.toLocaleString("vi-VN")} ₫`;
-  };
+function DetailRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
+      <span className="text-primary-400 shrink-0">{label}</span>
+      <span className="font-medium text-secondary-900 text-right break-all">{value}</span>
+    </div>
+  );
+}
 
-  if (type === 'jewelry') {
-    const jewelry = product as ProductModel;
-    const vAttributes = variant?.attributes || {};
+function CompactPrice({
+  className,
+  sale,
+  base,
+  formatPrice,
+}: {
+  className?: string;
+  sale: number;
+  base?: number;
+  formatPrice: (price: number) => string;
+}) {
+  const showStrike = (base ?? 0) > sale;
+  return (
+    <div className="text-right shrink-0">
+      {showStrike && (
+        <div className="text-[10px] text-primary-300 line-through leading-none">{formatPrice(base!)}</div>
+      )}
+      <div className={cn("text-xs font-bold text-secondary-900 leading-tight", className)}>{formatPrice(sale)}</div>
+    </div>
+  );
+}
 
-    return (
-      <div className="space-y-3">
-        {/* Image */}
-        <div className="flex justify-center">
-          <div className="w-24 h-24 border border-gray-200 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
-            <img
-              src={jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url}
-              alt={jewelry.type || 'Trang sức'}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
+function ComboDetailsSheetContent({
+  jewelry,
+  diamond,
+  variant,
+  totalBasePrice,
+  totalSalePrice,
+  formatPrice,
+}: {
+  jewelry: ProductModel;
+  diamond: DiamondModel;
+  variant: any;
+  totalBasePrice: number;
+  totalSalePrice: number;
+  formatPrice: (price: number) => string;
+}) {
+  const vAttributes = variant?.attributes || {};
+  const jewelryImage = jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url;
+  const jewelrySale = variant?.salePrice || jewelry.salePrice || 0;
+  const jewelryBase = variant?.basePrice || jewelry.basePrice || 0;
 
-        {/* Info grid */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <span className="text-gray-500">Loại:</span>
-            <p className="font-medium text-gray-900">{jewelry.type || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Mã thiết kế:</span>
-            <p className="font-medium text-gray-900">{jewelry.attributes?.designCode || '-'}</p>
-          </div>
-          {variant?.sku && (
-            <div className="col-span-2">
-              <span className="text-gray-500">SKU:</span>
-              <p className="font-medium text-gray-900 break-all">{variant.sku}</p>
-            </div>
-          )}
-          {variant?.barcode && (
-            <div className="col-span-2">
-              <span className="text-gray-500">Barcode:</span>
-              <p className="font-medium text-gray-900 break-all">{variant.barcode}</p>
-            </div>
-          )}
-          {vAttributes.serialNumber && (
-            <div>
-              <span className="text-gray-500">Serial:</span>
-              <p className="font-medium text-gray-900">{vAttributes.serialNumber}</p>
-            </div>
-          )}
-          {vAttributes.ringSize && (
-            <div>
-              <span className="text-gray-500">Ni nhẫn:</span>
-              <p className="font-medium text-gray-900">{vAttributes.ringSize}</p>
-            </div>
-          )}
-          {vAttributes.fineness && (
-            <div>
-              <span className="text-gray-500">Chất liệu:</span>
-              <p className="font-medium text-gray-900">{vAttributes.fineness}</p>
-            </div>
-          )}
-          {vAttributes.materialColor && (
-            <div>
-              <span className="text-gray-500">Màu sắc:</span>
-              <p className="font-medium text-gray-900">{vAttributes.materialColor}</p>
-            </div>
-          )}
-          <div>
-            <span className="text-gray-500">TL vàng:</span>
-            <p className="font-medium text-gray-900">
-              {formatGoldWeight(vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight)}
-            </p>
-          </div>
-          {variant?.stockAt && (
-            <div>
-              <span className="text-gray-500">Kho:</span>
-              <p className="font-medium text-gray-900">{variant.stockAt}</p>
-            </div>
-          )}
-        </div>
+  const d = diamond.attributes;
+  const fourCs = [d?.color, d?.clarity, d?.carat ? `${d.carat}ct` : null, d?.fluorescence]
+    .filter(Boolean)
+    .join(" · ");
+  const diamondSize =
+    d?.edgeSize1
+      ? `${Number(d.edgeSize1).toFixed(1)}${d?.edgeSize2 ? `×${Number(d.edgeSize2).toFixed(1)}` : ""}mm`
+      : null;
 
-        {/* Price */}
-        <div className="pt-3 border-t border-gray-100">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500">Giá bán:</span>
-            <div className="text-right">
-              {(variant?.basePrice || jewelry.basePrice) > (variant?.salePrice || jewelry.salePrice || 0) && (
-                <p className="text-sm text-gray-400 line-through">
-                  {formatPrice(variant?.basePrice || jewelry.basePrice || 0)}
-                </p>
-              )}
-              <p className="text-lg font-bold text-gray-900">
-                {formatPrice(variant?.salePrice || jewelry.salePrice || 0)}
+  return (
+    <div className="px-3 pb-1 space-y-2">
+      {/* Nhẫn */}
+      <div className="rounded-lg border border-primary-100 bg-primary-50/40 p-2.5">
+        <div className="flex gap-2.5">
+          <div className="size-11 shrink-0 border border-primary-100 bg-white overflow-hidden flex items-center justify-center">
+            {jewelryImage ? (
+              <img src={jewelryImage} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+            ) : null}
+          </div>
+          <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold text-primary-400 uppercase tracking-wider">Nhẫn</p>
+              <p className="text-[12px] font-bold text-secondary-900 truncate leading-tight">
+                {[jewelry.type, jewelry.attributes?.designCode].filter(Boolean).join(" · ") || "—"}
               </p>
             </div>
+            <CompactPrice sale={jewelrySale} base={jewelryBase} formatPrice={formatPrice} />
           </div>
         </div>
+        <div className="mt-2 pt-2 border-t border-primary-100/80 space-y-0">
+          <DetailRow label="SKU" value={variant?.sku} />
+          <DetailRow label="Serial" value={vAttributes.serialNumber} />
+          <DetailRow label="Ni nhẫn" value={vAttributes.ringSize} />
+          <DetailRow
+            label="Vàng"
+            value={[
+              vAttributes.fineness,
+              formatGoldWeight(vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight) !== "-"
+                ? formatGoldWeight(vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight)
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          />
+          <DetailRow label="Kho" value={variant?.stockAt} />
+        </div>
       </div>
-    );
-  } else {
-    const diamond = product as DiamondModel;
 
-    return (
-      <div className="space-y-3">
-        {/* Image */}
-        <div className="flex justify-center">
-          <div className="w-24 h-24 border border-gray-200 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+      {/* Kim cương */}
+      <div className="rounded-lg border border-primary-100 bg-primary-50/40 p-2.5">
+        <div className="flex gap-2.5">
+          <div className="size-11 shrink-0 border border-primary-100 bg-white overflow-hidden flex items-center justify-center p-1">
             <img
-              src={getDiamondShapeImage(diamond.attributes?.shape || 'Round')}
-              alt="Kim cương"
-              className="w-20 h-20 object-contain"
+              src={getDiamondShapeImage(d?.shape || "Round")}
+              alt=""
+              className="size-8 object-contain"
             />
           </div>
-        </div>
-
-        {/* Info grid */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <span className="text-gray-500">GIA ID:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.giaId || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Hình dạng:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.shape || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Trọng lượng:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.carat || '-'} ct</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Màu sắc:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.color || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Độ tinh khiết:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.clarity || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Giác cắt:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.cut || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Huỳnh quang:</span>
-            <p className="font-medium text-gray-900">{diamond.attributes?.fluorescence || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Kích thước:</span>
-            <p className="font-medium text-gray-900">
-              {diamond.attributes?.edgeSize1 ? Number(diamond.attributes.edgeSize1).toFixed(1) : '-'}
-              {diamond.attributes?.edgeSize2 ? ` x ${Number(diamond.attributes.edgeSize2).toFixed(1)}` : ''} mm
-            </p>
-          </div>
-          {diamond.warehouses?.[0]?.name && (
-            <div className="col-span-2">
-              <span className="text-gray-500">Kho:</span>
-              <p className="font-medium text-gray-900">{diamond.warehouses[0].name}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="pt-3 border-t border-gray-100">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500">Giá bán:</span>
-            <div className="text-right">
-              {diamond.basePrice > (diamond.salePrice || 0) && (
-                <p className="text-sm text-gray-400 line-through">
-                  {formatPrice(diamond.basePrice)}
-                </p>
-              )}
-              <p className="text-lg font-bold text-gray-900">
-                {formatPrice(diamond.salePrice || 0)}
+          <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold text-primary-400 uppercase tracking-wider">Kim cương</p>
+              <p className="text-[12px] font-bold text-secondary-900 truncate leading-tight">
+                GIA {d?.giaId || "—"}
+                {d?.shape ? ` · ${d.shape}` : ""}
               </p>
             </div>
+            <CompactPrice sale={diamond.salePrice || 0} base={diamond.basePrice} formatPrice={formatPrice} />
           </div>
         </div>
+        <div className="mt-2 pt-2 border-t border-primary-100/80 space-y-0">
+          {fourCs && <DetailRow label="4Cs" value={fourCs} />}
+          <DetailRow label="Giác cắt" value={d?.cut} />
+          <DetailRow label="Kích thước" value={diamondSize} />
+          <DetailRow label="Kho" value={diamond.warehouses?.[0]?.name} />
+        </div>
       </div>
-    );
-  }
+
+      {/* Tổng */}
+      <div className="flex justify-between items-center py-2 px-1">
+        <span className="text-[10px] font-bold text-primary-400 uppercase tracking-wider">Tổng cộng</span>
+        <CompactPrice className="text-sm" sale={totalSalePrice} base={totalBasePrice} formatPrice={formatPrice} />
+      </div>
+    </div>
+  );
 }

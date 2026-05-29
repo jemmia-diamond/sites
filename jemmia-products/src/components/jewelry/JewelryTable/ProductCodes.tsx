@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ProductModel } from "../../../types";
 import { Badge } from "@/components/ui/badge";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { CaretDown, Copy, Check } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { useHoverPopover } from "./hooks/useHoverPopover";
+import { useResponsivePopover } from "./hooks/useResponsivePopover";
 
 interface ProductCodesProps {
   product: ProductModel;
@@ -12,8 +13,13 @@ interface ProductCodesProps {
   className?: string;
 }
 
+interface CopyableItem {
+  code: string;
+  label: string;
+}
+
 export function ProductCodes({ product, isExpanded, className }: ProductCodesProps) {
-  const { open, onEnter, onLeave } = useHoverPopover();
+  const { open, isMobile, onEnter, onLeave, onTriggerClick, handleOpenChange } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -22,11 +28,6 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
   const designCode = isBundle
     ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
     : product.attributes?.designCode;
-
-  interface CopyableItem {
-    code: string;
-    label: string;
-  }
 
   const copyableItems: CopyableItem[] = [];
 
@@ -70,7 +71,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
   const hasPopover = copyableItems.length > 0;
 
   useEffect(() => {
-    if (open && triggerRef.current) {
+    if (open && !isMobile && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setCoords({
         top: rect.top,
@@ -79,7 +80,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
         width: rect.width,
       });
     }
-  }, [open]);
+  }, [open, isMobile]);
 
   const handleCopy = (e: React.MouseEvent, text: string) => {
     e.stopPropagation();
@@ -91,21 +92,61 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
 
   const shouldShowAbove = coords ? (coords.bottom + 160 > window.innerHeight) : false;
 
+  const codesPanel = (
+    <div className={cn(
+      "flex flex-col gap-1 items-stretch",
+      isMobile ? "gap-2 pt-3 pb-2" : "p-1.5 min-w-[180px]"
+    )}>
+      {copyableItems.map((item, i) => (
+        <div
+          key={i}
+          className={cn(
+            "group/item flex items-center justify-between gap-3 px-2.5 py-1.5 border transition-colors cursor-pointer",
+            isMobile
+              ? "bg-primary-50 border-primary-100 active:bg-primary-100/80 py-3"
+              : "bg-primary-50 border-primary-100 hover:bg-primary-100/80"
+          )}
+          onClick={(e) => handleCopy(e, item.code)}
+          title={`Copy ${item.label}`}
+        >
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-secondary-900 text-[11px] sm:text-[10px] font-black uppercase">
+              {item.code}
+            </span>
+          </div>
+          <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+            {copiedText === item.code ? (
+              <Check size={14} weight="bold" className="text-green-600" />
+            ) : (
+              <Copy size={14} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div
       className={cn("relative flex items-center justify-center w-fit", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
+      onClick={hasPopover && isMobile ? onTriggerClick : undefined}
       ref={triggerRef}
+      style={hasPopover && isMobile && open ? { pointerEvents: "none" } : undefined}
     >
       <Badge className={cn(
         "flex items-center gap-1.5 rounded-full pl-2 pr-1.5 py-0.5 text-[10px] font-black tracking-widest border-none shadow-sm uppercase whitespace-nowrap",
-        "bg-secondary-900 text-white"
+        "bg-secondary-900 text-white",
+        hasPopover && isMobile && "cursor-pointer active:opacity-90"
       )}>
         <span>{designCode || "N/A"}</span>
         {!isBundle && designCode && (
           <button
-            onClick={(e) => handleCopy(e, designCode)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy(e, designCode);
+            }}
             className="text-white/60 hover:text-white transition-colors focus:outline-none flex items-center justify-center animate-in fade-in duration-300"
             title="Copy mã sản phẩm"
           >
@@ -133,7 +174,18 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
         </div>
       )}
 
-      {hasPopover && open && coords && createPortal(
+      {hasPopover && isMobile && createPortal(
+        <BottomSheet
+          open={open}
+          onOpenChange={handleOpenChange}
+          title={isBundle ? "Mã thiết kế" : "Mã sản phẩm"}
+        >
+          {codesPanel}
+        </BottomSheet>,
+        document.body
+      )}
+
+      {hasPopover && !isMobile && open && coords && createPortal(
         <div
           className="fixed z-[100] pointer-events-none"
           style={{
@@ -141,34 +193,11 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
             left: `${coords.left}px`,
             transform: shouldShowAbove ? "translate(-50%, -100%)" : "translate(-50%, 0)"
           }}
+          onMouseEnter={onEnter}
+          onMouseLeave={onLeave}
         >
-          <div className="bg-white border border-primary-100 shadow-2xl p-1.5 flex flex-col gap-1 min-w-[180px] items-stretch animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-            {copyableItems.map((item, i) => (
-              <div
-                key={i}
-                className="group/item flex items-center justify-between gap-3 px-2.5 py-1.5 bg-primary-50 border border-primary-100 hover:bg-primary-100/80 transition-colors cursor-pointer"
-                onClick={(e) => handleCopy(e, item.code)}
-                title={`Copy ${item.label}`}
-              >
-                <div className="flex flex-col items-start gap-0.5">
-                  {isBundle && (
-                    <span className="text-secondary-600 text-[8px] font-semibold">
-                      {item.label}
-                    </span>
-                  )}
-                  <span className="text-secondary-900 text-[10px] font-black uppercase">
-                    {item.code}
-                  </span>
-                </div>
-                <div className="flex items-center justify-center w-4 h-4 flex-shrink-0">
-                  {copiedText === item.code ? (
-                    <Check size={12} weight="bold" className="text-green-600" />
-                  ) : (
-                    <Copy size={12} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="bg-white border border-primary-100 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+            {codesPanel}
           </div>
         </div>,
         document.body

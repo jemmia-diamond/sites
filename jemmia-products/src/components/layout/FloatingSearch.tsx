@@ -78,8 +78,8 @@ export function FloatingSearch() {
 
       {/* Modern Full-Screen Search Dialog */}
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="w-[95%] sm:max-w-md bg-white p-0 rounded-2xl overflow-hidden border-none shadow-2xl z-[9999] top-[20%] translate-y-0">
-          
+        <DialogContent className="w-[95%] sm:max-w-md bg-white gap-1 p-0 rounded-md overflow-hidden border-none shadow-2xl z-[9999] top-[20%] translate-y-0">
+
           {/* Search Input Bar */}
           <div className="relative border-b border-primary-50 p-4 flex items-center">
             <MagnifyingGlass className="absolute left-7 h-5 w-5 text-primary-300" />
