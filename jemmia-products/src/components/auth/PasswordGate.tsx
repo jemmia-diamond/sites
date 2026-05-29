@@ -36,26 +36,27 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md p-4 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-[440px]"
       >
-        <Card className="w-full sm:w-[500px] overflow-hidden border-primary-100 shadow-2xl">
-          <CardHeader className="bg-white pb-8 pt-10 text-center">
+        <Card className="w-full overflow-hidden border-primary-100 shadow-2xl">
+          <CardHeader className="bg-white pb-6 sm:pb-8 pt-8 sm:pt-10 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary-900 shadow-lg shadow-secondary-900/20">
               <Lock className="h-6 w-6 text-white" />
             </div>
-            <CardTitle className="font-sans text-2xl font-black uppercase tracking-wider text-secondary-900">
+            <CardTitle className="font-sans text-lg sm:text-2xl font-black uppercase tracking-wide sm:tracking-wider text-secondary-900">
               TRUY CẬP HỆ THỐNG
             </CardTitle>
-            <CardDescription className="font-sans text-xs font-bold uppercase tracking-wider text-primary-300">
+            <CardDescription className="font-sans text-[10px] sm:text-xs font-bold uppercase tracking-wide sm:tracking-wider text-primary-300">
               Vui lòng nhập mật khẩu để tiếp tục
             </CardDescription>
           </CardHeader>
-          
-          <CardContent className="px-8 pb-4">
+
+          <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <Input
@@ -66,7 +67,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
                   className="h-12 border-primary-100 bg-primary-50/50 px-4 font-sans font-medium text-secondary-900 placeholder:text-primary-200"
                   autoFocus
                 />
-                
+
                 <AnimatePresence mode="wait">
                   {error && (
                     <motion.div
@@ -75,7 +76,7 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
                       exit={{ opacity: 0, height: 0 }}
                     >
                       <Alert variant="destructive" className="border-none bg-red-50 py-3 text-red-600">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
                         <AlertDescription className="mt-0.5 text-xs text-red-600 font-bold tracking-tight">
                           {error}
                         </AlertDescription>
@@ -91,7 +92,10 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
                 className="h-12 w-full bg-secondary-900 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-secondary-800 disabled:opacity-50"
               >
                 {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    ĐANG ĐĂNG NHẬP...
+                  </span>
                 ) : (
                   "Đăng nhập"
                 )}
