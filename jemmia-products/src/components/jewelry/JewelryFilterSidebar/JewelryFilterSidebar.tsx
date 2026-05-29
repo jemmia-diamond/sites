@@ -20,6 +20,7 @@ interface JewelryFilterSidebarProps {
   onToggleCollapse?: () => void;
   onChipsChange?: (chips: { key: string; value: any; label: string }[]) => void;
   isCollapsed?: boolean;
+  isOpen?: boolean;
 }
 
 const ALL_WAREHOUSE_IDS = [
@@ -94,6 +95,7 @@ export function JewelryFilterSidebar({
   onToggleCollapse,
   onChipsChange,
   isCollapsed,
+  isOpen,
 }: JewelryFilterSidebarProps) {
   const [appliedChips, setAppliedChips] = useState<
     { key: string; value: any; label: string }[]
@@ -112,16 +114,6 @@ export function JewelryFilterSidebar({
   const [filters, setFilters] = useState<JewelryFilter>(initialFilters);
   const hasAutoSelected = useRef(false);
 
-  useEffect(() => {
-    if (currentFilters) {
-      setFilters(currentFilters);
-
-      if (!currentFilters.type && !currentFilters.searchQuery) {
-        hasAutoSelected.current = false;
-      }
-    }
-  }, [currentFilters]);
-
   const applyFilters = useCallback(
     (nextFilters: JewelryFilter) => {
       onApply(nextFilters);
@@ -134,7 +126,9 @@ export function JewelryFilterSidebar({
   ) => {
     setFilters((prev) => {
       const next = updater(prev);
-      setTimeout(() => applyFilters(next), 0);
+      if (window.innerWidth >= 1024) {
+        setTimeout(() => applyFilters(next), 0);
+      }
       return next;
     });
   };
@@ -370,8 +364,32 @@ export function JewelryFilterSidebar({
   useEffect(() => {
     const chips = buildChips(filters);
     setAppliedChips(chips);
-    onChipsChange?.(chips);
+    if (window.innerWidth >= 1024) {
+      onChipsChange?.(chips);
+    }
   }, [filters, buildChips, onChipsChange]);
+
+  useEffect(() => {
+    if (currentFilters) {
+      setFilters(currentFilters);
+
+      if (!currentFilters.type && !currentFilters.searchQuery) {
+        hasAutoSelected.current = false;
+      }
+      
+      // On mobile, update the parent's chips only when currentFilters changes (which means filters were applied)!
+      if (window.innerWidth < 1024) {
+        const chips = buildChips(currentFilters);
+        onChipsChange?.(chips);
+      }
+    }
+  }, [currentFilters, buildChips, onChipsChange]);
+
+  useEffect(() => {
+    if (!isOpen && window.innerWidth < 1024 && currentFilters) {
+      setFilters(currentFilters);
+    }
+  }, [isOpen, currentFilters]);
 
   const removeChip = (key: string) => {
     const getResetValue = (k: string): any => {
@@ -387,20 +405,20 @@ export function JewelryFilterSidebar({
       return undefined;
     };
 
+    let next;
     if (key === "salePrice") {
-      setFilters((prev) => ({
-        ...prev,
-        salePriceFrom: undefined,
-        salePriceTo: undefined,
-      }));
-      applyFilters({
+      next = {
         ...filters,
         salePriceFrom: undefined,
         salePriceTo: undefined,
-      });
+      };
     } else {
-      setFilters((prev) => ({ ...prev, [key]: getResetValue(key) }));
-      applyFilters({ ...filters, [key]: getResetValue(key) });
+      next = { ...filters, [key]: getResetValue(key) };
+    }
+
+    setFilters(next);
+    if (window.innerWidth >= 1024) {
+      applyFilters(next);
     }
   };
 
@@ -562,7 +580,10 @@ export function JewelryFilterSidebar({
 
         <div className="lg:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
           <Button
-            onClick={onClose}
+            onClick={() => {
+              applyFilters(filters);
+              onClose();
+            }}
             className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
           >
             Áp dụng

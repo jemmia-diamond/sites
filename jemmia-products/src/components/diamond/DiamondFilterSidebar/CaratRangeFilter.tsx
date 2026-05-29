@@ -81,7 +81,7 @@ export function CaratRangeFilter({
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-primary-400 font-bold">Carat</span>
         </div>
       </div>
-      <div className="pt-6">
+      <div className="pt-6 hidden lg:block">
         <Button
           variant="secondary"
           className="w-full px-2 rounded-none font-bold tracking-[0.2em] shadow-lg shadow-secondary-900/10 cursor-pointer"

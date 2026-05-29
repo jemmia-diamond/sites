@@ -18,6 +18,7 @@ interface DiamondFilterSidebarProps {
   onToggleCollapse?: () => void;
   onChipsChange?: (chips: { key: string; value: any; label: string }[]) => void;
   isCollapsed?: boolean;
+  isOpen?: boolean;
 }
 
 const SIZES = [
@@ -61,6 +62,7 @@ export function DiamondFilterSidebar({
   onToggleCollapse,
   onChipsChange,
   isCollapsed,
+  isOpen,
 }: DiamondFilterSidebarProps) {
   const [appliedChips, setAppliedChips] = useState<
     { key: string; value: any; label: string }[]
@@ -81,12 +83,6 @@ export function DiamondFilterSidebar({
 
   const [filters, setFilters] = useState<DiamondFilter>(initialFilters);
 
-  useEffect(() => {
-    if (currentFilters) {
-      setFilters(currentFilters);
-    }
-  }, [currentFilters]);
-
   const applyFilters = useCallback(
     (nextFilters: DiamondFilter) => {
       onApply(nextFilters);
@@ -99,7 +95,9 @@ export function DiamondFilterSidebar({
   ) => {
     setFilters((prev) => {
       const next = updater(prev);
-      setTimeout(() => applyFilters(next), 0);
+      if (window.innerWidth >= 1024) {
+        setTimeout(() => applyFilters(next), 0);
+      }
       return next;
     });
   };
@@ -286,23 +284,40 @@ export function DiamondFilterSidebar({
   useEffect(() => {
     const chips = buildChips(filters);
     setAppliedChips(chips);
-    onChipsChange?.(chips);
+    if (window.innerWidth >= 1024) {
+      onChipsChange?.(chips);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, buildChips]);
 
+  useEffect(() => {
+    if (currentFilters) {
+      setFilters(currentFilters);
+      
+      // On mobile, update the parent's chips only when currentFilters changes (which means filters were applied)!
+      if (window.innerWidth < 1024) {
+        const chips = buildChips(currentFilters);
+        onChipsChange?.(chips);
+      }
+    }
+  }, [currentFilters, buildChips, onChipsChange]);
+
+  useEffect(() => {
+    if (!isOpen && window.innerWidth < 1024 && currentFilters) {
+      setFilters(currentFilters);
+    }
+  }, [isOpen, currentFilters]);
+
   const removeChip = (key: string) => {
+    let next;
     if (key === "salePrice") {
-      const next = {
+      next = {
         ...filters,
         salePriceFrom: undefined,
         salePriceTo: undefined,
       };
-      setFilters(next);
-      applyFilters(next);
     } else if (key === "carat") {
-      const next = { ...filters, caratFrom: undefined, caratTo: undefined };
-      setFilters(next);
-      applyFilters(next);
+      next = { ...filters, caratFrom: undefined, caratTo: undefined };
     } else {
       const getResetValue = (k: string): any => {
         if (k === "stockStatus") return "IN_STOCK";
@@ -319,8 +334,11 @@ export function DiamondFilterSidebar({
           return [];
         return undefined;
       };
-      const next = { ...filters, [key]: getResetValue(key) };
-      setFilters(next);
+      next = { ...filters, [key]: getResetValue(key) };
+    }
+    
+    setFilters(next);
+    if (window.innerWidth >= 1024) {
       applyFilters(next);
     }
   };
@@ -497,7 +515,10 @@ export function DiamondFilterSidebar({
 
         <div className="lg:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
           <Button
-            onClick={onClose}
+            onClick={() => {
+              applyFilters(filters);
+              onClose();
+            }}
             className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
           >
             Áp dụng

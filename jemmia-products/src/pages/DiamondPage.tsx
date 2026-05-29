@@ -174,6 +174,7 @@ export default function DiamondPage() {
               onToggleCollapse={toggleFilterCollapsed}
               onChipsChange={setActiveChips}
               isCollapsed={isFilterCollapsed}
+              isOpen={isFilterOpen}
             />
           </div>
         )}

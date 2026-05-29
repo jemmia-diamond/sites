@@ -176,6 +176,7 @@ export default function JewelryPage() {
               onToggleCollapse={toggleFilterCollapsed}
               onChipsChange={setActiveChips}
               isCollapsed={isFilterCollapsed}
+              isOpen={isFilterOpen}
             />
           </div>
         )}
