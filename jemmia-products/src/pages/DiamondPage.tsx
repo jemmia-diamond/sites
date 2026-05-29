@@ -5,12 +5,19 @@ import { fetchDiamonds } from "../services/diamondService";
 import { DiamondFilter } from "../types";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { DiamondFilterSidebar } from "../components/diamond/DiamondFilterSidebar";
+import { useFilterSidebarCollapse } from "@/hooks/useFilterSidebarCollapse";
 import { DiamondTable } from "../components/diamond/DiamondTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowDownWideNarrow, ArrowLeft, ArrowUpWideNarrow, Filter, X } from "lucide-react";
+import {
+  ArrowDownWideNarrow,
+  ArrowLeft,
+  ArrowUpWideNarrow,
+  Filter,
+  X,
+} from "lucide-react";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
 import { PageHeader } from "../components/layout/PageHeader";
@@ -20,18 +27,22 @@ export default function DiamondPage() {
   const [searchParams] = useSearchParams();
   const searchQueryParam = searchParams.get("searchQuery");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeChips, setActiveChips] = useState<{ key: string; value: any; label: string }[]>([]);
+  const { collapsed: isFilterCollapsed, toggle: toggleFilterCollapsed } =
+    useFilterSidebarCollapse("jemmia-diamond-filter-collapsed");
+  const [activeChips, setActiveChips] = useState<
+    { key: string; value: any; label: string }[]
+  >([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Omit<DiamondFilter, 'page'>>({
+  const [filters, setFilters] = useState<Omit<DiamondFilter, "page">>({
     limit: 20,
     sortBySalePrice: "DESC",
     stockStatus: "IN_STOCK",
     warehouseIds: [],
-    searchQuery: searchQueryParam || undefined
+    searchQuery: searchQueryParam || undefined,
   });
 
   useEffect(() => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       searchQuery: searchQueryParam || undefined,
     }));
@@ -43,10 +54,11 @@ export default function DiamondPage() {
     isError,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["diamonds", filters],
-    queryFn: ({ pageParam = 1 }) => fetchDiamonds({ ...filters, page: pageParam }),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchDiamonds({ ...filters, page: pageParam }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages, lastPageParam) => {
       if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
@@ -74,7 +86,17 @@ export default function DiamondPage() {
     } else {
       const getResetValue = (k: string): any => {
         if (k === "stockStatus") return "IN_STOCK";
-        if (["edgeSizes", "shapes", "color", "clarity", "fluorescence", "warehouseIds"].includes(k)) return [];
+        if (
+          [
+            "edgeSizes",
+            "shapes",
+            "color",
+            "clarity",
+            "fluorescence",
+            "warehouseIds",
+          ].includes(k)
+        )
+          return [];
         return undefined;
       };
       (nextFilters as any)[key] = getResetValue(key);
@@ -83,7 +105,7 @@ export default function DiamondPage() {
   };
 
   const handleClearAllFilters = () => {
-    const resetFilters: Omit<DiamondFilter, 'page'> = {
+    const resetFilters: Omit<DiamondFilter, "page"> = {
       limit: 20,
       sortBySalePrice: "DESC",
       stockStatus: "IN_STOCK",
@@ -105,10 +127,10 @@ export default function DiamondPage() {
 
   const toggleSort = () => {
     const newSort = filters.sortBySalePrice === "DESC" ? "ASC" : "DESC";
-    setFilters(prev => ({ ...prev, sortBySalePrice: newSort }));
+    setFilters((prev) => ({ ...prev, sortBySalePrice: newSort }));
   };
 
-  const allDiamonds = data?.pages.flatMap(page => page.data) || [];
+  const allDiamonds = data?.pages.flatMap((page) => page.data) || [];
   const totalItems = data?.pages[0]?.meta?.totalRows || 0;
 
   useEffect(() => {
@@ -122,7 +144,7 @@ export default function DiamondPage() {
       fetchNextPage();
     },
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   );
 
   const handleGoBack = () => {
@@ -133,18 +155,25 @@ export default function DiamondPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className={cn(
-        "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-transform duration-300 lg:translate-x-0",
-        isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
-        "w-full lg:w-auto h-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
+          isFilterOpen
+            ? "translate-x-0 z-[10000]"
+            : "-translate-x-full lg:translate-x-0 z-[60]",
+          "w-full h-full",
+          !searchQueryParam && (isFilterCollapsed ? "lg:w-16" : "lg:w-80"),
+        )}
+      >
         {!searchQueryParam && (
           <div className="h-full relative flex flex-col">
             <DiamondFilterSidebar
               onApply={handleApplyFilters}
               currentFilters={filters as DiamondFilter}
               onClose={() => setIsFilterOpen(false)}
+              onToggleCollapse={toggleFilterCollapsed}
               onChipsChange={setActiveChips}
+              isCollapsed={isFilterCollapsed}
             />
           </div>
         )}
@@ -153,14 +182,15 @@ export default function DiamondPage() {
       <main className="flex-1 flex flex-col bg-white px-4 lg:px-6 pt-4 pb-6 gap-4 w-full max-w-full min-w-0 overflow-hidden min-h-0">
         <div className="flex-shrink-0">
           <PageHeader
-            title={filters.searchQuery ? `Tìm kiếm kim cương: ${filters.searchQuery}` : "Danh sách kim cương"}
+            title={
+              filters.searchQuery
+                ? `Tìm kiếm kim cương: ${filters.searchQuery}`
+                : "Danh sách kim cương"
+            }
             description={`Hiển thị ${totalItems} kết quả`}
             headerStart={
               searchQueryParam ? (
-                <Button
-                  onClick={handleGoBack}
-                  className={'h-full'}
-                >
+                <Button onClick={handleGoBack} className={"h-full"}>
                   <ArrowLeft size={16} />
                   Quay về
                 </Button>
@@ -168,14 +198,16 @@ export default function DiamondPage() {
             }
             actions={
               <>
-                <div className="hidden lg:flex flex-col gap-1.5 min-w-[150px]">
+                <div className="hidden lg:flex items-center gap-2">
                   <Button
                     onClick={toggleSort}
                     variant="outline"
                     className="flex items-center justify-between group h-10 px-4 rounded-none border-primary-100 font-bold text-xs"
                   >
                     <span className="uppercase tracking-tight">
-                      {filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}
+                      {filters.sortBySalePrice === "DESC"
+                        ? "Giá giảm dần"
+                        : "Giá tăng dần"}
                     </span>
                     {filters.sortBySalePrice === "DESC" ? (
                       <ArrowDownWideNarrow className="h-4 w-4 text-primary-900 group-hover:text-primary-50 transition-colors" />
@@ -184,7 +216,7 @@ export default function DiamondPage() {
                     )}
                   </Button>
                 </div>
-                <div className="sm:hidden flex items-center justify-between w-full">
+                <div className="lg:hidden flex items-center gap-3 justify-between w-full">
                   <Button
                     onClick={() => setIsFilterOpen(true)}
                     variant="outline"
@@ -198,8 +230,16 @@ export default function DiamondPage() {
                     variant="outline"
                     className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
                   >
-                    {filters.sortBySalePrice === "DESC" ? <ArrowDownWideNarrow size={14} className="mr-1" /> : <ArrowUpWideNarrow size={14} className="mr-1" />}
-                    <span className="w-max">{filters.sortBySalePrice === "DESC" ? "Giá giảm dần" : "Giá tăng dần"}</span>
+                    {filters.sortBySalePrice === "DESC" ? (
+                      <ArrowDownWideNarrow size={14} className="mr-1" />
+                    ) : (
+                      <ArrowUpWideNarrow size={14} className="mr-1" />
+                    )}
+                    <span className="w-max">
+                      {filters.sortBySalePrice === "DESC"
+                        ? "Giá giảm dần"
+                        : "Giá tăng dần"}
+                    </span>
                   </Button>
                 </div>
               </>
@@ -241,12 +281,17 @@ export default function DiamondPage() {
           {isLoading ? (
             <div className="h-full overflow-y-auto">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-96 w-full rounded-none mb-4 shadow-sm" />
+                <Skeleton
+                  key={i}
+                  className="h-96 w-full rounded-none mb-4 shadow-sm"
+                />
               ))}
             </div>
           ) : isError || allDiamonds.length === 0 ? (
             <div className="py-24 text-center bg-white rounded-none border border-dashed border-primary-200">
-              <p className="text-primary-400 font-medium">Không tìm thấy viên kim cương nào phù hợp với yêu cầu</p>
+              <p className="text-primary-400 font-medium">
+                Không tìm thấy viên kim cương nào phù hợp với yêu cầu
+              </p>
             </div>
           ) : (
             <DiamondTable

@@ -7,6 +7,7 @@ import { jewelryService } from "../services/jewelryService";
 import { JewelryFilter } from "../types";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { JewelryFilterSidebar } from "../components/jewelry/JewelryFilterSidebar";
+import { useFilterSidebarCollapse } from "@/hooks/useFilterSidebarCollapse";
 import { JewelryTable } from "../components/jewelry/JewelryTable";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +23,8 @@ export default function JewelryPage() {
   const designCodeParam = searchParams.get("designCode");
   const searchQueryParam = searchParams.get("searchQuery");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { collapsed: isFilterCollapsed, toggle: toggleFilterCollapsed } =
+    useFilterSidebarCollapse("jemmia-jewelry-filter-collapsed");
   const [activeChips, setActiveChips] = useState<{ key: string; value: any; label: string }[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -156,18 +159,23 @@ export default function JewelryPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className={cn(
-        "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-transform duration-300 lg:translate-x-0",
-        isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
-        "w-full lg:w-auto h-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-0 lg:relative lg:inset-auto bg-white lg:bg-transparent transition-all duration-300 lg:translate-x-0 shrink-0",
+          isFilterOpen ? "translate-x-0 z-[10000]" : "-translate-x-full lg:translate-x-0 z-[60]",
+          "w-full h-full",
+          !searchQueryParam && (isFilterCollapsed ? "lg:w-16" : "lg:w-80"),
+        )}
+      >
         {!searchQueryParam && (
           <div className="h-full relative flex flex-col">
             <JewelryFilterSidebar
               onApply={handleApplyFilters}
               currentFilters={filters as JewelryFilter}
               onClose={() => setIsFilterOpen(false)}
+              onToggleCollapse={toggleFilterCollapsed}
               onChipsChange={setActiveChips}
+              isCollapsed={isFilterCollapsed}
             />
           </div>
         )}
@@ -197,7 +205,7 @@ export default function JewelryPage() {
             }
             actions={
               <div className="flex items-center gap-2 w-full">
-                <div className="hidden lg:flex flex-col gap-1.5 min-w-[150px]">
+                <div className="hidden lg:flex items-center gap-2">
                   <Button
                     onClick={toggleSort}
                     variant="outline"
@@ -214,7 +222,7 @@ export default function JewelryPage() {
                   </Button>
                 </div>
 
-                <div className="sm:hidden flex items-center justify-between w-full">
+                <div className="lg:hidden flex items-center gap-3 justify-between w-full">
                   <Button
                     onClick={() => setIsFilterOpen(true)}
                     variant="outline"

@@ -669,7 +669,6 @@ function ExpandedPanel({
       currency: "VND",
     }).format(price);
   };
-  console.log(isBundle);
   return (
     <div className="bg-white overflow-hidden">
       {/* Mobile Only: Additional Info Section */}
