@@ -1,46 +1,44 @@
-
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchCombos, ComboFilter } from "../services/comboService";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { PageHeader } from "../components/layout/PageHeader";
 
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DiamondModel, ProductModel } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 export default function ComboPage() {
-  const [filters, setFilters] = useState<Omit<ComboFilter, 'page'>>({ limit: 100 });
-
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useInfiniteQuery({
-    queryKey: ["combos", filters],
-    queryFn: ({ pageParam = 1 }) => fetchCombos({ ...filters, page: pageParam }),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
-      if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
-        return lastPageParam + 1;
-      }
-      return undefined;
-    },
+  const [filters, setFilters] = useState<Omit<ComboFilter, "page">>({
+    limit: 100,
   });
 
-  const allCombos = data?.pages.flatMap(page => page.data) || [];
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["combos", filters],
+      queryFn: ({ pageParam = 1 }) =>
+        fetchCombos({ ...filters, page: pageParam }),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages, lastPageParam) => {
+        if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
+          return lastPageParam + 1;
+        }
+        return undefined;
+      },
+    });
+
+  const allCombos = data?.pages.flatMap((page) => page.data) || [];
 
   const lastElementRef = useInfiniteScroll(
     () => {
       fetchNextPage();
     },
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   );
 
   return (
@@ -56,7 +54,10 @@ export default function ComboPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm">
+                  <div
+                    key={i}
+                    className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm"
+                  >
                     {/* Item 1: Jewelry Skeleton */}
                     <div className="flex items-center p-2 md:p-4 border-b border-primary-50">
                       <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0" />
@@ -111,12 +112,17 @@ export default function ComboPage() {
               </div>
             ) : !allCombos.length ? (
               <div className="flex items-center justify-center h-32">
-                <p className="text-primary-300 text-xs">Không tìm thấy combo nào.</p>
+                <p className="text-primary-300 text-xs">
+                  Không tìm thấy combo nào.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {allCombos.map((combo) => (
-                  <ComboTableRow key={`${combo.variant_serials_id}-${combo.diamonds_id}`} combo={combo} />
+                  <ComboTableRow
+                    key={`${combo.variant_serials_id}-${combo.diamonds_id}`}
+                    combo={combo}
+                  />
                 ))}
               </div>
             )}
@@ -139,7 +145,13 @@ export default function ComboPage() {
 import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
-  if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "-";
+  if (
+    weightInChi === undefined ||
+    weightInChi === null ||
+    isNaN(weightInChi) ||
+    weightInChi <= 0
+  )
+    return "-";
 
   const roundedChi = Math.round(weightInChi * 100) / 100;
   const chiPart = Math.floor(roundedChi);
@@ -152,7 +164,9 @@ function formatGoldWeight(weightInChi: number | null | undefined): string {
     return lyPart > 0 ? `${phanPart}p${lyPart}` : `${phanPart}p`;
   } else {
     if (phanPart === 0 && lyPart === 0) return `${chiPart}c`;
-    return lyPart > 0 ? `${chiPart}c${phanPart}${lyPart}` : `${chiPart}c${phanPart}`;
+    return lyPart > 0
+      ? `${chiPart}c${phanPart}${lyPart}`
+      : `${chiPart}c${phanPart}`;
   }
 }
 
@@ -161,10 +175,23 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
   const diamond: DiamondModel = combo.diamond;
   const variant: any = jewelry.variants?.[0] || {};
   const isMobile = useIsMobile();
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1280 : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1280px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const totalBasePrice = (variant?.basePrice || jewelry.basePrice || 0) + (diamond.basePrice || 0);
-  const totalSalePrice = (variant?.salePrice || jewelry.salePrice || 0) + (diamond.salePrice || 0);
+  const totalBasePrice =
+    (variant?.basePrice || jewelry.basePrice || 0) + (diamond.basePrice || 0);
+  const totalSalePrice =
+    (variant?.salePrice || jewelry.salePrice || 0) + (diamond.salePrice || 0);
 
   const formatPrice = (price: number) => {
     return `${price.toLocaleString("vi-VN")} ₫`;
@@ -184,7 +211,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       sku: variant?.sku,
       barcode: variant?.barcode,
       price: jewelryPrice,
-      originalPrice: jewelryOriginalPrice
+      originalPrice: jewelryOriginalPrice,
     },
     {
       type: "diamond" as const,
@@ -195,30 +222,37 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       sku: undefined,
       barcode: undefined,
       price: diamondPrice,
-      originalPrice: diamondOriginalPrice
-    }
+      originalPrice: diamondOriginalPrice,
+    },
   ];
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsOpen(open);
   };
 
+  const isTablet = !isMobile && !isDesktop;
+
   return (
     <>
       <div
         className={cn(
           "border border-primary-100 bg-white flex flex-col overflow-hidden transition-colors duration-200 select-none",
-          isMobile && "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30"
+          (!isDesktop) &&
+            "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30",
         )}
         onClick={() => {
           if (isMobile) setDetailsOpen(true);
+          else if (isTablet) setDialogOpen(true);
         }}
       >
         {products.map((product, idx) => (
-          <div key={idx} className={cn(
-            "flex items-center p-2 md:p-4",
-            idx !== products.length - 1 && "border-b border-primary-50"
-          )}>
+          <div
+            key={idx}
+            className={cn(
+              "flex items-center p-2 md:p-4",
+              idx !== products.length - 1 && "border-b border-primary-50",
+            )}
+          >
             {/* Product thumbnail */}
             <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 border border-primary-100 overflow-hidden bg-primary-50/40 flex items-center justify-center">
               {product.image ? (
@@ -227,7 +261,8 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                   alt={product.title}
                   className={cn(
                     "w-full h-full object-cover",
-                    product.type === "diamond" && "object-contain w-8 h-8 md:w-9 md:h-9"
+                    product.type === "diamond" &&
+                      "object-contain w-8 h-8 md:w-9 md:h-9",
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -241,75 +276,136 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
               </div>
 
               {/* Additional info - only visible on desktop */}
-              <div className="mt-1 hidden md:grid md:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+              <div className="mt-1 hidden xl:grid xl:grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
                 {product.sku && (
                   <div className="text-primary-400">
-                    SKU: <span className="text-primary-700 font-semibold">{product.sku}</span>
+                    SKU:{" "}
+                    <span className="text-primary-700 font-semibold">
+                      {product.sku}
+                    </span>
                   </div>
                 )}
                 {product.barcode && (
                   <div className="text-primary-400">
-                    Barcode: <span className="text-primary-700 font-semibold">{product.barcode}</span>
+                    Barcode:{" "}
+                    <span className="text-primary-700 font-semibold">
+                      {product.barcode}
+                    </span>
                   </div>
                 )}
-                {product.type === 'jewelry' ? (
+                {product.type === "jewelry" ? (
                   <>
                     {product.variant?.attributes?.serialNumber && (
                       <div className="text-primary-400">
-                        Serial: <span className="text-primary-700 font-semibold">{product.variant.attributes.serialNumber}</span>
+                        Serial:{" "}
+                        <span className="text-primary-700 font-semibold">
+                          {product.variant.attributes.serialNumber}
+                        </span>
                       </div>
                     )}
                     {product.variant?.attributes?.ringSize && (
                       <div className="text-primary-400">
-                        Ni nhẫn: <span className="text-primary-700 font-semibold">{product.variant.attributes.ringSize}</span>
+                        Ni nhẫn:{" "}
+                        <span className="text-primary-700 font-semibold">
+                          {product.variant.attributes.ringSize}
+                        </span>
                       </div>
                     )}
                     {product.variant?.attributes?.fineness && (
                       <div className="text-primary-400">
-                        Chất liệu: <span className="text-primary-700 font-semibold">{product.variant.attributes.fineness}</span>
+                        Chất liệu:{" "}
+                        <span className="text-primary-700 font-semibold">
+                          {product.variant.attributes.fineness}
+                        </span>
                       </div>
                     )}
                     <div className="text-primary-400">
-                      TL vàng: <span className="text-primary-700 font-semibold">{formatGoldWeight(product.variant?.attributes?.serialNumber?.goldWeight || product.variant?.attributes?.goldWeight)}</span>
+                      TL vàng:{" "}
+                      <span className="text-primary-700 font-semibold">
+                        {formatGoldWeight(
+                          product.variant?.attributes?.serialNumber
+                            ?.goldWeight ||
+                            product.variant?.attributes?.goldWeight,
+                        )}
+                      </span>
                     </div>
                     {product.variant?.stockAt && (
                       <div className="text-primary-400 col-span-2">
-                        Kho: <span className="text-primary-700 font-semibold">{formatWarehouseName(product.variant.stockAt)}</span>
+                        Kho:{" "}
+                        <span className="text-primary-700 font-semibold">
+                          {formatWarehouseName(product.variant.stockAt)}
+                        </span>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
                     <div className="text-primary-400">
-                      Kích thước: <span className="text-primary-700 font-semibold">{product.product.attributes?.edgeSize1 ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ''}` : ''}</span>
+                      Kích thước:{" "}
+                      <span className="text-primary-700 font-semibold">
+                        {product.product.attributes?.edgeSize1
+                          ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ""}`
+                          : ""}
+                      </span>
                     </div>
                     <div className="text-primary-400">
-                      Thông số 4Cs: <span className="text-primary-700 font-semibold">{product.product.attributes.color} - {product.product.attributes.clarity} - {product.product.attributes.carat}ct - {product.product.attributes.fluorescence}</span>
+                      Thông số 4Cs:{" "}
+                      <span className="text-primary-700 font-semibold">
+                        {product.product.attributes.color} -{" "}
+                        {product.product.attributes.clarity} -{" "}
+                        {product.product.attributes.carat}ct -{" "}
+                        {product.product.attributes.fluorescence}
+                      </span>
                     </div>
                     {product.product.warehouses?.[0]?.name && (
                       <div className="text-primary-400 col-span-2">
-                        Kho: <span className="text-primary-700 font-semibold">{formatWarehouseName(product.product.warehouses[0].name)}</span>
+                        Kho:{" "}
+                        <span className="text-primary-700 font-semibold">
+                          {formatWarehouseName(
+                            product.product.warehouses[0].name,
+                          )}
+                        </span>
                       </div>
                     )}
                   </>
                 )}
               </div>
 
-              {/* Mobile-only info (for diamond: 4Cs & size) */}
-              {isMobile && product.type === "diamond" && (
+              {/* Mobile/tablet-only info (for diamond: 4Cs & size) */}
+              {!isDesktop && product.type === "diamond" && (
                 <div className="mt-1 flex flex-col gap-0.5 text-[10px] text-primary-500 leading-tight">
                   <div>
-                    <span className="font-semibold text-primary-700">{product.product.attributes?.edgeSize1 ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ''}` : '—'} - {[product.product.attributes.color, product.product.attributes.clarity, product.product.attributes.carat ? `${product.product.attributes.carat}ct` : '', product.product.attributes.fluorescence].filter(Boolean).join(" - ")}</span>
+                    <span className="font-semibold text-primary-700">
+                      {product.product.attributes?.edgeSize1
+                        ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ""}`
+                        : "—"}{" "}
+                      -{" "}
+                      {[
+                        product.product.attributes.color,
+                        product.product.attributes.clarity,
+                        product.product.attributes.carat
+                          ? `${product.product.attributes.carat}ct`
+                          : "",
+                        product.product.attributes.fluorescence,
+                      ]
+                        .filter(Boolean)
+                        .join(" - ")}
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Mobile-only info (for jewelry: Ni, Vàng, TL vàng) */}
-              {isMobile && product.type === "jewelry" && (
+              {/* Mobile/tablet-only info (for jewelry: Ni, Vàng, TL vàng) */}
+              {!isDesktop && product.type === "jewelry" && (
                 <div className="mt-1 flex flex-col gap-0.5 text-[10px] text-primary-500 leading-tight">
                   {product.variant?.attributes?.fineness && (
                     <div className="font-semibold text-primary-700">
-                      Ni {product.variant.attributes.ringSize} - {product.variant.attributes.fineness} - {formatGoldWeight(product.variant?.attributes?.serialNumber?.goldWeight || product.variant?.attributes?.goldWeight)}
+                      Ni {product.variant.attributes.ringSize} -{" "}
+                      {product.variant.attributes.fineness} -{" "}
+                      {formatGoldWeight(
+                        product.variant?.attributes?.serialNumber?.goldWeight ||
+                          product.variant?.attributes?.goldWeight,
+                      )}
                     </div>
                   )}
                 </div>
@@ -332,7 +428,9 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
 
         {/* Total section */}
         <div className="flex justify-between items-center px-3 py-2 border-t border-primary-50">
-          <span className="text-xs font-medium text-primary-400 uppercase">TỔNG CỘNG</span>
+          <span className="text-xs font-medium text-primary-400 uppercase">
+            TỔNG CỘNG
+          </span>
           <div className="flex flex-col items-end">
             <div className="text-[10px] text-primary-300 line-through">
               {formatPrice(totalBasePrice)}
@@ -362,6 +460,28 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
           />
         </BottomSheet>
       )}
+
+      {isTablet && (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="w-[95%] max-w-sm gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden">
+            <DialogHeader className="px-4 py-3 border-b border-primary-100 bg-white">
+              <DialogTitle className="text-sm font-bold text-secondary-900">
+                Chi tiết nguyên chiếc
+              </DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[75vh] overflow-y-auto">
+              <ComboDetailsSheetContent
+                jewelry={jewelry}
+                diamond={diamond}
+                variant={variant}
+                totalBasePrice={totalBasePrice}
+                totalSalePrice={totalSalePrice}
+                formatPrice={formatPrice}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
@@ -371,7 +491,9 @@ function DetailRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
       <span className="text-primary-400 shrink-0">{label}</span>
-      <span className="font-medium text-secondary-900 text-right break-all">{value}</span>
+      <span className="font-medium text-secondary-900 text-right break-all">
+        {value}
+      </span>
     </div>
   );
 }
@@ -391,9 +513,18 @@ function CompactPrice({
   return (
     <div className="text-right shrink-0">
       {showStrike && (
-        <div className="text-[10px] text-primary-300 line-through leading-none">{formatPrice(base!)}</div>
+        <div className="text-[10px] text-primary-300 line-through leading-none">
+          {formatPrice(base!)}
+        </div>
       )}
-      <div className={cn("text-xs font-medium text-secondary-900 leading-tight", className)}>{formatPrice(sale)}</div>
+      <div
+        className={cn(
+          "text-xs font-medium text-secondary-900 leading-tight",
+          className,
+        )}
+      >
+        {formatPrice(sale)}
+      </div>
     </div>
   );
 }
@@ -419,13 +550,17 @@ function ComboDetailsSheetContent({
   const jewelryBase = variant?.basePrice || jewelry.basePrice || 0;
 
   const d = diamond.attributes;
-  const fourCs = [d?.color, d?.clarity, d?.carat ? `${d.carat}ct` : null, d?.fluorescence]
+  const fourCs = [
+    d?.color,
+    d?.clarity,
+    d?.carat ? `${d.carat}ct` : null,
+    d?.fluorescence,
+  ]
     .filter(Boolean)
     .join(" · ");
-  const diamondSize =
-    d?.edgeSize1
-      ? `${Number(d.edgeSize1).toFixed(1)}${d?.edgeSize2 ? `×${Number(d.edgeSize2).toFixed(1)}` : ""}mm`
-      : null;
+  const diamondSize = d?.edgeSize1
+    ? `${Number(d.edgeSize1).toFixed(1)}${d?.edgeSize2 ? `×${Number(d.edgeSize2).toFixed(1)}` : ""}mm`
+    : null;
 
   return (
     <div className="px-3 pb-1 space-y-2">
@@ -434,17 +569,30 @@ function ComboDetailsSheetContent({
         <div className="flex gap-2.5">
           <div className="size-11 shrink-0 border border-primary-100 bg-white overflow-hidden flex items-center justify-center">
             {jewelryImage ? (
-              <img src={jewelryImage} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+              <img
+                src={jewelryImage}
+                alt=""
+                className="size-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             ) : null}
           </div>
           <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
             <div className="min-w-0">
-              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">Nhẫn</p>
+              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">
+                Nhẫn
+              </p>
               <p className="text-[12px] font-medium text-secondary-900 truncate leading-tight">
-                {[jewelry.type, jewelry.attributes?.designCode].filter(Boolean).join(" · ") || "—"}
+                {[jewelry.type, jewelry.attributes?.designCode]
+                  .filter(Boolean)
+                  .join(" · ") || "—"}
               </p>
             </div>
-            <CompactPrice sale={jewelrySale} base={jewelryBase} formatPrice={formatPrice} />
+            <CompactPrice
+              sale={jewelrySale}
+              base={jewelryBase}
+              formatPrice={formatPrice}
+            />
           </div>
         </div>
         <div className="mt-2 pt-2 border-t border-primary-100/80 space-y-0">
@@ -455,14 +603,22 @@ function ComboDetailsSheetContent({
             label="Vàng"
             value={[
               vAttributes.fineness,
-              formatGoldWeight(vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight) !== "-"
-                ? formatGoldWeight(vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight)
+              formatGoldWeight(
+                vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight,
+              ) !== "-"
+                ? formatGoldWeight(
+                    vAttributes.serialNumber?.goldWeight ||
+                      vAttributes.goldWeight,
+                  )
                 : null,
             ]
               .filter(Boolean)
               .join(" · ")}
           />
-          <DetailRow label="Kho" value={formatWarehouseName(variant?.stockAt)} />
+          <DetailRow
+            label="Kho"
+            value={formatWarehouseName(variant?.stockAt)}
+          />
         </div>
       </div>
 
@@ -478,27 +634,43 @@ function ComboDetailsSheetContent({
           </div>
           <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
             <div className="min-w-0">
-              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">Kim cương</p>
+              <p className="text-[9px] font-medium text-primary-400 uppercase tracking-wider">
+                Kim cương
+              </p>
               <p className="text-[12px] font-medium text-secondary-900 truncate leading-tight">
                 GIA {d?.giaId || "—"}
                 {d?.shape ? ` · ${d.shape}` : ""}
               </p>
             </div>
-            <CompactPrice sale={diamond.salePrice || 0} base={diamond.basePrice} formatPrice={formatPrice} />
+            <CompactPrice
+              sale={diamond.salePrice || 0}
+              base={diamond.basePrice}
+              formatPrice={formatPrice}
+            />
           </div>
         </div>
         <div className="mt-2 pt-2 border-t border-primary-100/80 space-y-0">
           {fourCs && <DetailRow label="4Cs" value={fourCs} />}
           <DetailRow label="Giác cắt" value={d?.cut} />
           <DetailRow label="Kích thước" value={diamondSize} />
-          <DetailRow label="Kho" value={formatWarehouseName(diamond.warehouses?.[0]?.name)} />
+          <DetailRow
+            label="Kho"
+            value={formatWarehouseName(diamond.warehouses?.[0]?.name)}
+          />
         </div>
       </div>
 
       {/* Tổng */}
       <div className="flex justify-between items-center py-2 px-1">
-        <span className="text-[10px] font-medium text-primary-400 uppercase tracking-wider">Tổng cộng</span>
-        <CompactPrice className="text-sm" sale={totalSalePrice} base={totalBasePrice} formatPrice={formatPrice} />
+        <span className="text-[10px] font-medium text-primary-400 uppercase tracking-wider">
+          Tổng cộng
+        </span>
+        <CompactPrice
+          className="text-sm"
+          sale={totalSalePrice}
+          base={totalBasePrice}
+          formatPrice={formatPrice}
+        />
       </div>
     </div>
   );

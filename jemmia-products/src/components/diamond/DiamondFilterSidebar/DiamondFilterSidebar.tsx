@@ -95,7 +95,7 @@ export function DiamondFilterSidebar({
   ) => {
     setFilters((prev) => {
       const next = updater(prev);
-      if (window.innerWidth >= 1024) {
+      if (window.innerWidth >= 1280) {
         setTimeout(() => applyFilters(next), 0);
       }
       return next;
@@ -283,8 +283,8 @@ export function DiamondFilterSidebar({
 
   useEffect(() => {
     const chips = buildChips(filters);
-    setAppliedChips(chips);
-    if (window.innerWidth >= 1024) {
+    if (window.innerWidth >= 1280) {
+      setAppliedChips(chips);
       onChipsChange?.(chips);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -294,16 +294,16 @@ export function DiamondFilterSidebar({
     if (currentFilters) {
       setFilters(currentFilters);
 
-      // On mobile, update the parent's chips only when currentFilters changes (which means filters were applied)!
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < 1280) {
         const chips = buildChips(currentFilters);
+        setAppliedChips(chips);
         onChipsChange?.(chips);
       }
     }
   }, [currentFilters, buildChips, onChipsChange]);
 
   useEffect(() => {
-    if (!isOpen && window.innerWidth < 1024 && currentFilters) {
+    if (!isOpen && window.innerWidth < 1280 && currentFilters) {
       setFilters(currentFilters);
     }
   }, [isOpen, currentFilters]);
@@ -338,7 +338,7 @@ export function DiamondFilterSidebar({
     }
 
     setFilters(next);
-    if (window.innerWidth >= 1024) {
+    if (window.innerWidth >= 1280) {
       applyFilters(next);
     }
   };
@@ -526,6 +526,9 @@ export function DiamondFilterSidebar({
           <Button
             onClick={() => {
               applyFilters(filters);
+              const chips = buildChips(filters);
+              setAppliedChips(chips);
+              onChipsChange?.(chips);
               onClose();
             }}
             className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
