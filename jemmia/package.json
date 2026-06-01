@@ -12,5 +12,9 @@
     "@cloudflare/vitest-pool-workers": "^0.12.4",
     "vitest": "~3.2.0",
     "wrangler": "^4.94.0"
+  },
+  "dependencies": {
+    "linkedom": "^0.18.12",
+    "turndown": "^7.2.4"
   }
 }

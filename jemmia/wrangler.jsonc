@@ -6,6 +6,10 @@
     {
       "pattern": "jemmia.vn/cas.txt",
       "zone_name": "jemmia.vn"
+    },
+    {
+      "pattern": "jemmia.vn/*.md",
+      "zone_name": "jemmia.vn"
     }
   ],
   "rules": [
