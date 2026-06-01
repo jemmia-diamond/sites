@@ -4,7 +4,7 @@
   "compatibility_date": "2026-05-25",
   "routes": [
     {
-      "pattern": "jemmia.vn/cas.txt",
+      "pattern": "jemmia.vn/*",
       "zone_name": "jemmia.vn"
     }
   ],
