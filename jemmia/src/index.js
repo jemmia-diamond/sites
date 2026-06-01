@@ -1,26 +1,22 @@
-import casContent from "./public/cas.txt";
-
-const STATIC_FILES = {
-  "/cas.txt": casContent,
-};
+import { handleStaticRequest } from "./static.js";
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const pathname = url.pathname;
+    let pathname = url.pathname;
 
-    if (Object.prototype.hasOwnProperty.call(STATIC_FILES, pathname)) {
-      return new Response(STATIC_FILES[pathname], {
-        status: 200,
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "public, max-age=3600",
-          "X-Content-Type-Options": "nosniff",
-        },
-      });
+    // Normalize pathname: strip trailing slash if present (except for root '/')
+    if (pathname.length > 1 && pathname.endsWith("/")) {
+      pathname = pathname.slice(0, -1);
     }
 
-    // Fallback to origin
+    // Dispatch static file requests (e.g. /cas.txt)
+    const staticResponse = handleStaticRequest(pathname);
+    if (staticResponse) {
+      return staticResponse;
+    }
+
+    // Fallback to origin for standard web traffic
     return fetch(request);
   },
 };
