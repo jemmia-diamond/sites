@@ -170,10 +170,17 @@ function formatGoldWeight(weightInChi: number | null | undefined): string {
   }
 }
 
-function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
+interface ComboItem {
+  jewelry: ProductModel;
+  diamond: DiamondModel;
+  variant_serials_id: string;
+  diamonds_id: string;
+}
+
+function ComboTableRow({ combo }: { combo: ComboItem }) {
   const jewelry: ProductModel = combo.jewelry;
   const diamond: DiamondModel = combo.diamond;
-  const variant: any = jewelry.variants?.[0] || {};
+  const variant = jewelry.variants?.[0];
   const isMobile = useIsMobile();
   const [isDesktop, setIsDesktop] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 1280 : false
@@ -539,7 +546,7 @@ function ComboDetailsSheetContent({
 }: {
   jewelry: ProductModel;
   diamond: DiamondModel;
-  variant: any;
+  variant: ProductModel['variants'][number] | undefined;
   totalBasePrice: number;
   totalSalePrice: number;
   formatPrice: (price: number) => string;

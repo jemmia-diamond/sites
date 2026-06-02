@@ -238,7 +238,6 @@ export function JewelryTableRow({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const galleryDisplayWeb = 3;
   const galleryDisplayActual = isTablet ? 3 : 4;
 
   const firstImage =
@@ -259,7 +258,7 @@ export function JewelryTableRow({
       >
         <TableCell className="px-6 md:px-3 py-2 text-center">
           <div className="flex flex-col items-center justify-center gap-1">
-            <ProductCodes product={product} isExpanded={isExpanded} />
+            <ProductCodes product={product} isExpanded={isExpanded} className="w-[130px] !justify-start align-caret-right" />
           </div>
         </TableCell>
 
@@ -278,7 +277,7 @@ export function JewelryTableRow({
                 });
               }}
               designCode={designCode || product.title}
-              displayCount={galleryDisplayWeb}
+              displayCount={galleryDisplayActual}
             />
           </div>
         </TableCell>

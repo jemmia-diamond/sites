@@ -115,7 +115,8 @@ export default function JewelryPage() {
           return [];
         return undefined;
       };
-      (nextFilters as any)[key] = getResetValue(key);
+      const filterKey = key as keyof Omit<JewelryFilter, "page">;
+      (nextFilters as any)[filterKey] = getResetValue(key);
     }
     handleApplyFilters(nextFilters as JewelryFilter);
   };

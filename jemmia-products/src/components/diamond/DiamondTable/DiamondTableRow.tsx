@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowSquareOut, CaretDown } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
+import { AlertCircle } from "lucide-react";
 import { DiamondModel, ProductModel } from "../../../types";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
@@ -60,6 +61,19 @@ export function DiamondTableRow({
     ...(diamond.videos?.map((v) => v.url) || []),
   ];
 
+  const noteText = diamond.attributes.diamondHistory?.errors
+    ? `${diamond.attributes.diamondHistory.errors}${
+        diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""
+      }`
+    : "";
+
+  const normalPassStage =
+    diamond.attributes.diamondHistory?.status === "Bình thường (pass)"
+      ? diamond.attributes.diamondHistory.stage
+      : "";
+
+  const fullNoteText = [noteText, normalPassStage].filter(Boolean).join(" - ");
+
   return (
     <>
       {/* Desktop Table View */}
@@ -69,10 +83,10 @@ export function DiamondTableRow({
           diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
         )}
       >
-        <TableCell className="px-2 md:px-6 py-2 text-center">
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-0">
-              <ProductCodes product={codeProduct} isExpanded={false} />
+        <TableCell className="px-2 md:pl-2 md:pr-2 py-2 text-left">
+          <div className="flex flex-col items-start gap-1">
+            <div className="flex items-center justify-start gap-0">
+              <ProductCodes product={codeProduct} isExpanded={false} className="w-[140px] !justify-start align-caret-right" />
             </div>
             {showBarcode && (
               <div className="flex items-center gap-1 animate-in fade-in duration-150">
@@ -81,7 +95,7 @@ export function DiamondTableRow({
                     Không bán lẻ
                   </Badge>
                 )}
-                <span className="text-[9px] text-primary-400 font-semibold uppercase tracking-wider">Barcode: {diamond.barcode}</span>
+                <span className="text-xs text-primary-400 font-semibold uppercase tracking-wider">Barcode: {diamond.barcode}</span>
               </div>
             )}
           </div>
@@ -91,19 +105,6 @@ export function DiamondTableRow({
           <span className="text-[11px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
             {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
           </span>
-        </TableCell>
-
-        <TableCell className="px-1 md:px-1 py-2 text-left">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-secondary-900 tracking-tight" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
-              {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
-            </span>
-            {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
-              <span className="text-[11px] font-semibold text-secondary-900 tracking-tight">
-                {diamond.attributes.diamondHistory.stage}
-              </span>
-            )}
-          </div>
         </TableCell>
 
         <TableCell className="px-1 md:px-1 py-2 text-center">
@@ -167,7 +168,7 @@ export function DiamondTableRow({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
+                className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase"
                 onClick={(e) => {
                   e.stopPropagation();
                   const url = diamond.attributes.giaPdfUrl;
@@ -179,17 +180,39 @@ export function DiamondTableRow({
             ) : (
               <span className="text-[8px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
             )}
-            <a
-              href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center text-[8px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
-            >
-              HRA <ArrowSquareOut size={9} className="ml-0.5 opacity-50 group-hover:opacity-100" />
-            </a>
+            {diamond.attributes.productId ? (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase"
+              >
+                <a
+                  href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  HRA
+                </a>
+              </Button>
+            ) : (
+              <span className="text-[8px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
+            )}
           </div>
         </TableCell>
       </TableRow>
+
+      {fullNoteText && (
+        <TableRow className="hidden md:table-row hover:bg-transparent">
+          <TableCell colSpan={7} className="px-2 py-2 border-b border-primary-100">
+            <div className="flex items-center gap-2 text-amber-600 text-[11px] font-semibold">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+              <span>{fullNoteText}</span>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
 
       {/* Mobile Card View */}
       <TableRow
@@ -288,7 +311,7 @@ export function DiamondTableRow({
       {/* Expanded Panel */}
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
-          <TableCell colSpan={9} className="p-0">
+          <TableCell colSpan={7} className="p-0">
             <div className="px-3 py-2 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200 space-y-1">
               {/* Row 1: Identification + Illustration + Shape */}
               <div className="flex items-center gap-3">
@@ -327,6 +350,26 @@ export function DiamondTableRow({
                     }}
                   >
                     Hình GIA
+                  </Button>
+                ) : (
+                  <span className="text-[9px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
+                )}
+                {/* HRA */}
+                {diamond.attributes.productId ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase"
+                  >
+                    <a
+                      href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      HRA
+                    </a>
                   </Button>
                 ) : (
                   <span className="text-[9px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
