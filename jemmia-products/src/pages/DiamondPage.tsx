@@ -91,6 +91,12 @@ export default function DiamondPage() {
     } else if (key === "carat") {
       nextFilters.caratFrom = undefined;
       nextFilters.caratTo = undefined;
+    } else if (key === "edgeLong") {
+      nextFilters.edgeLongFrom = undefined;
+      nextFilters.edgeLongTo = undefined;
+    } else if (key === "edgeShort") {
+      nextFilters.edgeShortFrom = undefined;
+      nextFilters.edgeShortTo = undefined;
     } else {
       const getResetValue = (k: string): any => {
         if (k === "stockStatus") return "IN_STOCK";
@@ -123,6 +129,10 @@ export default function DiamondPage() {
       salePriceTo: undefined,
       caratFrom: undefined,
       caratTo: undefined,
+      edgeLongFrom: undefined,
+      edgeLongTo: undefined,
+      edgeShortFrom: undefined,
+      edgeShortTo: undefined,
       edgeSizes: [],
       shapes: [],
       color: [],
@@ -324,7 +334,7 @@ export default function DiamondPage() {
             </div>
           </div>
           {activeChips.length > 0 && (
-            <div className="hidden md:flex flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
+            <div className="hidden md:flex xl:hidden flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
               <div className="flex flex-wrap gap-2 flex-1">
                 {activeChips.map((chip) => (
                   <Badge

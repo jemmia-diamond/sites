@@ -123,6 +123,10 @@ export interface DiamondFilter {
   salePriceFrom?: number;
   salePriceTo?: number;
   edgeSizes?: (number | string)[];
+  edgeLongFrom?: number;
+  edgeLongTo?: number;
+  edgeShortFrom?: number;
+  edgeShortTo?: number;
   warehouseIds?: string[];
   stockStatus?: "REAL_INCOMING" | "IN_STOCK";
   color?: string[];
