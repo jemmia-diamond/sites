@@ -333,6 +333,30 @@ function MediaViewer({
     }
   }, [selectedMedia]);
 
+  React.useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const videos = track.querySelectorAll("video");
+    videos.forEach((video) => {
+      const v = video as HTMLVideoElement;
+      v.pause();
+      v.currentTime = 0;
+    });
+
+    const currentVideo = Array.from(videos).find(
+      (video) => {
+        const v = video as HTMLVideoElement;
+        return v.src === selectedMedia || v.getAttribute("src") === selectedMedia;
+      }
+    ) as HTMLVideoElement | undefined;
+
+    if (currentVideo) {
+      currentVideo.play().catch((err) => {
+        console.warn("Autoplay was blocked or interrupted:", err);
+      });
+    }
+  }, [selectedMedia]);
+
   const handleNext = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     onSelectMedia(nextMedia);
@@ -384,10 +408,18 @@ function MediaViewer({
 
   const renderSlide = (url: string, key: string) => {
     const isV = isVideo(url);
+    const isActive = key === 'current';
     return (
       <div key={key} className="w-full h-full flex items-center justify-center select-none pointer-events-none p-3 md:p-4">
         {isV ? (
-          <video src={url} muted preload="metadata" className="max-w-full max-h-full object-contain" />
+          <video
+            src={url}
+            controls
+            autoPlay={isActive}
+            playsInline
+            preload="metadata"
+            className="max-w-full max-h-full object-contain pointer-events-auto"
+          />
         ) : (
           <img
             src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
