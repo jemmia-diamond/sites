@@ -368,9 +368,12 @@ export default function DiamondPage() {
                       {Array.from({ length: 14 }).map((_, i) => (
                         <TableHead
                           key={i}
-                          className="bg-primary-50 h-10 px-2 py-0"
+                          className={cn(
+                            "bg-primary-50 h-10 py-0",
+                            i === 0 ? "text-left px-2 w-[170px]" : "text-center px-2"
+                          )}
                         >
-                          <Skeleton className="h-3 w-16 bg-primary-200/50 mx-auto" />
+                          <Skeleton className={cn("h-3 w-16 bg-primary-200/50", i === 0 ? "mx-0" : "mx-auto")} />
                         </TableHead>
                       ))}
                     </TableRow>
@@ -385,12 +388,15 @@ export default function DiamondPage() {
                         {Array.from({ length: 14 }).map((_, cellIndex) => (
                           <TableCell
                             key={cellIndex}
-                            className="px-3 py-4 text-center"
+                            className={cn(
+                              "py-4",
+                              cellIndex === 0 ? "px-2 text-left w-[180px]" : "px-3 text-center"
+                            )}
                           >
                             <Skeleton
                               className={cn(
-                                "h-3 bg-primary-100/50 mx-auto",
-                                cellIndex === 0 && "w-20",
+                                "h-3 bg-primary-100/50",
+                                cellIndex === 0 ? "w-20 mx-0" : "mx-auto",
                                 cellIndex === 1 && "w-12",
                                 cellIndex === 2 && "w-10",
                                 cellIndex === 3 && "w-16",

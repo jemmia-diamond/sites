@@ -127,7 +127,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
 
   return (
     <div
-      className={cn("relative flex items-center justify-center w-fit", className)}
+      className={cn("relative flex items-center justify-start w-[140px]", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       ref={triggerRef}
@@ -138,7 +138,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           if (designCode) handleCopy(e, designCode);
         }}
         className={cn(
-          "flex items-center gap-1.5 rounded-full pl-2.5 pr-2 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[11px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
           "bg-secondary-900 text-white active:opacity-90"
         )}
       >

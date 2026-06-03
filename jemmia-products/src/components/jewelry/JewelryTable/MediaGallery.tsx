@@ -21,6 +21,8 @@ import axios from "axios";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { API_BASE_URL } from "../../../config";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface MediaGalleryProps {
   validPreviewList: string[];
@@ -32,6 +34,11 @@ export interface MediaGalleryProps {
   onImageError: (url: string) => void;
   onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
+  webImages?: string[];
+  actualImages?: string[];
+  activeTab?: 'web' | 'actual';
+  onTabChange?: (tab: 'web' | 'actual') => void;
+  brokenImages?: Set<string>;
 }
 
 export function MediaGallery({
@@ -44,6 +51,11 @@ export function MediaGallery({
   onImageError,
   onUploadSuccess,
   isVideo,
+  webImages = [],
+  actualImages = [],
+  activeTab = 'web',
+  onTabChange,
+  brokenImages,
 }: MediaGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -57,6 +69,10 @@ export function MediaGallery({
   const [selectedMediaUrls, setSelectedMediaUrls] = useState<string[]>([]);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [copyingUrl, setCopyingUrl] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    setSelectedMediaUrls([]);
+  }, [activeTab]);
 
   const handleToggleSelect = (url: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -278,7 +294,7 @@ export function MediaGallery({
 
   const allSelected =
     validPreviewList.length > 0 && selectedMediaUrls.length === validPreviewList.length;
-  const hasActions = validPreviewList.length > 0 || uploadConfig?.showUpload;
+  const hasActions = validPreviewList.length > 0 || (uploadConfig?.showUpload && activeTab === 'actual');
 
   const openFilePicker = () => {
     if (uploadConfig?.uploadOptions && uploadConfig.uploadOptions.length > 1) {
@@ -293,7 +309,7 @@ export function MediaGallery({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Mobile header */}
-      <div className="xl:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
+      <div className="md:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
         <div className="flex items-start justify-between gap-2 px-3 md:px-4 pt-3 pb-2">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">
@@ -349,7 +365,7 @@ export function MediaGallery({
                 </Button>
               </>
             )}
-            {uploadConfig?.showUpload && (
+            {uploadConfig?.showUpload && activeTab === 'actual' && (
               <Button
                 variant="outline"
                 size="sm"
@@ -370,7 +386,7 @@ export function MediaGallery({
       </div>
 
       {/* Desktop header */}
-      <div className="hidden xl:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
+      <div className="hidden md:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
         <div>
           <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
             Thư viện
@@ -410,7 +426,7 @@ export function MediaGallery({
               </Button>
             </>
           )}
-          {uploadConfig?.showUpload && (
+          {uploadConfig?.showUpload && activeTab === 'actual' && (
             <Button
               variant="outline"
               size="sm"
@@ -436,6 +452,20 @@ export function MediaGallery({
           </Button>
         </div>
       </div>
+
+      {/* Unified shadcn Tabs Bar (below headers) */}
+      {webImages && actualImages && (webImages.length > 0 || actualImages.length > 0) && (
+        <Tabs value={activeTab} onValueChange={(val) => onTabChange?.(val as 'web' | 'actual')} className="border-b border-primary-100 w-full bg-white shrink-0">
+          <TabsList variant="line" className="px-4 xl:px-8 w-full md:w-fit py-5 justify-start h-11 bg-white rounded-none">
+            <TabsTrigger value="web" className="text-xs font-black py-4 px-4 cursor-pointer">
+              Ảnh Website ({webImages.filter(url => !brokenImages?.has(url)).length})
+            </TabsTrigger>
+            <TabsTrigger value="actual" className="text-xs font-black py-4 px-4 cursor-pointer">
+              Ảnh/Video Thực Tế ({actualImages.filter(url => !brokenImages?.has(url)).length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       <input
         type="file"
