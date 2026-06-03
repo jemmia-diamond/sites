@@ -12,10 +12,8 @@ export default {
       
       return response;
     } catch (e) {
-      // Đề phòng lỗi 1101 (Worker threw exception)
-      const url = new URL(request.url);
-      url.pathname = '/index.html';
-      return await env.ASSETS.fetch(new Request(url, request));
+      // In lỗi ra màn hình thay vì bắn ra 1101 Exception
+      return new Response("Lỗi Worker: " + (e.stack || e.message), { status: 500 });
     }
   }
 }
