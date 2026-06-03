@@ -1,8 +1,0 @@
-{
-  "name": "jemmia-products",
-  "compatibility_date": "2024-01-01",
-  "main": "worker.js",
-  "assets": {
-    "directory": "dist"
-  }
-}
