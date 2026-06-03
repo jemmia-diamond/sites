@@ -107,19 +107,6 @@ export function DiamondTableRow({
           </span>
         </TableCell>
 
-        <TableCell className="px-1 md:px-1 py-2 text-left">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-secondary-900 tracking-tight" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
-              {diamond.attributes.diamondHistory?.errors ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}` : ""}
-            </span>
-            {diamond.attributes.diamondHistory?.status === "Bình thường (pass)" && (
-              <span className="text-[11px] font-semibold text-secondary-900 tracking-tight">
-                {diamond.attributes.diamondHistory.stage}
-              </span>
-            )}
-          </div>
-        </TableCell>
-
         <TableCell className="px-1 md:px-1 py-2 text-center">
           <div className="flex justify-center">
             {actualImages.length > 0 ? (
