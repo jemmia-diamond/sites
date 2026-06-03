@@ -362,12 +362,12 @@ export function JewelryFilterSidebar({
   );
 
   useEffect(() => {
-    const chips = buildChips(filters);
     if (window.innerWidth >= 1280) {
+      const chips = buildChips(currentFilters || filters);
       setAppliedChips(chips);
       onChipsChange?.(chips);
     }
-  }, [filters, buildChips, onChipsChange]);
+  }, [currentFilters, filters, buildChips, onChipsChange]);
 
   useEffect(() => {
     if (currentFilters) {
