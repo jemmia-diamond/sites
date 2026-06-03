@@ -92,6 +92,18 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
     if (filters.caratTo !== undefined) {
       params.caratTo = filters.caratTo;
     }
+    if (filters.edgeLongFrom !== undefined) {
+      params.edgeLongFrom = filters.edgeLongFrom;
+    }
+    if (filters.edgeLongTo !== undefined) {
+      params.edgeLongTo = filters.edgeLongTo;
+    }
+    if (filters.edgeShortFrom !== undefined) {
+      params.edgeShortFrom = filters.edgeShortFrom;
+    }
+    if (filters.edgeShortTo !== undefined) {
+      params.edgeShortTo = filters.edgeShortTo;
+    }
   }
 
   const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { 

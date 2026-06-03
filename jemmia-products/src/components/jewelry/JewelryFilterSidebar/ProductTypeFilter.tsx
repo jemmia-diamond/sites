@@ -26,6 +26,11 @@ export function ProductTypeFilter({
     return 0;
   });
 
+  const uniqueTypes = sortedTypes?.filter(
+    (type, index, self) =>
+      self.findIndex((t) => t.id === type.id || t.name === type.name) === index
+  );
+
   return (
     <div className="max-h-60 overflow-y-auto pr-2 space-y-2 scrollbar-hide">
       {isLoadingTypes ? (
@@ -38,7 +43,7 @@ export function ProductTypeFilter({
           onValueChange={onTypeChange}
           className="space-y-2"
         >
-          {sortedTypes?.map((cat) => {
+          {uniqueTypes?.map((cat) => {
             return (
               <div key={cat.id} className="flex items-center space-x-3 group">
                 <RadioGroupItem

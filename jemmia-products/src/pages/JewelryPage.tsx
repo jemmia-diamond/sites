@@ -345,7 +345,7 @@ export default function JewelryPage() {
             </div>
           </div>
           {activeChips.length > 0 && (
-            <div className="hidden md:flex flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
+            <div className="hidden md:flex xl:hidden flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
               <div className="flex flex-wrap gap-2 flex-1">
                 {activeChips.map((chip) => (
                   <Badge

@@ -72,6 +72,10 @@ export function DiamondFilterSidebar({
     salePriceTo: undefined,
     caratFrom: undefined,
     caratTo: undefined,
+    edgeLongFrom: undefined,
+    edgeLongTo: undefined,
+    edgeShortFrom: undefined,
+    edgeShortTo: undefined,
     edgeSizes: [],
     warehouseIds: [],
     stockStatus: "IN_STOCK",
@@ -150,6 +154,63 @@ export function DiamondFilterSidebar({
 
   const handleMaxCaratChange = (value: number | undefined) => {
     setFilters((prev) => ({ ...prev, caratTo: value }));
+  };
+
+  const handleMinEdgeLongChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, edgeLongFrom: value }));
+  };
+
+  const handleMaxEdgeLongChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, edgeLongTo: value }));
+  };
+
+  const handleMinEdgeShortChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, edgeShortFrom: value }));
+  };
+
+  const handleMaxEdgeShortChange = (value: number | undefined) => {
+    setFilters((prev) => ({ ...prev, edgeShortTo: value }));
+  };
+
+  const getCorrectedFilters = (current: DiamondFilter): DiamondFilter => {
+    const next = { ...current };
+    if (next.salePriceFrom !== undefined && next.salePriceTo !== undefined && next.salePriceTo < next.salePriceFrom) {
+      next.salePriceTo = next.salePriceFrom;
+    }
+    if (next.caratFrom !== undefined && next.caratTo !== undefined && next.caratTo < next.caratFrom) {
+      next.caratTo = next.caratFrom;
+    }
+    if (next.edgeLongFrom !== undefined && next.edgeLongTo !== undefined && next.edgeLongTo < next.edgeLongFrom) {
+      next.edgeLongTo = next.edgeLongFrom;
+    }
+    if (next.edgeShortFrom !== undefined && next.edgeShortTo !== undefined && next.edgeShortTo < next.edgeShortFrom) {
+      next.edgeShortTo = next.edgeShortFrom;
+    }
+    return next;
+  };
+
+  const handleApplyPrice = () => {
+    setFilters((prev) => {
+      const next = getCorrectedFilters(prev);
+      applyFilters(next);
+      return next;
+    });
+  };
+
+  const handleApplyCarat = () => {
+    setFilters((prev) => {
+      const next = getCorrectedFilters(prev);
+      applyFilters(next);
+      return next;
+    });
+  };
+
+  const handleApplySize = () => {
+    setFilters((prev) => {
+      const next = getCorrectedFilters(prev);
+      applyFilters(next);
+      return next;
+    });
   };
 
   const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK") => {
@@ -276,19 +337,47 @@ export function DiamondFilterSidebar({
         });
       }
 
+      if (currentFilters.edgeLongFrom !== undefined || currentFilters.edgeLongTo !== undefined) {
+        const from = currentFilters.edgeLongFrom !== undefined
+          ? `${currentFilters.edgeLongFrom} mm`
+          : "";
+        const to = currentFilters.edgeLongTo !== undefined
+          ? `${currentFilters.edgeLongTo} mm`
+          : "";
+        chips.push({
+          key: "edgeLong",
+          value: { from: currentFilters.edgeLongFrom, to: currentFilters.edgeLongTo },
+          label: `Cạnh dài: ${from && to ? `${from} - ${to}` : from || to}`,
+        });
+      }
+
+      if (currentFilters.edgeShortFrom !== undefined || currentFilters.edgeShortTo !== undefined) {
+        const from = currentFilters.edgeShortFrom !== undefined
+          ? `${currentFilters.edgeShortFrom} mm`
+          : "";
+        const to = currentFilters.edgeShortTo !== undefined
+          ? `${currentFilters.edgeShortTo} mm`
+          : "";
+        chips.push({
+          key: "edgeShort",
+          value: { from: currentFilters.edgeShortFrom, to: currentFilters.edgeShortTo },
+          label: `Cạnh ngắn: ${from && to ? `${from} - ${to}` : from || to}`,
+        });
+      }
+
       return chips;
     },
     [],
   );
 
   useEffect(() => {
-    const chips = buildChips(filters);
     if (window.innerWidth >= 1280) {
+      const chips = buildChips(currentFilters || filters);
       setAppliedChips(chips);
       onChipsChange?.(chips);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, buildChips]);
+  }, [currentFilters, filters, buildChips]);
 
   useEffect(() => {
     if (currentFilters) {
@@ -318,6 +407,10 @@ export function DiamondFilterSidebar({
       };
     } else if (key === "carat") {
       next = { ...filters, caratFrom: undefined, caratTo: undefined };
+    } else if (key === "edgeLong") {
+      next = { ...filters, edgeLongFrom: undefined, edgeLongTo: undefined };
+    } else if (key === "edgeShort") {
+      next = { ...filters, edgeShortFrom: undefined, edgeShortTo: undefined };
     } else {
       const getResetValue = (k: string): any => {
         if (k === "stockStatus") return "IN_STOCK";
@@ -437,7 +530,7 @@ export function DiamondFilterSidebar({
               filters={filters}
               onMinPriceChange={handleMinPriceChange}
               onMaxPriceChange={handleMaxPriceChange}
-              onApply={() => applyFilters(filters)}
+              onApply={handleApplyPrice}
             />
           </FilterSection>
 
@@ -491,8 +584,11 @@ export function DiamondFilterSidebar({
           <FilterSection label="Kích thước">
             <SizeFilter
               filters={filters}
-              sizes={SIZES}
-              onSizeToggle={(value) => toggleMultiSelect("edgeSizes", value)}
+              onMinEdgeLongChange={handleMinEdgeLongChange}
+              onMaxEdgeLongChange={handleMaxEdgeLongChange}
+              onMinEdgeShortChange={handleMinEdgeShortChange}
+              onMaxEdgeShortChange={handleMaxEdgeShortChange}
+              onApply={handleApplySize}
             />
           </FilterSection>
 
@@ -517,7 +613,14 @@ export function DiamondFilterSidebar({
               filters={filters}
               onMinCaratChange={handleMinCaratChange}
               onMaxCaratChange={handleMaxCaratChange}
-              onApply={() => applyFilters(filters)}
+              onApply={handleApplyCarat}
+              onPresetSelect={(from, to) => {
+                handleFastFilterChange((prev) => ({
+                  ...prev,
+                  caratFrom: from,
+                  caratTo: to,
+                }));
+              }}
             />
           </FilterSection>
         </div>
@@ -525,8 +628,10 @@ export function DiamondFilterSidebar({
         <div className="xl:hidden px-6 py-3 sticky bottom-0 bg-white border-t border-primary-100 z-10">
           <Button
             onClick={() => {
-              applyFilters(filters);
-              const chips = buildChips(filters);
+              const corrected = getCorrectedFilters(filters);
+              setFilters(corrected);
+              applyFilters(corrected);
+              const chips = buildChips(corrected);
               setAppliedChips(chips);
               onChipsChange?.(chips);
               onClose();

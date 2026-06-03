@@ -37,9 +37,6 @@ export function PriceRangeFilter({
   };
 
   const handleApply = () => {
-    if (filters.salePriceFrom !== undefined && filters.salePriceTo !== undefined && filters.salePriceTo < filters.salePriceFrom) {
-      onMaxPriceChange(filters.salePriceFrom);
-    }
     onApply();
   };
 
