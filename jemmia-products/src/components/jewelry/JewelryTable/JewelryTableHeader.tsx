@@ -7,8 +7,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const HEADERS = [
-  "Mã sản phẩm",
   "Ảnh website",
+  "Mã sản phẩm",
   "Ảnh/video thực tế",
   "Viên tấm",
   "Giá",
@@ -36,7 +36,7 @@ export function JewelryTableHeader() {
               text-primary-700
               whitespace-nowrap
             `,
-              i === 0 ? "text-left px-6 md:px-3 w-fit" : "text-center px-2",
+              i === 1 ? "text-left px-6 md:px-3 w-42.5" : "text-center px-2",
               i === 5 && "w-12"
             )}
           >

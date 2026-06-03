@@ -180,14 +180,21 @@ export function DiamondTableRow({
             ) : (
               <span className="text-[8px] text-primary-200 font-semibold uppercase italic opacity-50">N/A</span>
             )}
-            <a
-              href={`https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center text-[8px] font-black text-primary-300 hover:text-secondary-900 transition-colors group tracking-tight uppercase"
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(
+                  `https://jemmiavn.myharavan.com/admin/products/${diamond.attributes.productId}`,
+                  "_blank",
+                  "noopener,noreferrer"
+                );
+              }}
             >
-              HRA <ArrowSquareOut size={9} className="ml-0.5 opacity-50 group-hover:opacity-100" />
-            </a>
+              HRA
+            </Button>
           </div>
         </TableCell>
       </TableRow>

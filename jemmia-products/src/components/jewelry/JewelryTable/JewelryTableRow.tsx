@@ -238,7 +238,7 @@ export function JewelryTableRow({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const galleryDisplayWeb = 3;
+  const galleryDisplayWeb = 1;
   const galleryDisplayActual = isTablet ? 3 : 4;
 
   const firstImage =
@@ -257,29 +257,60 @@ export function JewelryTableRow({
         )}
         onClick={() => onToggleExpand(product.id)}
       >
-        <TableCell className="px-6 md:px-3 py-2 text-left w-42.5">
-          <div className="flex flex-col items-start justify-start gap-1">
-            <ProductCodes product={product} isExpanded={isExpanded} className="w-[130px] !justify-start align-caret-right" />
+        <TableCell className="px-6 md:px-2 py-2">
+          <div className="flex justify-center">
+            <div
+              className={cn(
+                "w-12 h-12 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center",
+                firstImage
+                  ? "cursor-pointer hover:scale-105 transition-transform"
+                  : "cursor-default"
+              )}
+              onClick={(e) => {
+                if (!firstImage) return;
+                e.stopPropagation();
+                const showActual = webImages.length === 0;
+                onPreview(showActual ? actualImages : webImages, 0, {
+                  productId: product.id,
+                  isActual: showActual,
+                  designCode: designCode || product.title,
+                  showUpload: true,
+                  uploadOptions,
+                });
+              }}
+            >
+              {firstImage ? (
+                <img
+                  src={firstImage}
+                  alt={designCode || product.title}
+                  className="w-full h-full object-cover"
+                  onError={() => onImageError(firstImage)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-primary-300">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span className="text-[8px] mt-0.5">No image</span>
+                </div>
+              )}
+            </div>
           </div>
         </TableCell>
 
-        <TableCell className="px-6 md:px-2 py-2">
-          <div className="flex justify-center">
-            <CompactGallery
-              images={webImages}
-              showUpload={false}
-              brokenImages={brokenImages}
-              onImageError={onImageError}
-              onPreview={(images, index, config) => {
-                onPreview(images, index, {
-                  ...config,
-                  productId: product.id,
-                  isActual: false,
-                });
-              }}
-              designCode={designCode || product.title}
-              displayCount={galleryDisplayWeb}
-            />
+        <TableCell className="px-6 md:px-3 py-2 text-left w-42.5">
+          <div className="flex flex-col items-start justify-start gap-1">
+            <ProductCodes product={product} isExpanded={isExpanded} className="w-[130px] !justify-start align-caret-right" />
           </div>
         </TableCell>
 
@@ -414,8 +445,12 @@ export function JewelryTableRow({
           <div className="flex items-center gap-3 w-full">
             {/* Image or Placeholder */}
             <div
-              className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center cursor-pointer"
+              className={cn(
+                "w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center",
+                firstImage ? "cursor-pointer" : "cursor-default"
+              )}
               onClick={(e) => {
+                if (!firstImage) return;
                 e.stopPropagation();
                 const showActual = webImages.length === 0;
                 onPreview(showActual ? actualImages : webImages, 0, {

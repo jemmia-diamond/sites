@@ -24,6 +24,7 @@ interface CompactGalleryProps {
   displayCount?: number;
   uploadOptions?: { label: string; designCode: string }[];
   fixedWidth?: boolean;
+  showCountBadge?: boolean;
 }
 
 export function CompactGallery({
@@ -38,6 +39,7 @@ export function CompactGallery({
   displayCount = 4,
   uploadOptions,
   fixedWidth = true,
+  showCountBadge = true,
 }: CompactGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
@@ -187,7 +189,8 @@ export function CompactGallery({
                     )}
 
                     {idx === displayCount - 1 &&
-                      totalCount > displayCount && (
+                      totalCount > displayCount &&
+                      showCountBadge && (
                         <div
                           className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10"
                           onClick={(e) => {

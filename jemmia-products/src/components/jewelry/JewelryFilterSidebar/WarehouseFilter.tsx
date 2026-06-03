@@ -25,7 +25,7 @@ export function WarehouseFilter({
         <div key={wh.id} className="flex items-center space-x-3 group">
           <Checkbox
             id={wh.id}
-            checked={filters.warehouseIds?.includes(wh.id)}
+            checked={filters.warehouseIds?.includes(wh.id) ?? false}
             onCheckedChange={() => onWarehouseToggle(wh.id)}
             className="h-4 w-4 rounded-none border-primary-300 data-[state=checked]:bg-secondary-900"
           />
