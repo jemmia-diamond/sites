@@ -25,8 +25,10 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ onSuccess }) => {
       const response = await axios.post("/auth/login", { password });
       if (response.data && response.data.token) {
         localStorage.setItem("site_auth_token", response.data.token);
+        onSuccess();
+      } else {
+        setError("Mật khẩu không chính xác. Vui lòng thử lại.");
       }
-      onSuccess();
     } catch (err: any) {
       if (err.response?.status === 401) {
         setError("Mật khẩu không chính xác. Vui lòng thử lại.");
