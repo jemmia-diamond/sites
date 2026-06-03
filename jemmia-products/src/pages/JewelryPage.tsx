@@ -390,9 +390,13 @@ export default function JewelryPage() {
                       {Array.from({ length: 7 }).map((_, i) => (
                         <TableHead
                           key={i}
-                          className="bg-primary-50 h-10 px-2 py-0"
+                          className={cn(
+                            "bg-primary-50 h-10 py-0",
+                            i === 0 ? "text-left px-6 md:px-3 w-[160px]" : "text-center px-2",
+                            i === 5 && "w-12"
+                          )}
                         >
-                          <Skeleton className="h-3 w-16 bg-primary-200/50 mx-auto" />
+                          <Skeleton className={cn("h-3 w-16 bg-primary-200/50", i === 0 ? "mx-0" : "mx-auto")} />
                         </TableHead>
                       ))}
                     </TableRow>
@@ -407,12 +411,16 @@ export default function JewelryPage() {
                         {Array.from({ length: 7 }).map((_, cellIndex) => (
                           <TableCell
                             key={cellIndex}
-                            className="px-3 py-4 text-center"
+                            className={cn(
+                              "py-4",
+                              cellIndex === 0 ? "px-6 md:px-3 text-left w-[160px]" : "px-3 text-center",
+                              cellIndex === 5 && "w-12"
+                            )}
                           >
                             <Skeleton
                               className={cn(
-                                "h-3 bg-primary-100/50 mx-auto",
-                                cellIndex === 0 && "w-24",
+                                "h-3 bg-primary-100/50",
+                                cellIndex === 0 ? "w-24 mx-0" : "mx-auto",
                                 cellIndex === 1 && "w-28",
                                 cellIndex === 2 && "w-28",
                                 cellIndex === 3 && "w-16",

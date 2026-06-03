@@ -53,7 +53,12 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, exp
     setPreviewList(images);
     setPreviewIndex(index);
     setMediaPreviewUrl(images[index]);
-    setSelectedMedia(null);
+    const validImages = images.filter((url) => !brokenImages.has(url));
+    if (validImages.length === 1) {
+      setSelectedMedia(validImages[0]);
+    } else {
+      setSelectedMedia(null);
+    }
     setUploadConfig(config || null);
   };
 
@@ -132,7 +137,7 @@ return (
           <Table className="w-full border-collapse">
             <TableHeader className="hidden md:table-header-group">
               <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Mã sản phẩm</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 md:px-3 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap w-[170px]">Mã sản phẩm</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Thông số kỹ thuật</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-1 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal w-75">Ghi chú</TableHead>
                 <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình ảnh</TableHead>
@@ -186,6 +191,10 @@ return (
         onDownloadAll={handleDownloadAll}
         onUploadSuccess={handleUploadSuccess}
         isVideo={isVideo}
+        webImages={[]}
+        actualImages={[]}
+        activeTab="actual"
+        onTabChange={() => {}}
       />
     </div>
   </>

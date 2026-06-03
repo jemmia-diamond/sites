@@ -39,19 +39,24 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; uploadOptions?: { label: string; designCode: string }[]; } | null>(null);
+  const [activeTab, setActiveTab] = useState<'web' | 'actual'>('web');
 
-  React.useEffect(() => {
-    if (!uploadConfig?.productId) return;
-    const activeProduct = jewelries.find((j) => j.id === uploadConfig.productId);
-    if (!activeProduct) return;
+  const activeProduct = uploadConfig?.productId
+    ? jewelries.find((j) => j.id === uploadConfig.productId)
+    : null;
 
-    const isBundle = activeProduct.products && activeProduct.products.length > 0;
+  const isBundle = activeProduct
+    ? activeProduct.products && activeProduct.products.length > 0
+    : false;
 
-    const webImages = isBundle
+  const allWebImages = activeProduct
+    ? (isBundle
       ? activeProduct.products?.[0]?.thumbnails?.map((t) => t.url) || []
-      : activeProduct.thumbnails?.map((t) => t.url) || [];
+      : activeProduct.thumbnails?.map((t) => t.url) || [])
+    : [];
 
-    const actualImages = isBundle
+  const allActualImages = activeProduct
+    ? (isBundle
       ? activeProduct.products!.flatMap((p) => [
         ...(p.images?.map((img) => img.url) || []),
         ...(p.videos?.map((v) => v.url) || []),
@@ -59,13 +64,12 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
       : [
         ...(activeProduct.images?.map((img) => img.url) || []),
         ...(activeProduct.videos?.map((v) => v.url) || []),
-      ];
+      ])
+    : [];
 
-    const isActual = uploadConfig.isActual ?? uploadConfig.showUpload;
-    const newImages = isActual ? actualImages : webImages;
-
-    setPreviewList(newImages);
-  }, [jewelries, uploadConfig]);
+  const displayList = activeProduct
+    ? (activeTab === 'actual' ? allActualImages : allWebImages)
+    : previewList;
 
   const handleImageError = (url: string) =>
     setBrokenImages((prev) => new Set(prev).add(url));
@@ -76,6 +80,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
     setPreviewUrl(images[index]);
     setSelectedMedia(null);
     setUploadConfig(config || null);
+    setActiveTab(config?.isActual ? 'actual' : 'web');
   };
 
   const closeMediaDialog = () => {
@@ -195,7 +200,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
 
       <MediaPreviewDialog
         previewUrl={previewUrl}
-        previewList={previewList}
+        previewList={displayList}
         previewIndex={previewIndex}
         selectedMedia={selectedMedia}
         brokenImages={brokenImages}
@@ -208,6 +213,10 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
         onDownloadAll={handleDownloadAll}
         onUploadSuccess={() => handleUploadSuccess(true)}
         isVideo={isVideo}
+        webImages={allWebImages}
+        actualImages={allActualImages}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
     </>
   );
@@ -228,6 +237,10 @@ interface MediaPreviewDialogProps {
   onDownloadAll: (images: string[]) => void;
   onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
+  webImages: string[];
+  actualImages: string[];
+  activeTab: 'web' | 'actual';
+  onTabChange: (tab: 'web' | 'actual') => void;
 }
 
 export function MediaPreviewDialog({
@@ -244,12 +257,16 @@ export function MediaPreviewDialog({
   onDownloadAll,
   onUploadSuccess,
   isVideo,
+  webImages,
+  actualImages,
+  activeTab,
+  onTabChange,
 }: MediaPreviewDialogProps) {
   const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
 
   return (
     <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
+      <DialogContent className="!w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
         {selectedMedia ? (
           <MediaViewer
             selectedMedia={selectedMedia}
@@ -270,6 +287,11 @@ export function MediaPreviewDialog({
             onImageError={onImageError}
             onUploadSuccess={onUploadSuccess}
             isVideo={isVideo}
+            webImages={webImages}
+            actualImages={actualImages}
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            brokenImages={brokenImages}
           />
         )}
       </DialogContent>

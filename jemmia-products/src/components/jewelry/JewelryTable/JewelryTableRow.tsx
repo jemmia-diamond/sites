@@ -64,7 +64,7 @@ function ReferencePriceTooltip({ isExpanded, size = 12 }: ReferencePriceTooltipP
           e.stopPropagation();
           setShow((prev) => !prev);
         }}
-        className="focus:outline-none flex items-center justify-center p-0.5 cursor-help"
+        className="focus:outline-none flex items-center justify-center pt-1 md:p-0.5 cursor-help"
       >
         <Info
           size={size}
@@ -257,9 +257,9 @@ export function JewelryTableRow({
         )}
         onClick={() => onToggleExpand(product.id)}
       >
-        <TableCell className="px-6 md:px-3 py-2 text-center">
-          <div className="flex flex-col items-center justify-center gap-1">
-            <ProductCodes product={product} isExpanded={isExpanded} />
+        <TableCell className="px-6 md:px-3 py-2 text-left w-42.5">
+          <div className="flex flex-col items-start justify-start gap-1">
+            <ProductCodes product={product} isExpanded={isExpanded} className="w-[130px] !justify-start align-caret-right" />
           </div>
         </TableCell>
 
@@ -413,7 +413,20 @@ export function JewelryTableRow({
         <TableCell className="px-3 py-2">
           <div className="flex items-center gap-3 w-full">
             {/* Image or Placeholder */}
-            <div className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center">
+            <div
+              className="w-14 h-14 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                const showActual = webImages.length === 0;
+                onPreview(showActual ? actualImages : webImages, 0, {
+                  productId: product.id,
+                  isActual: showActual,
+                  designCode: designCode || product.title,
+                  showUpload: true,
+                  uploadOptions,
+                });
+              }}
+            >
               {firstImage ? (
                 <img
                   src={firstImage}
@@ -798,14 +811,14 @@ function ExpandedPanel({
                     {hasSideStonesNam && (
                       <SideStoneTooltip
                         fourView={fourViewNam as any}
-                        isExpanded={true}
+                        isExpanded={false}
                         label="Tấm Nam"
                       />
                     )}
                     {hasSideStonesNu && (
                       <SideStoneTooltip
                         fourView={fourViewNu as any}
-                        isExpanded={true}
+                        isExpanded={false}
                         label="Tấm Nữ"
                       />
                     )}
@@ -816,7 +829,7 @@ function ExpandedPanel({
                   fourView.length > 0 && (
                     <SideStoneTooltip
                       fourView={fourView as any}
-                      isExpanded={true}
+                      isExpanded={false}
                     />
                   )
                 )}
@@ -827,21 +840,6 @@ function ExpandedPanel({
 
         {/* Galleries */}
         <div className="space-y-2">
-          {/* Website Images */}
-          <div className="space-y-1">
-            <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
-              Ảnh Website
-            </p>
-            <CompactGallery
-              images={webImages}
-              showUpload={false}
-              brokenImages={brokenImages || new Set()}
-              onImageError={onImageError || (() => {})}
-              onPreview={onPreview || (() => {})}
-              designCode={designCode || product.title}
-            />
-          </div>
-
           {/* Actual Images */}
           <div className="space-y-1">
             <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
@@ -853,7 +851,16 @@ function ExpandedPanel({
               uploadOptions={uploadOptions}
               brokenImages={brokenImages || new Set()}
               onImageError={onImageError || (() => {})}
-              onPreview={onPreview || (() => {})}
+              onPreview={(images, index, config) => {
+                if (onPreview) {
+                  onPreview(images, index, {
+                    ...config,
+                    productId: product.id,
+                    isActual: true,
+                    uploadOptions,
+                  });
+                }
+              }}
               designCode={designCode || product.title}
               onUploadSuccess={onUploadSuccess}
             />
@@ -1008,7 +1015,7 @@ function ExpandedPanel({
                         Barcode: {variant.barcode || "No Barcode"}
                       </p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Badge className="rounded-full bg-secondary-800 text-white text-[8px] font-black shadow-sm px-1.5 py-0">
+                        <Badge className="rounded-full bg-secondary-800 text-white text-[9px] font-black shadow-sm px-1.5 py-0">
                           Khả dụng: {group.totalHaravanQuantity}
                         </Badge>
                       </div>

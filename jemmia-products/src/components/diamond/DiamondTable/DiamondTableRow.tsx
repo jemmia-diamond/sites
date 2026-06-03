@@ -8,6 +8,7 @@ import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
+import { AlertCircle } from "lucide-react";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
@@ -60,6 +61,19 @@ export function DiamondTableRow({
     ...(diamond.videos?.map((v) => v.url) || []),
   ];
 
+  const noteText = diamond.attributes.diamondHistory?.errors
+    ? `${diamond.attributes.diamondHistory.errors}${
+        diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""
+      }`
+    : "";
+
+  const normalPassStage =
+    diamond.attributes.diamondHistory?.status === "Bình thường (pass)"
+      ? diamond.attributes.diamondHistory.stage
+      : "";
+
+  const fullNoteText = [noteText, normalPassStage].filter(Boolean).join(" - ");
+
   return (
     <>
       {/* Desktop Table View */}
@@ -69,10 +83,10 @@ export function DiamondTableRow({
           diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
         )}
       >
-        <TableCell className="px-2 md:px-6 py-2 text-center">
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-0">
-              <ProductCodes product={codeProduct} isExpanded={false} />
+        <TableCell className="px-2 md:pl-3 md:pr-3 py-2 text-left w-[180px]">
+          <div className="flex flex-col items-start gap-1">
+            <div className="flex items-center justify-start gap-0">
+              <ProductCodes product={codeProduct} isExpanded={false} className="w-[140px] !justify-start align-caret-right" />
             </div>
             {showBarcode && (
               <div className="flex items-center gap-1 animate-in fade-in duration-150">
@@ -190,6 +204,17 @@ export function DiamondTableRow({
           </div>
         </TableCell>
       </TableRow>
+
+      {fullNoteText && (
+        <TableRow className="hidden md:table-row hover:bg-transparent">
+          <TableCell colSpan={7} className="px-3 py-2 border-b border-primary-100">
+            <div className="flex items-center gap-2 text-amber-600 text-[11px] font-semibold">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+              <span>{fullNoteText}</span>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
 
       {/* Mobile Card View */}
       <TableRow
@@ -335,8 +360,8 @@ export function DiamondTableRow({
               {/* Row 2: Diamond History */}
               {diamond.attributes.diamondHistory && (
                 <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-[8px] font-semibold text-primary-300 tracking-wider">Ghi chú:</span>
-                  <span className="text-[8px] font-semibold text-secondary-900">
+                  <span className="text-[10px] text-primary-500 font-semibold">Ghi chú:</span>
+                  <span className="text-[10px] text-primary-700 font-semibold">
                     {diamond.attributes.diamondHistory.errors}
                     {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
                     {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && `${diamond.attributes.diamondHistory.stage}`}
