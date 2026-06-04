@@ -36,7 +36,6 @@ export function DiamondTableRow({
     id: diamond.id,
     attributes: {
       designCode: `GIA${diamond.attributes.giaId}`,
-      erpCode: diamond.barcode,
     },
     products: [],
   } as unknown as ProductModel;
@@ -62,9 +61,8 @@ export function DiamondTableRow({
   ];
 
   const noteText = diamond.attributes.diamondHistory?.errors
-    ? `${diamond.attributes.diamondHistory.errors}${
-        diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""
-      }`
+    ? `${diamond.attributes.diamondHistory.errors}${diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""
+    }`
     : "";
 
   const normalPassStage =
@@ -79,30 +77,21 @@ export function DiamondTableRow({
       {/* Desktop Table View */}
       <TableRow
         className={cn(
-          "divide-x transition-all group min-h-[3.5rem] relative hidden md:table-row border-primary-50 hover:bg-primary-50/30 divide-primary-50",
-          diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50"
+          "transition-all group min-h-[3.5rem] relative hidden md:table-row border-primary-100 hover:bg-primary-50/30 divide-primary-50",
+          diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50",
+          fullNoteText ? "border-b-white" : "border-primary-100",
         )}
       >
         <TableCell className="px-2 md:pl-3 md:pr-3 py-2 text-left w-[180px]">
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center justify-start gap-0">
-              <ProductCodes product={codeProduct} isExpanded={false} className="w-[140px] !justify-start align-caret-right" />
+              <ProductCodes product={codeProduct} isExpanded={false} className="w-[130px] !justify-start align-caret-right" />
             </div>
-            {showBarcode && (
-              <div className="flex items-center gap-1 animate-in fade-in duration-150">
-                {diamond.inCombo && (
-                  <Badge className="bg-amber-500 text-white text-[7px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
-                    Không bán lẻ
-                  </Badge>
-                )}
-                <span className="text-[9px] text-primary-400 font-semibold uppercase tracking-wider">Barcode: {diamond.barcode}</span>
-              </div>
-            )}
           </div>
         </TableCell>
 
         <TableCell className="px-1 md:px-1 py-2 text-center">
-          <span className="text-[11px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
+          <span className="text-[10px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
             {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
           </span>
         </TableCell>
@@ -129,9 +118,9 @@ export function DiamondTableRow({
         <TableCell className="px-2 md:px-2 py-2 text-right">
           <div className="flex flex-col items-end leading-none">
             {diamond.basePrice > diamond.salePrice && (
-              <p className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
+              <p className="text-[9px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">{formatPriceVND(diamond.basePrice)}</p>
             )}
-            <p className="text-sm font-semibold text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
+            <p className="text-xs font-semibold text-secondary-900 tracking-tight">{formatPriceVND(diamond.salePrice)}</p>
           </div>
         </TableCell>
 
@@ -154,9 +143,9 @@ export function DiamondTableRow({
               <span className="text-[8px] md:text-[9px] font-semibold text-primary-300 italic">N/A</span>
             ) : (
               realWarehouses.map((wh, idx) => (
-                <Badge key={idx} className="bg-primary-50 text-secondary-900 hover:bg-primary-100 border-none rounded-none px-1.5 py-0.5 text-[8px] md:text-[9px] font-black uppercase tracking-tight whitespace-nowrap">
+                <span key={idx} className="text-secondary-900 text-[8px] md:text-[10px] font-black uppercase tracking-tight whitespace-nowrap">
                   {formatWarehouseName(wh.name)}
-                </Badge>
+                </span>
               ))
             )}
           </div>
@@ -183,7 +172,7 @@ export function DiamondTableRow({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group"
+              className="h-7 px-2 rounded-none border-primary-100 text-[9px] font-black tracking-tight hover:bg-secondary-900 hover:text-white hover:border-secondary-900 transition-all uppercase group flex items-center justify-center gap-0.5"
               onClick={(e) => {
                 e.stopPropagation();
                 window.open(
@@ -200,11 +189,21 @@ export function DiamondTableRow({
       </TableRow>
 
       {fullNoteText && (
-        <TableRow className="hidden md:table-row hover:bg-transparent">
-          <TableCell colSpan={7} className="px-3 py-2 border-b border-primary-100">
-            <div className="flex items-center gap-2 text-amber-600 text-[11px] font-semibold">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-              <span>{fullNoteText}</span>
+        <TableRow className="hidden md:table-row hover:bg-transparent border-b border-primary-100">
+          <TableCell colSpan={7} className="px-0 py-0">
+            <div className="relative px-3 py-2">
+              <div
+                className="absolute top-0 left-3 right-3 h-px"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(to right, #d6d6d6 0 8px, white 8px 16px)",
+                }}
+              />
+
+              <div className="flex items-center gap-2 text-amber-600 text-[10px] font-semibold">
+                <AlertCircle className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                <span>{fullNoteText}</span>
+              </div>
             </div>
           </TableCell>
         </TableRow>
@@ -216,42 +215,44 @@ export function DiamondTableRow({
           "transition-all cursor-pointer group relative md:hidden",
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-50 hover:bg-primary-50/30",
+            : "border-primary-100 hover:bg-primary-50/30",
           diamond.inCombo && !isExpanded && "bg-amber-50/20"
         )}
         onClick={() => onToggleExpand(diamond.id)}
       >
-        <TableCell className="px-3 py-2">
-          <div className="flex items-center gap-3 w-full">
+        <TableCell className="px-2 py-2">
+          <div className="flex items-center gap-2 w-full">
             {/* Left Section: All Info */}
             <div className="flex-1 min-w-0 flex flex-col gap-1">
               {/* Top Row: GIA ID and Badge */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={cn(
-                  "text-xs font-semibold tracking-tight",
-                  isExpanded ? "text-white" : "text-secondary-900"
-                )}>
-                  GIA{diamond.attributes.giaId}
-                </span>
+              <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                <ProductCodes
+                  product={codeProduct}
+                  isExpanded={isExpanded}
+                  className={cn(
+                    "w-[125px] !justify-start align-caret-right",
+                    isExpanded && "[&_button]:bg-white/20 [&_button]:text-white"
+                  )}
+                />
                 {diamond.inCombo && (
                   <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
                     Không bán lẻ
                   </Badge>
                 )}
                 {realWarehouses.length > 0 && !isIncoming && realWarehouses.map((wh, idx) => (
-                  <Badge key={idx} className={cn(
-                    "border-none rounded-none px-1 py-0 text-[8px] font-semibold tracking-tight whitespace-nowrap",
-                    isExpanded ? "bg-white/20 text-white" : "bg-primary-50 text-secondary-900"
+                  <span key={idx} className={cn(
+                    "text-[10px] px-0.5 bg-primary-50 font-semibold tracking-tight whitespace-nowrap",
+                    isExpanded ? "text-white" : "text-secondary-900"
                   )}>
                     {formatWarehouseName(wh.name)}
-                  </Badge>
+                  </span>
                 ))}
               </div>
 
               {/* Bottom Row: 4Cs, Shape, Dimensions */}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className={cn(
-                  "text-xs font-semibold tracking-tight",
+                  "text-[10px] font-semibold tracking-tight",
                   isExpanded ? "text-white/90" : "text-primary-500"
                 )}>
                   {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.shape}

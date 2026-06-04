@@ -151,13 +151,20 @@ export default function JewelryPage() {
     data,
     isLoading,
     isError,
+    isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["jewelry-designs", debouncedFilters],
-    queryFn: ({ pageParam = 1 }) =>
-      jewelryService.getJewelries({ ...debouncedFilters, page: pageParam }),
+    queryFn: ({ pageParam = 1 }) => {
+      const apiFilters = { ...debouncedFilters } as any;
+      if (apiFilters.searchQuery) {
+        delete apiFilters.warehouseIds;
+        delete apiFilters.stockStatus;
+      }
+      return jewelryService.getJewelries({ ...apiFilters, page: pageParam });
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages, lastPageParam) => {
       if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
@@ -172,10 +179,17 @@ export default function JewelryPage() {
   const totalResults = data?.pages[0]?.meta?.totalRows || 0;
 
   useEffect(() => {
+    setExpandedId(null);
+  }, [searchQueryParam, designCodeParam]);
+
+  useEffect(() => {
+    if (searchQueryParam || filters.searchQuery || debouncedFilters.searchQuery || isFetching) {
+      return;
+    }
     if (allJewelries.length === 1) {
       setExpandedId(allJewelries[0].id);
     }
-  }, [allJewelries]);
+  }, [allJewelries, searchQueryParam, filters.searchQuery, debouncedFilters.searchQuery, isFetching]);
 
   const lastElementRef = useInfiniteScroll(
     () => {
@@ -472,6 +486,7 @@ export default function JewelryPage() {
             <JewelryTable
               jewelries={allJewelries}
               warehouseIds={debouncedFilters.warehouseIds}
+              stockStatus={debouncedFilters.stockStatus}
               lastElementRef={lastElementRef}
               isFetchingNextPage={isFetchingNextPage}
               expandedId={expandedId}

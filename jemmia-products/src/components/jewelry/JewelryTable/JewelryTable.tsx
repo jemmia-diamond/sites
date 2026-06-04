@@ -20,17 +20,27 @@ import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
 import { MediaGallery } from "./MediaGallery";
 import { API_BASE_URL } from "../../../config";
+import { cn } from "@/lib/utils";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
   warehouseIds?: string[];
+  stockStatus?: string;
   lastElementRef?: (node: HTMLElement | null) => void;
   isFetchingNextPage?: boolean;
   expandedId: string | null;
   onToggleExpand: (id: string | null) => void;
 }
 
-export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchingNextPage, expandedId, onToggleExpand }: JewelryTableProps) {
+export function JewelryTable({
+  jewelries,
+  warehouseIds,
+  stockStatus,
+  lastElementRef,
+  isFetchingNextPage,
+  expandedId,
+  onToggleExpand,
+}: JewelryTableProps) {
   const queryClient = useQueryClient();
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -162,6 +172,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
                 <JewelryTableRow
                   product={product}
                   warehouseIds={warehouseIds}
+                  stockStatus={stockStatus}
                   isExpanded={expandedId === product.id}
                   expandedId={expandedId}
                   brokenImages={brokenImages}
@@ -194,6 +205,7 @@ export function JewelryTable({ jewelries, warehouseIds, lastElementRef, isFetchi
         sku={serialModal?.sku || ""}
         totalQuantity={serialModal?.totalQuantity}
         totalHaravanQuantity={serialModal?.totalHaravanQuantity}
+        stockStatus={stockStatus}
         open={!!serialModal}
         onClose={() => setSerialModal(null)}
       />
@@ -267,16 +279,19 @@ export function MediaPreviewDialog({
   return (
     <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="!w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
-        {selectedMedia ? (
-          <MediaViewer
-            selectedMedia={selectedMedia}
-            validPreviewList={validPreviewList}
-            onClose={onClose}
-            onSelectMedia={onSelectMedia}
-            onDownloadSingle={onDownloadSingle}
-            isVideo={isVideo}
-          />
-        ) : (
+        {selectedMedia && (
+          <div className="flex-1 min-h-0 w-full h-full">
+            <MediaViewer
+              selectedMedia={selectedMedia}
+              validPreviewList={validPreviewList}
+              onClose={onClose}
+              onSelectMedia={onSelectMedia}
+              onDownloadSingle={onDownloadSingle}
+              isVideo={isVideo}
+            />
+          </div>
+        )}
+        <div className={cn("flex-1 min-h-0 w-full h-full", selectedMedia ? "hidden" : "flex flex-col")}>
           <MediaGallery
             validPreviewList={validPreviewList}
             previewIndex={previewIndex}
@@ -293,7 +308,7 @@ export function MediaPreviewDialog({
             onTabChange={onTabChange}
             brokenImages={brokenImages}
           />
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -60,7 +60,7 @@ export function SearchDropdown({
   }, [onClose]);
 
   return (
-    <div className="w-full w-full md:max-w-[300px] flex items-center relative group" ref={dropdownRef}>
+    <div className="w-full w-full sm:max-w-[300px] md:max-w-[400px] flex items-center relative group" ref={dropdownRef}>
       <MagnifyingGlass className="absolute left-3 h-3.5 w-3.5 md:h-4 md:w-4 text-primary-300 group-hover:text-secondary-900 transition-colors z-10" />
       <Input
         placeholder={searchPlaceholder}

@@ -1,4 +1,14 @@
 
+export const STOCK_STATUS = {
+  IN_STOCK: "IN_STOCK",
+  INCOMING: "INCOMING",
+  OUT_OF_STOCK: "OUT_OF_STOCK",
+  REAL_OUT_OF_STOCK: "REAL_OUT_OF_STOCK",
+  REAL_INCOMING: "REAL_INCOMING",
+} as const;
+
+export type StockStatus = typeof STOCK_STATUS[keyof typeof STOCK_STATUS];
+
 export interface Bookmark {
   id: string;
   createdAt: string;
@@ -20,7 +30,7 @@ export interface ProductModel {
   salePrice: number | null; 
   discountType: string | null;
   discountValue: number | null;
-  stockStatus: "IN_STOCK" | "INCOMING" | "OUT_OF_STOCK" | "REAL_OUT_OF_STOCK";
+  stockStatus: StockStatus;
   quantity: number;
   warehouses: { name: string }[];
   thumbnails: { url: string }[];
@@ -56,7 +66,7 @@ export interface PaginateResponse<T> {
   meta: PaginateMeta;
 }
 
-export type StockStatusFilter = "all" | "IN_STOCK" | "OUT_OF_STOCK" | "REAL_OUT_OF_STOCK";
+export type StockStatusFilter = "all" | typeof STOCK_STATUS.IN_STOCK | typeof STOCK_STATUS.OUT_OF_STOCK | typeof STOCK_STATUS.REAL_OUT_OF_STOCK;
 
 export interface Warehouse {
   id: string;
@@ -128,7 +138,7 @@ export interface DiamondFilter {
   edgeShortFrom?: number;
   edgeShortTo?: number;
   warehouseIds?: string[];
-  stockStatus?: "REAL_INCOMING" | "IN_STOCK";
+  stockStatus?: typeof STOCK_STATUS.REAL_INCOMING | typeof STOCK_STATUS.IN_STOCK;
   color?: string[];
   clarity?: string[];
   fluorescence?: string[];

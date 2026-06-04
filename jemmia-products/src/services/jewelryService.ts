@@ -19,74 +19,80 @@ export const jewelryService = {
       offset,
     };
 
-    if (filters.type) {
-      params.type = filters.type;
-    }
-
-    // Warehouse logic
-    const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
-    if (filters.warehouseIds && filters.warehouseIds.length > 0) {
-      params.warehouseIds = filters.warehouseIds.flatMap(id => id.split(",")).filter(id => id && !isNaN(Number(id)));
-    } else {
-      params.warehouseIds = defaultWarehouses;
-    }
-
-    // Logic for Price
-    const priceMultiplier = 1000000;
-    let priceDivisor = 1;
-    // Normalized type check
-    const normalizedType = filters.type?.toLowerCase();
-    if (normalizedType === "bông tai" || normalizedType === "bong-tai") {
-      priceDivisor = 2;
-    }
-
-    if (filters.salePriceFrom !== undefined) {
-      params.salePriceFrom = (filters.salePriceFrom * priceMultiplier) / priceDivisor;
-    }
-
-    if (filters.salePriceTo !== undefined) {
-      params.salePriceTo = (filters.salePriceTo * priceMultiplier) / priceDivisor;
-    }
-
-    if (filters.stockStatus) {
-      if (filters.stockStatus === "all") {
-        params.stockStatus = ["OUT_OF_STOCK"];
-      } else if (filters.stockStatus === "IN_STOCK") {
-        params.stockStatus = ["IN_STOCK"];
-      } else if (filters.stockStatus === "OUT_OF_STOCK") {
-        // Map UI "OUT_OF_STOCK" to backend "REAL_OUT_OF_STOCK"
-        params.stockStatus = ["REAL_OUT_OF_STOCK"];
-      } else {
-        params.stockStatus = [filters.stockStatus];
-      }
-    }
-
-    if (filters.storageSize1 && filters.storageSize1.length > 0) {
-      params.storageSize1 = filters.storageSize1;
-    }
-
-    if (filters.collectionIds && filters.collectionIds.length > 0) {
-      params.collectionIds = filters.collectionIds;
-    }
-
-    if (filters.sortBySalePrice) {
-      params.sortBySalePrice = filters.sortBySalePrice;
-    }
-
-    if (filters.designCode) {
-      params.designCode = filters.designCode;
-    }
-
     if (filters.searchQuery) {
       params.searchQuery = filters.searchQuery;
-    }
+      if (filters.sortBySalePrice) {
+        params.sortBySalePrice = filters.sortBySalePrice;
+      }
+      if (filters.designCode) {
+        params.designCode = filters.designCode;
+      }
+    } else {
+      if (filters.type) {
+        params.type = filters.type;
+      }
 
-    if (filters.ringHeadStyles && filters.ringHeadStyles.length > 0) {
-      params.ringHeadStyles = filters.ringHeadStyles;
-    }
+      // Warehouse logic
+      const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
+      if (filters.warehouseIds && filters.warehouseIds.length > 0) {
+        params.warehouseIds = filters.warehouseIds.flatMap(id => id.split(",")).filter(id => id && !isNaN(Number(id)));
+      } else {
+        params.warehouseIds = defaultWarehouses;
+      }
 
-    if (filters.ringBandStyles && filters.ringBandStyles.length > 0) {
-      params.ringBandStyles = filters.ringBandStyles;
+      // Logic for Price
+      const priceMultiplier = 1000000;
+      let priceDivisor = 1;
+      // Normalized type check
+      const normalizedType = filters.type?.toLowerCase();
+      if (normalizedType === "bông tai" || normalizedType === "bong-tai") {
+        priceDivisor = 2;
+      }
+
+      if (filters.salePriceFrom !== undefined) {
+        params.salePriceFrom = (filters.salePriceFrom * priceMultiplier) / priceDivisor;
+      }
+
+      if (filters.salePriceTo !== undefined) {
+        params.salePriceTo = (filters.salePriceTo * priceMultiplier) / priceDivisor;
+      }
+
+      if (filters.stockStatus) {
+        if (filters.stockStatus === "all") {
+          params.stockStatus = ["OUT_OF_STOCK"];
+        } else if (filters.stockStatus === "IN_STOCK") {
+          params.stockStatus = ["IN_STOCK"];
+        } else if (filters.stockStatus === "OUT_OF_STOCK") {
+          // Map UI "OUT_OF_STOCK" to backend "REAL_OUT_OF_STOCK"
+          params.stockStatus = ["REAL_OUT_OF_STOCK"];
+        } else {
+          params.stockStatus = [filters.stockStatus];
+        }
+      }
+
+      if (filters.storageSize1 && filters.storageSize1.length > 0) {
+        params.storageSize1 = filters.storageSize1;
+      }
+
+      if (filters.collectionIds && filters.collectionIds.length > 0) {
+        params.collectionIds = filters.collectionIds;
+      }
+
+      if (filters.sortBySalePrice) {
+        params.sortBySalePrice = filters.sortBySalePrice;
+      }
+
+      if (filters.designCode) {
+        params.designCode = filters.designCode;
+      }
+
+      if (filters.ringHeadStyles && filters.ringHeadStyles.length > 0) {
+        params.ringHeadStyles = filters.ringHeadStyles;
+      }
+
+      if (filters.ringBandStyles && filters.ringBandStyles.length > 0) {
+        params.ringBandStyles = filters.ringBandStyles;
+      }
     }
 
     const response = await axios.get<PaginateResponse<ProductModel>>("/products/jewelries", {

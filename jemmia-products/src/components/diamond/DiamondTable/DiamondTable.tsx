@@ -137,13 +137,13 @@ return (
           <Table className="w-full border-collapse">
             <TableHeader className="hidden md:table-header-group">
               <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 md:px-3 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap w-[170px]">Mã sản phẩm</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Thông số kỹ thuật</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình ảnh</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Giá (VND)</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Trạng thái</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Vị trí kho</TableHead>
-                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Tác vụ</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 md:px-3 py-0 text-left text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap w-[170px]">Mã sản phẩm</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Thông số kỹ thuật</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Hình ảnh</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-right text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Giá (VND)</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Trạng thái</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Vị trí kho</TableHead>
+                <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 py-0 text-center text-[10px] font-bold uppercase tracking-wider text-primary-700 whitespace-nowrap">Tác vụ</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

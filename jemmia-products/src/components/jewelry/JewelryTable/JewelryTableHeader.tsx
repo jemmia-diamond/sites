@@ -7,7 +7,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const HEADERS = [
-  "Ảnh website",
+  "Hình ảnh",
   "Mã sản phẩm",
   "Ảnh/video thực tế",
   "Viên tấm",
