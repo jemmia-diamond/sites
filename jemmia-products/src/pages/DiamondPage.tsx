@@ -60,13 +60,20 @@ export default function DiamondPage() {
     data,
     isLoading,
     isError,
+    isFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["diamonds", filters],
-    queryFn: ({ pageParam = 1 }) =>
-      fetchDiamonds({ ...filters, page: pageParam }),
+    queryFn: ({ pageParam = 1 }) => {
+      const apiFilters = { ...filters } as any;
+      if (apiFilters.searchQuery) {
+        delete apiFilters.warehouseIds;
+        delete apiFilters.stockStatus;
+      }
+      return fetchDiamonds({ ...apiFilters, page: pageParam });
+    },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages, lastPageParam) => {
       if (lastPageParam < (lastPage?.meta?.totalPages || 1)) {
@@ -152,14 +159,17 @@ export default function DiamondPage() {
   const totalItems = data?.pages[0]?.meta?.totalRows || 0;
 
   useEffect(() => {
+    setExpandedId(null);
+  }, [searchQueryParam]);
+
+  useEffect(() => {
+    if (searchQueryParam || filters.searchQuery || isFetching) {
+      return;
+    }
     if (allDiamonds.length === 1) {
-      const isMobile = window.innerWidth < 640;
-      if (searchQueryParam && !isMobile) {
-        return;
-      }
       setExpandedId(allDiamonds[0].id);
     }
-  }, [allDiamonds, searchQueryParam]);
+  }, [allDiamonds, searchQueryParam, filters.searchQuery, isFetching]);
 
   const lastElementRef = useInfiniteScroll(
     () => {

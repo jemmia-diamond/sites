@@ -95,6 +95,7 @@ function ReferencePriceTooltip({ isExpanded, size = 12 }: ReferencePriceTooltipP
 interface JewelryTableRowProps {
   product: ProductModel;
   warehouseIds?: string[];
+  stockStatus?: string;
   isExpanded: boolean;
   expandedId: string | null;
   brokenImages: Set<string>;
@@ -122,6 +123,7 @@ const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
 export function JewelryTableRow({
   product,
   warehouseIds,
+  stockStatus,
   isExpanded,
   brokenImages,
   onImageError,
@@ -249,10 +251,10 @@ export function JewelryTableRow({
       {/* Desktop Table View - Only visible on desktop */}
       <TableRow
         className={cn(
-          "divide-x transition-all cursor-pointer group min-h-[3.5rem] relative hidden md:table-row",
+          "transition-all cursor-pointer group min-h-[3.5rem] relative hidden md:table-row",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-50 hover:bg-primary-50/30 divide-primary-50",
+            : "border-primary-100 hover:bg-primary-50/30 divide-primary-50",
           isBundle && !isExpanded && "bg-amber-50/20",
         )}
         onClick={() => onToggleExpand(product.id)}
@@ -310,7 +312,7 @@ export function JewelryTableRow({
 
         <TableCell className="px-6 md:px-3 py-2 text-left w-42.5">
           <div className="flex flex-col items-start justify-start gap-1">
-            <ProductCodes product={product} isExpanded={isExpanded} className="w-[130px] !justify-start align-caret-right" />
+            <ProductCodes product={product} isExpanded={isExpanded} className="w-[120px] !justify-start align-caret-right" />
           </div>
         </TableCell>
 
@@ -436,7 +438,7 @@ export function JewelryTableRow({
           "transition-all cursor-pointer group relative md:hidden",
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-50 hover:bg-primary-50/30",
+            : "border-primary-100 hover:bg-primary-50/30",
           isBundle && !isExpanded && "bg-amber-50/20",
         )}
         onClick={() => onToggleExpand(product.id)}
@@ -617,6 +619,7 @@ export function JewelryTableRow({
                               .includes("bông tai") || false
                           }
                           product={subProduct}
+                          stockStatus={stockStatus}
                           onOpenSerialModal={onOpenSerialModal}
                           webImages={subWebImages}
                           actualImages={subActualImages}
@@ -638,6 +641,7 @@ export function JewelryTableRow({
                   stockBySKU={stockBySKU}
                   isEarring={isEarring}
                   product={product}
+                  stockStatus={stockStatus}
                   onOpenSerialModal={onOpenSerialModal}
                   webImages={webImages}
                   actualImages={actualImages}
@@ -775,6 +779,7 @@ interface ExpandedPanelProps {
   >;
   isEarring: boolean;
   product: ProductModel;
+  stockStatus?: string;
   onOpenSerialModal: (
     variants: any[],
     sku: string,
@@ -802,6 +807,7 @@ function ExpandedPanel({
   stockBySKU,
   isEarring,
   product,
+  stockStatus,
   onOpenSerialModal,
   webImages = [],
   actualImages = [],
@@ -908,6 +914,7 @@ function ExpandedPanel({
           const variant = group.firstVariant;
           const hasSale =
             variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
+          const isDimmed = group.totalHaravanQuantity === 0;
 
           return (
             <div
@@ -915,13 +922,11 @@ function ExpandedPanel({
               className={cn(
                 idx % 2 === 1 ? "bg-primary-50/20" : "bg-white",
                 "hover:bg-primary-50/50 transition-all",
-                group.totalHaravanQuantity === 0 &&
-                  "opacity-50 hover:opacity-80",
               )}
             >
               {/* Desktop Grid View */}
               <div className="hidden md:grid grid-cols-[1.5fr_2fr_1.5fr_1.5fr_1.2fr] items-center">
-                <div className="px-4 md:px-5 py-2.5 md:py-3.5 flex flex-col gap-0.5">
+                <div className={cn("px-4 md:px-5 py-2.5 md:py-3.5 flex flex-col gap-0.5", isDimmed && "opacity-50")}>
                   <p className="text-[10px] md:text-xs font-black text-secondary-900 tracking-tight leading-none uppercase">
                     SKU: {sku}
                   </p>
@@ -930,7 +935,7 @@ function ExpandedPanel({
                   </p>
                 </div>
 
-                <div className="px-4 py-2 md:py-3.5 flex items-center justify-start md:justify-center gap-1.5 flex-wrap">
+                <div className={cn("px-4 py-2 md:py-3.5 flex items-center justify-start md:justify-center gap-1.5 flex-wrap", isDimmed && "opacity-50")}>
                   {variant.attributes?.fineness && (
                     <Badge
                       variant="outline"
@@ -959,7 +964,7 @@ function ExpandedPanel({
                   )}
                 </div>
 
-                <div className="px-4 py-2 md:py-3.5 flex items-center gap-2">
+                <div className={cn("px-4 py-2 md:py-3.5 flex items-center gap-2", isDimmed && "opacity-50")}>
                   <Badge className="rounded-full bg-secondary-800 text-white text-[10px] md:text-[11px] font-black shadow-sm px-2 py-0.5">
                     Khả dụng: {group.totalHaravanQuantity}
                   </Badge>
@@ -974,7 +979,7 @@ function ExpandedPanel({
                   </a>
                 </div>
 
-                <div className="px-4 py-2 md:py-3.5 text-left md:text-right">
+                <div className={cn("px-4 py-2 md:py-3.5 text-left md:text-right", isDimmed && "opacity-50")}>
                   <div className="flex flex-col items-start md:items-end gap-0.5">
                     {hasSale && (
                       <p className="text-[9px] md:text-[10px] font-bold text-primary-200 line-through leading-none">
@@ -1007,8 +1012,8 @@ function ExpandedPanel({
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={group.totalQuantity === 0}
-                    className="text-[9px] md:text-[10px] font-bold h-7 px-3 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1.5"
+                    disabled={!group.variants || group.variants.length === 0}
+                    className="w-[110px] text-[9px] md:text-[10px] font-bold h-7 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center justify-center gap-1.5"
                     onClick={() =>
                       onOpenSerialModal(
                         group.variants,
@@ -1019,16 +1024,11 @@ function ExpandedPanel({
                     }
                   >
                     <span>Xem Serials</span>
-                    <span
-                      className={cn(
-                        "flex items-center justify-center h-4 w-4 rounded-full text-[8px] md:text-[9px] font-black transition-all duration-300",
-                        group.totalQuantity === 0
-                          ? "bg-primary-50 text-primary-200"
-                          : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white",
-                      )}
-                    >
-                      {group.totalQuantity}
-                    </span>
+                    {group.totalQuantity > 0 && (
+                      <span className="flex items-center justify-center h-4 w-4 rounded-full text-[8px] md:text-[9px] font-black transition-all duration-300 bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white">
+                        {group.totalQuantity}
+                      </span>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -1041,7 +1041,7 @@ function ExpandedPanel({
               >
                 <div className="flex flex-col gap-1.5 w-full">
                   {/* SKU + Barcode + Price + Haravan */}
-                  <div className="flex items-start justify-between gap-2">
+                  <div className={cn("flex items-start justify-between gap-2", isDimmed && "opacity-50")}>
                     <div className="flex flex-col gap-0.5">
                       <p className="text-[10px] font-black text-secondary-900 tracking-tight leading-none uppercase">
                         SKU: {sku}
@@ -1083,7 +1083,7 @@ function ExpandedPanel({
 
                   <div className="flex justify-between gap-2">
                     {/* Badges */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className={cn("flex items-center gap-1.5 flex-wrap", isDimmed && "opacity-50")}>
                       {variant.attributes?.fineness && (
                         <Badge
                           variant="outline"
@@ -1118,8 +1118,8 @@ function ExpandedPanel({
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={group.totalQuantity === 0}
-                        className="text-[8px] font-bold h-6 px-2 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center gap-1"
+                        disabled={!group.variants || group.variants.length === 0}
+                        className="w-[90px] text-[8px] font-bold h-6 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center justify-center gap-1"
                         onClick={() =>
                           onOpenSerialModal(
                             group.variants,
@@ -1130,16 +1130,11 @@ function ExpandedPanel({
                         }
                       >
                         <span>Xem Serials</span>
-                        <span
-                          className={cn(
-                            "flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300",
-                            group.totalQuantity === 0
-                              ? "bg-primary-50 text-primary-200"
-                              : "bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white",
-                          )}
-                        >
-                          {group.totalQuantity}
-                        </span>
+                        {group.totalQuantity > 0 && (
+                          <span className="flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300 bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white">
+                            {group.totalQuantity}
+                          </span>
+                        )}
                       </Button>
                     </div>
                   </div>

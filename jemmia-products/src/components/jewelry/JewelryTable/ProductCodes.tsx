@@ -138,7 +138,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           if (designCode) handleCopy(e, designCode);
         }}
         className={cn(
-          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[11px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
           "bg-secondary-900 text-white active:opacity-90"
         )}
       >
@@ -161,7 +161,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
               setOpen(true);
             }
           }}
-          className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-3 h-3 cursor-pointer"
+          className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 cursor-pointer"
         >
           <CaretDown
             size={10}

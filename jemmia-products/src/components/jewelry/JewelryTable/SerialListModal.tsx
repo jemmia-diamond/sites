@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { formatDateTime } from "./utils/formatters";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
@@ -35,6 +36,7 @@ interface SerialListModalProps {
   sku: string;
   totalQuantity?: number;
   totalHaravanQuantity?: number;
+  stockStatus?: string;
   open: boolean;
   onClose: () => void;
 }
@@ -138,26 +140,42 @@ function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps
   );
 }
 
-function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
+function SerialListDesktopTable({
+  activeSerials,
+  showOrderCol,
+  isOutOfStockTab,
+}: {
+  activeSerials: any[];
+  showOrderCol: boolean;
+  isOutOfStockTab: boolean;
+}) {
+    console.log(activeSerials);
+
   return (
     <div className="hidden md:block">
       <div className="min-w-[800px]">
-        <div className="flex items-center px-8 py-3 border-b border-primary-100 bg-primary-50/20">
-          <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider">Serial</span>
-          <span className="w-[160px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Vị trí kho</span>
-          <span className="w-[130px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Trọng lượng vàng</span>
-          <span className="w-[110px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-center">Viên chủ</span>
-          <span className="flex-1 text-center text-[10px] font-bold text-primary-300 uppercase tracking-wider">Chính sách</span>
-          <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-300 uppercase tracking-wider text-right">Thời gian Quét kho</span>
+        <div className="flex items-center px-8 py-2.5 border-b border-primary-100 bg-primary-50/40 sticky top-0 z-10">
+          <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider">Serial</span>
+          <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Vị trí kho</span>
+          <span className="w-[105px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">TL vàng</span>
+          <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Viên chủ</span>
+          <span className="flex-1 text-center text-[10px] font-bold text-primary-400 uppercase tracking-wider">Chính sách</span>
+          {showOrderCol && (
+            <span className="w-[110px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Đơn hàng</span>
+          )}
+          <span className="w-[130px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-right">Thời gian Quét kho</span>
         </div>
         <div className="divide-y divide-primary-50">
           {activeSerials.length > 0 ? (
             activeSerials.map((v, index) => (
               <div
                 key={`${v.id}-${index}`}
-                className="flex items-center px-8 py-4 hover:bg-primary-50/40 transition-all"
+                className={cn(
+                  "flex items-center px-8 py-3 hover:bg-primary-50/40 transition-all",
+                  (v.quantity || 0) === 0 && !isOutOfStockTab && "opacity-40 grayscale-[20%]"
+                )}
               >
-                <div className="w-[120px] shrink-0 flex items-center gap-1.5">
+                <div className="w-[80px] shrink-0 flex flex-col justify-center items-start gap-1">
                   <span className="text-xs font-bold text-secondary-900 tracking-tight leading-none">
                     {v.attributes?.serialNumber || "N/A"}
                   </span>
@@ -167,17 +185,17 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
                     </Badge>
                   )}
                 </div>
-                <div className="w-[160px] shrink-0 text-center">
-                  <Badge className="rounded-full bg-secondary-900/5 text-secondary-900 border-none text-[10px] px-3 py-1 font-bold h-6 tracking-wider">
+                <div className="w-[120px] shrink-0 text-center">
+                  <span className="text-xs text-secondary-900 font-medium">
                     {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
-                  </Badge>
+                  </span>
                 </div>
-                <div className="w-[130px] shrink-0 text-center flex flex-col justify-center items-center">
+                <div className="w-[105px] shrink-0 text-center flex flex-col justify-center items-center">
                   <span className="text-xs font-semibold text-secondary-600 leading-none block">
                     {v.attributes?.goldWeight ? `${formatGoldWeight(v.attributes.goldWeight)}` : "--"}
                   </span>
                 </div>
-                <div className="w-[110px] shrink-0 text-center">
+                <div className="w-[80px] shrink-0 text-center">
                   <span className="text-xs font-semibold text-secondary-600 leading-none">
                     {v.attributes?.storageSize1 && v.attributes?.storageSize2
                       ? `${v.attributes.storageSize1}-${v.attributes.storageSize2}`
@@ -189,8 +207,26 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
                     {formatPolicy(v.policy, false)}
                   </div>
                 </div>
-                <div className="w-[120px] shrink-0 text-right">
-                  <span className="text-[10px] font-medium text-secondary-900 leading-none">
+                {showOrderCol && (
+                  <div className="w-[110px] shrink-0 text-center" onClick={(e) => e.stopPropagation()}>
+                    {v.orderId ? (
+                      <a
+                        href={`https://jemmiavn.myharavan.com/admin/orders/${v.orderId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                      >
+                        {v.orderReference || "--"}
+                      </a>
+                    ) : (
+                      <span className="text-xs font-medium text-secondary-600 leading-none">
+                        {v.orderReference || "--"}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="w-[130px] shrink-0 text-right">
+                  <span className="text-xs font-medium text-secondary-900 leading-none">
                     {formatDateTime(v.lastRfidScanTime)}
                   </span>
                 </div>
@@ -205,14 +241,26 @@ function SerialListDesktopTable({ activeSerials }: { activeSerials: any[] }) {
   );
 }
 
-function SerialListMobileCards({ activeSerials }: { activeSerials: any[] }) {
+function SerialListMobileCards({
+  activeSerials,
+  showOrderCol,
+  isOutOfStockTab,
+}: {
+  activeSerials: any[];
+  showOrderCol: boolean;
+  isOutOfStockTab: boolean;
+}) {
+  console.log(activeSerials);
   return (
     <div className="space-y-2">
       {activeSerials.length > 0 ? (
         activeSerials.map((v, index) => (
           <div
             key={`${v.id}-${index}`}
-            className="bg-white border border-primary-100 rounded-sm p-2 hover:bg-primary-50/40 transition-all shadow-sm"
+            className={cn(
+              "bg-white border border-primary-100 rounded-sm p-2 hover:bg-primary-50/40 transition-all shadow-sm",
+              (v.quantity || 0) === 0 && !isOutOfStockTab && "opacity-40 grayscale-[20%]"
+            )}
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-1 flex-wrap">
@@ -225,9 +273,9 @@ function SerialListMobileCards({ activeSerials }: { activeSerials: any[] }) {
                   </Badge>
                 )}
               </div>
-              <Badge className="rounded-full bg-secondary-900/5 text-secondary-900 border-none text-[9px] px-2 py-0.5 font-bold h-5 tracking-wider shrink-0">
+              <span className="text-[9px] text-secondary-900 font-bold tracking-wider shrink-0">
                 {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
-              </Badge>
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="flex items-center gap-2">
@@ -255,6 +303,25 @@ function SerialListMobileCards({ activeSerials }: { activeSerials: any[] }) {
                   {formatDateTime(v.lastRfidScanTime)}
                 </span>
               </div>
+              {showOrderCol && (
+                <div className="flex items-center gap-2 col-span-2" onClick={(e) => e.stopPropagation()}>
+                  <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Đơn hàng</span>
+                  {v.orderId ? (
+                    <a
+                      href={`https://jemmiavn.myharavan.com/admin/orders/${v.orderId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] -mt-0.5 font-bold text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                    >
+                      {v.orderReference || "--"}
+                    </a>
+                  ) : (
+                    <span className="text-[10px] -mt-0.5 font-bold text-blue-600 leading-none">
+                      {v.orderReference || "--"}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))
@@ -267,15 +334,15 @@ function SerialListMobileCards({ activeSerials }: { activeSerials: any[] }) {
 
 function SerialListEmptyState({ large }: { large?: boolean }) {
   return (
-    <div className={large ? "p-20 text-center" : "py-10 text-center"}>
+    <div className={large ? "py-10 text-center" : "py-6 text-center"}>
       <div
-        className={`rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-2 ${
-          large ? "w-12 h-12 mb-4" : "w-8 h-8"
+        className={`rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-1.5 ${
+          large ? "w-8 h-8" : "w-6 h-6"
         }`}
       >
-        <Tag size={large ? 24 : 16} className="text-primary-200" />
+        <Tag size={large ? 16 : 12} className="text-primary-200" />
       </div>
-      <p className={`text-primary-300 font-bold uppercase tracking-widest italic ${large ? "text-[11px]" : "text-[10px]"}`}>
+      <p className={`text-primary-300 font-bold uppercase tracking-widest italic ${large ? "text-[9px]" : "text-[8px]"}`}>
         Không có dữ liệu
       </p>
     </div>
@@ -287,29 +354,58 @@ export function SerialListModal({
   sku: _sku,
   totalQuantity,
   totalHaravanQuantity,
+  stockStatus,
   open,
   onClose,
 }: SerialListModalProps) {
   const isMobile = useIsMobile();
-  const activeSerials = variants.filter((v) => (v.quantity || 0) > 0);
+  const [cachedVariants, setCachedVariants] = useState<any[]>([]);
+  const [cachedSku, setCachedSku] = useState("");
+  const [cachedTotalQuantity, setCachedTotalQuantity] = useState<number | undefined>(undefined);
+  const [cachedTotalHaravanQuantity, setCachedTotalHaravanQuantity] = useState<number | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<"inStock" | "outOfStock">("inStock");
 
-  // Filter: scan time after 00:00:00 12/05/2026 (local time UTC+7)
+  useEffect(() => {
+    if (open) {
+      setCachedVariants(variants);
+      setCachedSku(_sku);
+      setCachedTotalQuantity(totalQuantity);
+      setCachedTotalHaravanQuantity(totalHaravanQuantity);
+
+      if (typeof totalQuantity === "number" && totalQuantity > 0) {
+        setActiveTab("inStock");
+      } else {
+        setActiveTab("outOfStock");
+      }
+    }
+  }, [open, variants, _sku, totalQuantity, totalHaravanQuantity, stockStatus]);
+
   const threshold = new Date("2026-05-12T00:00:00+07:00").getTime();
-  const scannedAfterThreshold = activeSerials.filter((v) => {
-    if (!v.lastRfidScanTime) return false;
-    return new Date(v.lastRfidScanTime).getTime() > threshold;
-  });
-  const scannedBeforeOrNoScan = activeSerials.filter((v) => {
-    if (!v.lastRfidScanTime) return true;
-    return new Date(v.lastRfidScanTime).getTime() <= threshold;
-  });
 
-  const displaySerials = [...scannedAfterThreshold];
+  const inStockSerials = cachedVariants
+    .filter((v) => (v.quantity || 0) > 0)
+    .filter((v) => {
+      if (!v.lastRfidScanTime) return false;
+      return new Date(v.lastRfidScanTime).getTime() > threshold;
+    })
+    .sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+
+  const outOfStockSerials = cachedVariants
+    .filter((v) => (v.quantity || 0) === 0);
+
+  const displaySerials = activeTab === "inStock" ? inStockSerials : outOfStockSerials;
+
+  const scannedBeforeOrNoScan = cachedVariants
+    .filter((v) => (v.quantity || 0) > 0)
+    .filter((v) => {
+      if (!v.lastRfidScanTime) return true;
+      return new Date(v.lastRfidScanTime).getTime() <= threshold;
+    });
 
   const hasDiff =
-    typeof totalQuantity === "number" &&
-    typeof totalHaravanQuantity === "number" &&
-    totalQuantity !== totalHaravanQuantity;
+    typeof cachedTotalQuantity === "number" &&
+    typeof cachedTotalHaravanQuantity === "number" &&
+    cachedTotalQuantity !== cachedTotalHaravanQuantity;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) onClose();
@@ -320,17 +416,45 @@ export function SerialListModal({
       <BottomSheet
         open={open}
         onOpenChange={handleOpenChange}
-        className="max-h-[92vh] bottom-[92px]"
+        className="max-h-[92vh]"
         contentClassName="px-0"
         title={
-          <div className="flex flex-col gap-2">
-            <span>DANH SÁCH SERIALS</span>
+          <div className="flex flex-col gap-1.5 pb-2">
+            <span className="text-xs font-bold text-secondary-900 tracking-wider">DANH SÁCH SERIALS</span>
             <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} compact />
           </div>
         }
       >
-        <div className="px-3 py-2">
-          <SerialListMobileCards activeSerials={displaySerials} />
+        <div className="px-4 py-2 flex flex-col gap-4">
+          <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-full">
+            <TabsList variant="line" className="w-full flex border-b border-primary-100 px-0 h-9">
+              <TabsTrigger
+                value="inStock"
+                className={cn(
+                  "flex-1 font-bold text-xs cursor-pointer pb-2 relative transition-all duration-200 rounded-none",
+                  activeTab === "inStock"
+                    ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
+                    : "text-primary-300 hover:text-secondary-900"
+                )}
+              >
+                Có hàng ({inStockSerials.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="outOfStock"
+                className={cn(
+                  "flex-1 font-bold text-xs cursor-pointer pb-2 relative transition-all duration-200 rounded-none",
+                  activeTab === "outOfStock"
+                    ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
+                    : "text-primary-300 hover:text-secondary-900"
+                )}
+              >
+                Đã bán ({outOfStockSerials.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div>
+            <SerialListMobileCards activeSerials={displaySerials} showOrderCol={activeTab === "outOfStock"} isOutOfStockTab={activeTab === "outOfStock"} />
+          </div>
         </div>
       </BottomSheet>
     );
@@ -339,18 +463,52 @@ export function SerialListModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[95%] md:w-full md:max-w-[900px] gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none flex flex-col max-h-[90vh] md:max-h-[75vh]">
-        <DialogHeader className="px-4 md:px-8 py-3 md:py-4 border-b border-primary-100 bg-white sticky top-0 z-10 flex flex-row justify-between flex-shrink-0 gap-3">
-          <DialogTitle className="text-sm md:text-[16px] flex flex-col md:flex-row gap-2 md:gap-4 items-start md:items-center font-bold tracking-tight text-secondary-900 flex-1">
-            <span>DANH SÁCH SERIALS</span>
-            <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} />
-          </DialogTitle>
-          <DialogClose className="cursor-pointer shrink-0">
-            <X className="h-4 w-4 md:h-5 md:w-5" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
+        <DialogHeader className="pt-5 md:pt-6 pb-0 bg-white sticky top-0 z-20 flex flex-col gap-4 flex-shrink-0">
+          <div className="flex flex-row justify-between items-center w-full px-4 md:px-8">
+            <DialogTitle className="text-base md:text-lg font-bold tracking-wider text-secondary-900">
+              DANH SÁCH SERIALS
+            </DialogTitle>
+            <DialogClose className="cursor-pointer shrink-0 text-primary-400 hover:text-secondary-900 transition-colors">
+              <X className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+
+          <div className="flex flex-row items-end justify-between border-b border-primary-100 w-full px-4 md:px-8 pb-0">
+            <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-fit">
+              <TabsList variant="line" className="flex justify-start px-0 gap-6 h-9">
+                <TabsTrigger
+                  value="inStock"
+                  className={cn(
+                    "font-bold text-xs md:text-sm cursor-pointer pb-2 relative transition-all duration-200 rounded-none px-1",
+                    activeTab === "inStock"
+                      ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
+                      : "text-primary-300 hover:text-secondary-900"
+                  )}
+                >
+                  Có hàng ({inStockSerials.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="outOfStock"
+                  className={cn(
+                    "font-bold text-xs md:text-sm cursor-pointer pb-2 relative transition-all duration-200 rounded-none px-1",
+                    activeTab === "outOfStock"
+                      ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
+                      : "text-primary-300 hover:text-secondary-900"
+                  )}
+                >
+                  Đã bán ({outOfStockSerials.length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="pb-1.5">
+              <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} />
+            </div>
+          </div>
         </DialogHeader>
-        <div className="flex-1 overflow-auto bg-white pb-3 no-scrollbar">
-          <SerialListDesktopTable activeSerials={displaySerials} />
+        <div className="flex-1 overflow-auto bg-white pb-3">
+          <SerialListDesktopTable activeSerials={displaySerials} showOrderCol={activeTab === "outOfStock"} isOutOfStockTab={activeTab === "outOfStock"} />
         </div>
       </DialogContent>
     </Dialog>
