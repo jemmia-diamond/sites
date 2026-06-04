@@ -49,12 +49,12 @@ function formatPolicy(val?: string, isMobile?: boolean) {
     return (
       <span className={`flex ${isMobile ? "gap-1" : "items-center gap-1.5 justify-center"}`}>
         <span className={`${isMobile ? "text-[8px] font-bold text-primary-300 uppercase tracking-wider" : ""}`}>
-          Thu mua:{" "}
+          {isMobile ? "Thu mua: " : "TM: "}
           <span className={`${isMobile ? "text-[9px]" : ""} font-bold text-secondary-900`}>{match[1]}%</span>
         </span>
         {!isMobile && <span className="text-primary-200">|</span>}
         <span className={`${isMobile ? "text-[8px] font-bold text-primary-300 uppercase tracking-wider" : ""}`}>
-          Thu đổi:{" "}
+          {isMobile ? "Thu đổi: " : "TĐ: "}
           <span className={`${isMobile ? "text-[9px]" : ""} font-bold text-secondary-900`}>{match[2]}%</span>
         </span>
       </span>
@@ -157,11 +157,11 @@ function SerialListDesktopTable({
         <div className="flex items-center px-8 py-2.5 border-b border-primary-100 bg-primary-50/40 sticky top-0 z-10">
           <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider">Serial</span>
           <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Vị trí kho</span>
-          <span className="w-[105px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">TL vàng</span>
+          <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">TL vàng</span>
           <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Viên chủ</span>
           <span className="flex-1 text-center text-[10px] font-bold text-primary-400 uppercase tracking-wider">Chính sách</span>
           {showOrderCol && (
-            <span className="w-[110px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Đơn hàng</span>
+            <span className="flex-1 shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Đơn hàng</span>
           )}
           <span className="w-[130px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-right">Thời gian Quét kho</span>
         </div>
@@ -190,7 +190,7 @@ function SerialListDesktopTable({
                     {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
                   </span>
                 </div>
-                <div className="w-[105px] shrink-0 text-center flex flex-col justify-center items-center">
+                <div className="w-[80px] shrink-0 text-center flex flex-col justify-center items-center">
                   <span className="text-xs font-semibold text-secondary-600 leading-none block">
                     {v.attributes?.goldWeight ? `${formatGoldWeight(v.attributes.goldWeight)}` : "--"}
                   </span>
@@ -208,7 +208,7 @@ function SerialListDesktopTable({
                   </div>
                 </div>
                 {showOrderCol && (
-                  <div className="w-[110px] shrink-0 text-center" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex-1 shrink-0 text-center flex flex-row flex-wrap items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                     {v.orderId ? (
                       <a
                         href={`https://jemmiavn.myharavan.com/admin/orders/${v.orderId}`}
@@ -223,9 +223,14 @@ function SerialListDesktopTable({
                         {v.orderReference || "--"}
                       </span>
                     )}
+                    {v.fulfillmentStatusValue && (
+                      <span className="text-[10px] font-semibold text-primary-400">
+                        ({v.fulfillmentStatusValue})
+                      </span>
+                    )}
                   </div>
                 )}
-                <div className="w-[130px] shrink-0 text-right">
+                <div className="w-[130px] shrink-0 text-center">
                   <span className="text-xs font-medium text-secondary-900 leading-none">
                     {formatDateTime(v.lastRfidScanTime)}
                   </span>
@@ -306,20 +311,27 @@ function SerialListMobileCards({
               {showOrderCol && (
                 <div className="flex items-center gap-2 col-span-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Đơn hàng</span>
-                  {v.orderId ? (
-                    <a
-                      href={`https://jemmiavn.myharavan.com/admin/orders/${v.orderId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] -mt-0.5 font-bold text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 transition-colors cursor-pointer"
-                    >
-                      {v.orderReference || "--"}
-                    </a>
-                  ) : (
-                    <span className="text-[10px] -mt-0.5 font-bold text-blue-600 leading-none">
-                      {v.orderReference || "--"}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {v.orderId ? (
+                      <a
+                        href={`https://jemmiavn.myharavan.com/admin/orders/${v.orderId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] -mt-0.5 font-bold text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                      >
+                        {v.orderReference || "--"}
+                      </a>
+                    ) : (
+                      <span className="text-[10px] -mt-0.5 font-bold text-blue-600 leading-none">
+                        {v.orderReference || "--"}
+                      </span>
+                    )}
+                    {v.fulfillmentStatusValue && (
+                      <span className="text-[9px] font-semibold text-primary-400 -mt-0.5">
+                        ({v.fulfillmentStatusValue})
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -36,7 +36,6 @@ export function DiamondTableRow({
     id: diamond.id,
     attributes: {
       designCode: `GIA${diamond.attributes.giaId}`,
-      erpCode: diamond.barcode,
     },
     products: [],
   } as unknown as ProductModel;
@@ -88,16 +87,6 @@ export function DiamondTableRow({
             <div className="flex items-center justify-start gap-0">
               <ProductCodes product={codeProduct} isExpanded={false} className="w-[130px] !justify-start align-caret-right" />
             </div>
-            {showBarcode && (
-              <div className="flex items-center gap-1 animate-in fade-in duration-150">
-                {diamond.inCombo && (
-                  <Badge className="bg-amber-500 text-white text-[7px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
-                    Không bán lẻ
-                  </Badge>
-                )}
-                <span className="text-[9px] text-primary-400 font-semibold uppercase tracking-wider">Barcode: {diamond.barcode}</span>
-              </div>
-            )}
           </div>
         </TableCell>
 
@@ -231,18 +220,20 @@ export function DiamondTableRow({
         )}
         onClick={() => onToggleExpand(diamond.id)}
       >
-        <TableCell className="px-3 py-2">
-          <div className="flex items-center gap-3 w-full">
+        <TableCell className="px-2 py-2">
+          <div className="flex items-center gap-2 w-full">
             {/* Left Section: All Info */}
             <div className="flex-1 min-w-0 flex flex-col gap-1">
               {/* Top Row: GIA ID and Badge */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={cn(
-                  "text-xs font-semibold tracking-tight",
-                  isExpanded ? "text-white" : "text-secondary-900"
-                )}>
-                  GIA{diamond.attributes.giaId}
-                </span>
+              <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                <ProductCodes
+                  product={codeProduct}
+                  isExpanded={isExpanded}
+                  className={cn(
+                    "w-[125px] !justify-start align-caret-right",
+                    isExpanded && "[&_button]:bg-white/20 [&_button]:text-white"
+                  )}
+                />
                 {diamond.inCombo && (
                   <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
                     Không bán lẻ
@@ -250,7 +241,7 @@ export function DiamondTableRow({
                 )}
                 {realWarehouses.length > 0 && !isIncoming && realWarehouses.map((wh, idx) => (
                   <span key={idx} className={cn(
-                    "text-[8px] font-semibold tracking-tight whitespace-nowrap",
+                    "text-[10px] px-1 bg-primary-50 font-semibold tracking-tight whitespace-nowrap",
                     isExpanded ? "text-white" : "text-secondary-900"
                   )}>
                     {formatWarehouseName(wh.name)}
@@ -261,7 +252,7 @@ export function DiamondTableRow({
               {/* Bottom Row: 4Cs, Shape, Dimensions */}
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className={cn(
-                  "text-xs font-semibold tracking-tight",
+                  "text-[10px] font-semibold tracking-tight",
                   isExpanded ? "text-white/90" : "text-primary-500"
                 )}>
                   {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.shape}

@@ -127,7 +127,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
 
   return (
     <div
-      className={cn("relative flex items-center justify-start w-[140px]", className)}
+      className={cn("relative flex items-center justify-start w-[120px]", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       ref={triggerRef}
@@ -138,15 +138,15 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           if (designCode) handleCopy(e, designCode);
         }}
         className={cn(
-          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
           "bg-secondary-900 text-white active:opacity-90"
         )}
       >
         <span>{designCode || "N/A"}</span>
         {copiedText === designCode ? (
-          <Check size={11} weight="bold" className="text-green-400" />
+          <Check  weight="bold" className="text-green-400 text-[9px] md:text-[11px]" />
         ) : (
-          <Copy size={11} weight="bold" />
+          <Copy  weight="bold" className="text-white text-[10px] md:text-[11px]" />
         )}
       </button>
 
