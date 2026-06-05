@@ -85,7 +85,7 @@ export function DiamondTableRow({
         <TableCell className="px-2 md:pl-3 md:pr-3 py-2 text-left w-[180px]">
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center justify-start gap-0">
-              <ProductCodes product={codeProduct} isExpanded={false} showCopyAlways={true} className="w-[130px] !justify-start align-caret-right" />
+              <ProductCodes product={codeProduct} isExpanded={false} className="w-[130px] !justify-start align-caret-right" />
             </div>
           </div>
         </TableCell>
@@ -228,7 +228,6 @@ export function DiamondTableRow({
                 <ProductCodes
                   product={codeProduct}
                   isExpanded={isExpanded}
-                  showCopyAlways={true}
                   className={cn(
                     "w-[125px] !justify-start align-caret-right",
                     isExpanded && "[&_button]:bg-white/20 [&_button]:text-white"

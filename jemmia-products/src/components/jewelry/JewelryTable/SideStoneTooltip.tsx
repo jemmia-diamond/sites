@@ -18,6 +18,7 @@ interface SideStoneTooltipProps {
   fourView: SideStone[];
   isExpanded: boolean;
   label?: string;
+  className?: string;
 }
 
 function getStoneSize(stone: SideStone): string {
@@ -32,7 +33,7 @@ function getStoneSize(stone: SideStone): string {
   return otherKey ? stone[otherKey] : "";
 }
 
-export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneTooltipProps) {
+export function SideStoneTooltip({ fourView, isExpanded, label, className }: SideStoneTooltipProps) {
   const { open, isMobile, isTablet, onEnter, onLeave, onTriggerClick, handleOpenChange } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
@@ -82,7 +83,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
       {fourView.map((stone, idx) => {
         const sizeValue = getStoneSizeValue(stone);
         return (
-          <div key={idx} className="flex items-center justify-between px-0 md:px-4 py-2 text-xs">
+          <div key={idx} className={cn("flex items-center justify-between px-0 md:px-4 py-2 text-xs")}>
             {hasAnyShape ? (
               <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 w-full items-center">
                 <span className="text-xs text-secondary-900 truncate" title={stone.shape || ""}>
@@ -131,7 +132,8 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
           "flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal leading-none rounded-full transition-colors cursor-pointer select-none border border-transparent shadow-sm",
           isExpanded
             ? "bg-white/15 text-white hover:bg-white/25"
-            : "bg-slate-100 text-secondary-900 hover:bg-slate-200"
+            : "bg-slate-100 text-secondary-900 hover:bg-slate-200",
+          className,
         )}>
           <span>{label || `${count} loại`}</span>
           <CaretDown size={9} weight="bold" className="mt-px flex-shrink-0" />
