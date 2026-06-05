@@ -2,6 +2,9 @@
   "name": "jemmia",
   "main": "src/index.js",
   "compatibility_date": "2026-05-25",
+  "vars": {
+    "GA4_API_URL": "https://www.google-analytics.com"
+  },
   "routes": [
     {
       "pattern": "jemmia.vn/*",
