@@ -241,8 +241,8 @@ export function DiamondTableRow({
                 )}
                 {realWarehouses.length > 0 && !isIncoming && realWarehouses.map((wh, idx) => (
                   <span key={idx} className={cn(
-                    "text-[10px] px-0.5 bg-primary-50 font-semibold tracking-tight whitespace-nowrap",
-                    isExpanded ? "text-white" : "text-secondary-900"
+                    "text-[10px] px-0.5 font-semibold tracking-tight whitespace-nowrap",
+                    isExpanded ? "text-white bg-secondary-600" : "bg-primary-50 text-secondary-900",
                   )}>
                     {formatWarehouseName(wh.name)}
                   </span>
