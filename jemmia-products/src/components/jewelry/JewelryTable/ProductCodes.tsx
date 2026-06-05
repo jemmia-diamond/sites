@@ -9,8 +9,9 @@ import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 interface ProductCodesProps {
   product: ProductModel;
-  isExpanded: boolean;
+  isExpanded?: boolean;
   className?: string;
+  showCopyAlways?: boolean;
 }
 
 interface CopyableItem {
@@ -18,7 +19,37 @@ interface CopyableItem {
   label: string;
 }
 
-export function ProductCodes({ product, isExpanded, className }: ProductCodesProps) {
+function CodeButton({ item }: { item: CopyableItem; key?: React.Key }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(item.code).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={cn(
+        "flex justify-between items-center gap-1.5 rounded-full pl-2.5 pr-2 py-0.5 w-[130px] md:w-[140px] text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+        "bg-secondary-900 text-white active:opacity-90 flex-shrink-0"
+      )}
+      title={`Copy ${item.label}: ${item.code}`}
+    >
+      <span className="truncate">{item.code}</span>
+      {copied ? (
+        <Check weight="bold" className="text-green-400 text-[9px] md:text-[11px] flex-shrink-0" />
+      ) : (
+        <Copy weight="bold" className="text-white text-[10px] md:text-[11px] flex-shrink-0" />
+      )}
+    </button>
+  );
+}
+
+export function ProductCodes({ product, className, showCopyAlways }: ProductCodesProps) {
   const { open, setOpen, isMobile, isTablet, onEnter, onLeave, handleOpenChange } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null);
@@ -27,7 +58,7 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
   const isBundle = product.products && product.products.length > 0;
 
   const designCode = isBundle
-    ? product.products?.map(p => p.attributes.designCode).filter(Boolean).join(" / ")
+    ? product.products?.map(p => p.attributes?.designCode).filter(Boolean).join(" / ")
     : product.attributes?.designCode;
 
   const copyableItems: CopyableItem[] = [];
@@ -74,8 +105,6 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
     allItems.push({ code: designCode, label: "Mã thiết kế" });
   }
   allItems.push(...copyableItems);
-
-  const hasPopover = copyableItems.length > 0;
 
   useEffect(() => {
     if (open && !isMobile && triggerRef.current) {
@@ -125,53 +154,81 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
     );
   }
 
+  if (allItems.length === 0) {
+    return (
+      <span className="text-primary-100 text-[9px] md:text-[10px] font-black italic">
+        --
+      </span>
+    );
+  }
+
+  // --- Case 1: Wedding rings (bundles) ---
+  if (isBundle) {
+    return (
+      <div
+        className={cn(
+          "flex gap-1 w-full",
+          "flex-row flex-wrap", // Mobile
+          "md:flex-col md:items-start md:justify-start", // Tablet/Desktop
+          className
+        )}
+      >
+        {copyableItems.map((item, i) => (
+          <CodeButton key={i} item={item} />
+        ))}
+      </div>
+    );
+  }
+
+  // --- Case 2: Other products (non-bundles) ---
   return (
     <div
-      className={cn("relative flex items-center justify-start w-[120px]", className)}
+      className={cn("relative flex items-center justify-start w-[120px] md:w-[130px]", className)}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       ref={triggerRef}
     >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (designCode) handleCopy(e, designCode);
-        }}
-        className={cn(
-          "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
-          "bg-secondary-900 text-white active:opacity-90"
-        )}
-      >
-        <span>{designCode || "N/A"}</span>
-        {copiedText === designCode ? (
-          <Check  weight="bold" className="text-green-400 text-[9px] md:text-[11px]" />
-        ) : (
-          <Copy  weight="bold" className="text-white text-[10px] md:text-[11px]" />
-        )}
-      </button>
-
-      {hasPopover && (
+      {showCopyAlways ? (
         <button
-          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (designCode) handleCopy(e, designCode);
+          }}
+          className={cn(
+            "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+            "bg-secondary-900 text-white active:opacity-90"
+          )}
+        >
+          <span className="truncate">{designCode || "N/A"}</span>
+          {copiedText === designCode ? (
+            <Check weight="bold" className="text-green-400 text-[9px] md:text-[11px] flex-shrink-0" />
+          ) : (
+            <Copy weight="bold" className="text-white text-[10px] md:text-[11px] flex-shrink-0" />
+          )}
+        </button>
+      ) : (
+        <button
           onClick={(e) => {
             e.stopPropagation();
             if (isTablet) {
               setDialogOpen(true);
             } else if (isMobile) {
               setOpen(true);
+            } else {
+              setOpen(!open);
             }
           }}
-          className="absolute left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 cursor-pointer"
+          className={cn(
+            "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+            "bg-secondary-900 text-white active:opacity-90"
+          )}
         >
-          <CaretDown
-            size={10}
-            weight="bold"
-            className="text-primary-400"
-          />
+          <span className="truncate">{designCode || "N/A"}</span>
+          <CaretDown weight="bold" className="text-white text-[10px] md:text-[11px] flex-shrink-0" />
         </button>
       )}
 
-      {hasPopover && !isMobile && !isTablet && open && coords && createPortal(
+      {!isMobile && !isTablet && open && coords && createPortal(
         <div
           className="fixed z-[100] pointer-events-none"
           style={{
@@ -183,13 +240,13 @@ export function ProductCodes({ product, isExpanded, className }: ProductCodesPro
           onMouseLeave={onLeave}
         >
           <div className="bg-white border border-primary-100 shadow-2xl p-1.5 min-w-[180px] flex flex-col animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-            <CodesList items={copyableItems} />
+            <CodesList items={allItems} />
           </div>
         </div>,
         document.body
       )}
 
-      {isMobile && hasPopover && createPortal(
+      {isMobile && createPortal(
         <BottomSheet open={open} onOpenChange={handleOpenChange} title={`Mã sản phẩm`}>
           <div className="pb-4">
             <div className="px-4 pt-2">

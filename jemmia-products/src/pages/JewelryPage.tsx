@@ -395,9 +395,9 @@ export default function JewelryPage() {
         </div>
         <div className="flex-1 flex flex-col min-h-0 xl:overflow-hidden">
           {isLoading ? (
-            <div className="relative border border-primary-100 bg-white shadow-none flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
-              <div className="flex-1 xl:overflow-y-auto min-w-0 w-full relative">
-                <Table className="w-full md:min-w-[1200px] border-collapse">
+            <div className="relative border border-primary-100 bg-white flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
+              <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
+                <Table className="w-full xl:min-w-[1200px] border-collapse">
                   {/* Desktop Table Header */}
                   <TableHeader className="hidden md:table-header-group">
                     <TableRow className="border-b border-primary-100 hover:bg-transparent">
@@ -406,11 +406,11 @@ export default function JewelryPage() {
                           key={i}
                           className={cn(
                             "bg-primary-50 h-10 py-0",
-                            i === 0 ? "text-left px-6 md:px-3 w-[160px]" : "text-center px-2",
+                            i === 1 ? "text-left px-6 md:px-3 w-42.5" : "text-center px-2",
                             i === 5 && "w-12"
                           )}
                         >
-                          <Skeleton className={cn("h-3 w-16 bg-primary-200/50", i === 0 ? "mx-0" : "mx-auto")} />
+                          <Skeleton className={cn("h-3 w-16 bg-primary-200/50", i === 1 ? "mx-0" : "mx-auto")} />
                         </TableHead>
                       ))}
                     </TableRow>
@@ -427,22 +427,30 @@ export default function JewelryPage() {
                             key={cellIndex}
                             className={cn(
                               "py-4",
-                              cellIndex === 0 ? "px-6 md:px-3 text-left w-[160px]" : "px-3 text-center",
+                              cellIndex === 1 ? "px-6 md:px-3 text-left w-42.5" : "px-3 text-center",
                               cellIndex === 5 && "w-12"
                             )}
                           >
-                            <Skeleton
-                              className={cn(
-                                "h-3 bg-primary-100/50",
-                                cellIndex === 0 ? "w-24 mx-0" : "mx-auto",
-                                cellIndex === 1 && "w-28",
-                                cellIndex === 2 && "w-28",
-                                cellIndex === 3 && "w-16",
-                                cellIndex === 4 && "w-24",
-                                cellIndex === 5 && "w-16",
-                                cellIndex === 6 && "w-8",
-                              )}
-                            />
+                            {cellIndex === 0 ? (
+                              <div className="flex justify-center">
+                                <Skeleton className="h-10 w-10 bg-primary-100/50 rounded" />
+                              </div>
+                            ) : cellIndex === 1 ? (
+                              <Skeleton className="h-4 w-24 bg-primary-100/50 rounded-full" />
+                            ) : cellIndex === 2 ? (
+                              <div className="flex justify-center gap-1">
+                                <Skeleton className="h-6 w-6 bg-primary-100/50 rounded" />
+                                <Skeleton className="h-6 w-6 bg-primary-100/50 rounded" />
+                              </div>
+                            ) : cellIndex === 3 ? (
+                              <Skeleton className="h-4 w-12 bg-primary-100/50 rounded-full mx-auto" />
+                            ) : cellIndex === 4 ? (
+                              <Skeleton className="h-4 w-16 bg-primary-100/50 mx-auto" />
+                            ) : cellIndex === 5 ? (
+                              <Skeleton className="h-5 w-14 bg-primary-100/50 rounded-full mx-auto" />
+                            ) : (
+                              <Skeleton className="h-5 w-5 bg-primary-100/50 rounded-full mx-auto" />
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>
