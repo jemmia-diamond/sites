@@ -16,7 +16,7 @@ export function getDiamondShapeImage(shape?: string): string {
       return "https://cdn.hstatic.net/products/200000355853/radiant-diamond_a0d3c03bedf5486d9f151ce9aa92af86_large.png";
     case "PEAR":
       return "https://cdn.hstatic.net/products/200000355853/pear-diamond_480779adb258446b99397fa337641506_large.png";
-    case "OVAL": 
+    case "OVAL":
       return "https://cdn.hstatic.net/products/200000355853/oval-diamond_c746e137363a443daed440b3b6b95c70_large.png";
     default:
       return "https://cdn.hstatic.net/files/200000355853/file/salesaya_image_131__1_.png";
@@ -59,7 +59,7 @@ export function formatWarehouseName(name: string | null | undefined): string {
   if (!name) return "";
   const trimmed = name.trim();
   const lower = trimmed.toLowerCase();
-  
+
   if (lower.includes("hcm") || lower.includes("hồ chí minh")) {
     return "Hồ Chí Minh";
   }
@@ -68,6 +68,9 @@ export function formatWarehouseName(name: string | null | undefined): string {
   }
   if (lower.includes("ct") || lower.includes("cần thơ")) {
     return "Cần Thơ";
+  }
+  if(lower.includes("sc")) {
+    return "Cung ứng";
   }
   return trimmed;
 }

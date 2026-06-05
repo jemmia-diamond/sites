@@ -34,7 +34,7 @@ function CodeButton({ item }: { item: CopyableItem; key?: React.Key }) {
     <button
       onClick={handleCopy}
       className={cn(
-        "flex justify-between items-center gap-1.5 rounded-full pl-2.5 pr-2 py-0.5 w-[130px] md:w-[140px] text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
+        "flex justify-between items-center gap-1.5 rounded-full pl-2.5 pr-2 py-0.5 w-[110px] lg:w-[125px] xl:w-[140px] text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
         "bg-secondary-900 text-white active:opacity-90 flex-shrink-0"
       )}
       title={`Copy ${item.label}: ${item.code}`}

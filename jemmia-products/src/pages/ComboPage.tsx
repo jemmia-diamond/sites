@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, Fragment } from "react";
 import { fetchCombos, ComboFilter } from "../services/comboService";
 import { LayoutShell } from "../components/layout/LayoutShell";
 import { PageHeader } from "../components/layout/PageHeader";
@@ -11,11 +11,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DiamondModel, ProductModel } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  CompactGallery,
+  ProductCodes,
+  MediaPreviewDialog,
+  SideStoneTooltip,
+} from "../components/jewelry/JewelryTable";
 
 export default function ComboPage() {
   const [filters, setFilters] = useState<Omit<ComboFilter, "page">>({
     limit: 100,
   });
+
+  const queryClient = useQueryClient();
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -41,75 +58,283 @@ export default function ComboPage() {
     isFetchingNextPage,
   );
 
+  // Media Preview State
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+  const [previewList, setPreviewList] = useState<string[]>([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const [uploadConfig, setUploadConfig] = useState<{
+    showUpload?: boolean;
+    designCode?: string;
+    uploadEndpoint?: string;
+    productId?: string;
+    diamondId?: string;
+    isActual?: boolean;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState<'web' | 'actual'>('web');
+
+  const activeProductId = uploadConfig?.productId;
+  const activeDiamondId = uploadConfig?.diamondId;
+
+  const activeJewelry = activeProductId
+    ? allCombos.find((c) => c.jewelry?.id === activeProductId)?.jewelry
+    : null;
+
+  const activeDiamond = activeDiamondId
+    ? allCombos.find((c) => c.diamond?.id === activeDiamondId)?.diamond
+    : null;
+
+  const allWebImages = activeJewelry
+    ? activeJewelry.thumbnails?.map((t: any) => t.url) || []
+    : activeDiamond
+      ? activeDiamond.thumbnails?.map((t: any) => t.url) || []
+      : [];
+
+  const allActualImages = activeJewelry
+    ? [
+      ...(activeJewelry.images?.map((img: any) => img.url) || []),
+      ...(activeJewelry.videos?.map((v: any) => v.url) || []),
+    ]
+    : activeDiamond
+      ? [
+        ...(activeDiamond.images?.map((img: any) => img.url) || []),
+        ...(activeDiamond.videos?.map((v: any) => v.url) || []),
+      ]
+      : [];
+
+  const displayList = activeJewelry || activeDiamond
+    ? (activeTab === 'actual' ? allActualImages : allWebImages)
+    : previewList;
+
+  const handleImageError = (url: string) =>
+    setBrokenImages((prev) => new Set(prev).add(url));
+
+  const handlePreview = (images: string[], index: number, config?: any) => {
+    setActiveTab(config?.isActual ? 'actual' : 'web');
+    setPreviewList(images);
+    setPreviewIndex(index);
+    setMediaPreviewUrl(images[index]);
+    const validImages = images.filter((url) => !brokenImages.has(url));
+    if (validImages.length === 1) {
+      setSelectedMedia(validImages[0]);
+    } else {
+      setSelectedMedia(null);
+    }
+    setUploadConfig(config || null);
+  };
+
+  const closeMediaDialog = () => {
+    setMediaPreviewUrl(null);
+    setSelectedMedia(null);
+    setTimeout(() => setUploadConfig(null), 200);
+  };
+
+  const handleDownloadSingle = async (url: string) => {
+    try {
+      const urlParts = url.split('/');
+      let fileName = urlParts[urlParts.length - 1];
+      if (fileName.includes('?')) {
+        fileName = fileName.split('?')[0];
+      }
+
+      if (!fileName.includes('.')) {
+        const ext = (url.includes('.mp4') || url.includes('.mov')) ? 'mp4' : 'jpg';
+        fileName = `media_${Date.now()}.${ext}`;
+      }
+
+      const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+
+      try {
+        const response = await fetch(cacheBusterUrl, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+      } catch (fetchError) {
+        console.warn("Fetch failed, falling back to window.open", fetchError);
+        window.open(url, '_blank');
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải file:", url, error);
+    }
+  };
+
+  const handleDownloadAll = (images: string[]) => {
+    images.forEach((imageUrl) => {
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = imageUrl.split("/").pop() || "image.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  };
+
+  const isVideo = (url: string) =>
+    !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
+
+  const handleUploadSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["combos"] });
+  };
+
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
-      <div className="flex flex-col xl:h-full bg-white w-full px-4 xl:px-6 pt-4 md:pt-2 xl:pt-4 pb-6 gap-4 min-w-0 xl:overflow-hidden min-h-0">
-        <PageHeader
-          title="Sản phẩm nguyên chiếc"
-          description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
-        />
+      <main className="flex-1 flex flex-col bg-white px-4 xl:px-6 pt-4 md:pt-0  xl:pt-4 pb-2 gap-4 md:gap-0 xl:gap-4 w-full max-w-full min-w-0 xl:overflow-hidden min-h-0">
+        <div className="flex flex-col md:sticky md:top-12 xl:top-0 z-51 w-full bg-white justify-between md:gap-2 py-0 md:py-3 xl:py-0">
+          <PageHeader
+            title="Sản phẩm nguyên chiếc"
+            description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
+          />
+        </div>
 
-        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full xl:overflow-hidden">
-          <div className="flex-1 xl:overflow-y-auto min-w-0 w-full">
+        <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full md:overflow-hidden md:border md:border-primary-100">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm"
-                  >
-                    {/* Item 1: Jewelry Skeleton */}
-                    <div className="flex items-center p-2 md:p-4 border-b border-primary-50">
-                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0" />
-                      <div className="flex-1 ml-2 md:ml-3 min-w-0">
-                        <Skeleton className="h-4 w-1/3 bg-primary-100/50 mb-2" />
-                        <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
-                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
-                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
-                          <Skeleton className="h-3 w-1/2 bg-primary-100/50" />
-                          <Skeleton className="h-3 w-5/6 bg-primary-100/50" />
+              <>
+                {/* Mobile skeletons */}
+                <div className="grid grid-cols-1 gap-6 md:hidden">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="border border-primary-100 bg-white flex flex-col overflow-hidden shadow-sm"
+                    >
+                      {/* Item 1: Jewelry Skeleton */}
+                      <div className="flex items-center p-2 md:p-4 border-b border-primary-50">
+                        <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0" />
+                        <div className="flex-1 ml-2 md:ml-3 min-w-0">
+                          <Skeleton className="h-4 w-1/3 bg-primary-100/50 mb-2" />
+                          <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
+                            <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                            <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                          </div>
+                          <div className="md:hidden mt-1">
+                            <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                          </div>
                         </div>
-                        <div className="md:hidden mt-1">
-                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                        <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                          <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
+                          <Skeleton className="h-4 w-20 bg-primary-100/50" />
                         </div>
                       </div>
-                      <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
-                        <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
-                        <Skeleton className="h-4 w-20 bg-primary-100/50" />
-                      </div>
-                    </div>
 
-                    {/* Item 2: Diamond Skeleton */}
-                    <div className="flex items-center p-2 md:p-4">
-                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0 rounded-full" />
-                      <div className="flex-1 ml-2 md:ml-3 min-w-0">
-                        <Skeleton className="h-4 w-1/4 bg-primary-100/50 mb-2" />
-                        <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
-                          <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
-                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
-                          <Skeleton className="h-3 w-1/2 bg-primary-100/50 col-span-2" />
+                      {/* Item 2: Diamond Skeleton */}
+                      <div className="flex items-center p-2 md:p-4">
+                        <Skeleton className="w-10 h-10 md:w-12 md:h-12 bg-primary-100/50 flex-shrink-0 rounded-full" />
+                        <div className="flex-1 ml-2 md:ml-3 min-w-0">
+                          <Skeleton className="h-4 w-1/4 bg-primary-100/50 mb-2" />
+                          <div className="mt-1 hidden md:grid md:grid-cols-2 gap-2">
+                            <Skeleton className="h-3 w-2/3 bg-primary-100/50" />
+                            <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                          </div>
+                          <div className="md:hidden mt-1">
+                            <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                          </div>
                         </div>
-                        <div className="md:hidden mt-1">
-                          <Skeleton className="h-3 w-3/4 bg-primary-100/50" />
+                        <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
+                          <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
+                          <Skeleton className="h-4 w-20 bg-primary-100/50" />
                         </div>
                       </div>
-                      <div className="ml-2 md:ml-3 text-right flex flex-col items-end min-w-[100px]">
-                        <Skeleton className="h-3 w-12 bg-primary-100/50 mb-1" />
-                        <Skeleton className="h-4 w-20 bg-primary-100/50" />
-                      </div>
-                    </div>
 
-                    {/* Total Section Skeleton */}
-                    <div className="flex justify-between items-center px-3 py-2 border-t border-primary-50 bg-primary-50/10">
-                      <Skeleton className="h-3 w-20 bg-primary-100/50" />
-                      <div className="flex flex-col items-end">
-                        <Skeleton className="h-3 w-16 bg-primary-100/50 mb-1" />
-                        <Skeleton className="h-4 w-24 bg-primary-100/50" />
+                      {/* Total Section Skeleton */}
+                      <div className="flex justify-between items-center px-3 py-2 border-t border-primary-50 bg-primary-50/10">
+                        <Skeleton className="h-3 w-20 bg-primary-100/50" />
+                        <div className="flex flex-col items-end">
+                          <Skeleton className="h-3 w-16 bg-primary-100/50 mb-1" />
+                          <Skeleton className="h-4 w-24 bg-primary-100/50" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                {/* Tablet/Desktop table skeletons */}
+                <Table className="hidden md:table w-full border-collapse animate-pulse">
+                  <TableHeader className="hidden md:table-header-group">
+                    <TableRow className="border-b border-primary-100 hover:bg-transparent">
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">Hình ảnh</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Định danh</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">Thông tin combo</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">Vị trí kho</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">Hình ảnh thực tế</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">Giá chi tiết</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Tổng cộng</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 3 }).map((_, groupIndex) => (
+                      <Fragment key={groupIndex}>
+                        {/* Row 1: Jewelry skeleton */}
+                        <TableRow className="border-b border-primary-50 divide-x divide-primary-50">
+                          <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]">
+                            <Skeleton className="h-10 w-10 lg:h-12 lg:w-12 bg-primary-100/50 rounded mx-auto" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 w-[110px] lg:w-[125px] xl:w-[140px]">
+                            <Skeleton className="h-5 w-20 lg:w-24 bg-primary-100/50 rounded-full" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2">
+                            <Skeleton className="h-4 w-32 lg:w-48 bg-primary-100/50 rounded-full" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 text-center">
+                            <Skeleton className="h-4 w-16 lg:w-24 bg-primary-100/50 rounded-full mx-auto" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 w-[110px] lg:w-[145px] xl:w-[180px]">
+                            <div className="flex justify-center gap-1">
+                              <Skeleton className="h-8 w-8 bg-primary-100/50 rounded" />
+                              <Skeleton className="h-8 w-8 bg-primary-100/50 rounded" />
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 w-[100px] lg:w-[120px] xl:w-[140px]">
+                            <Skeleton className="h-4 w-12 lg:w-16 bg-primary-100/50 ml-auto" />
+                          </TableCell>
+                          <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 align-middle text-right w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50">
+                            <div className="flex flex-col items-end gap-1 justify-center h-full">
+                              <Skeleton className="h-3 w-12 lg:w-16 bg-primary-100/50" />
+                              <Skeleton className="h-4 w-16 lg:w-24 bg-primary-100/50" />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {/* Row 2: Diamond skeleton */}
+                        <TableRow className="border-b-2 border-primary-100 divide-x divide-primary-50">
+                          <TableCell className="px-2 xl:px-4 py-2 w-[110px] lg:w-[125px] xl:w-[140px]">
+                            <Skeleton className="h-5 w-20 lg:w-24 bg-primary-100/50 rounded-full" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2">
+                            <Skeleton className="h-4 w-32 lg:w-48 bg-primary-100/50 rounded-full" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 text-center">
+                            <Skeleton className="h-4 w-16 lg:w-24 bg-primary-100/50 rounded-full mx-auto" />
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 w-[110px] lg:w-[145px] xl:w-[180px]">
+                            <div className="flex justify-center gap-1">
+                              <Skeleton className="h-8 w-8 bg-primary-100/50 rounded" />
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-2 xl:px-4 py-2 w-[100px] lg:w-[120px] xl:w-[140px]">
+                            <Skeleton className="h-4 w-12 lg:w-16 bg-primary-100/50 ml-auto" />
+                          </TableCell>
+                        </TableRow>
+                      </Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
             ) : !allCombos.length ? (
               <div className="flex items-center justify-center h-32">
                 <p className="text-primary-300 text-xs">
@@ -117,14 +342,44 @@ export default function ComboPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {allCombos.map((combo) => (
-                  <ComboTableRow
-                    key={`${combo.variant_serials_id}-${combo.diamonds_id}`}
-                    combo={combo}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Mobile View: Cards Grid */}
+                <div className="grid grid-cols-1 gap-6 md:hidden">
+                  {allCombos.map((combo) => (
+                    <ComboTableRow
+                      key={`${combo.variant_serials_id}-${combo.diamonds_id}`}
+                      combo={combo}
+                    />
+                  ))}
+                </div>
+
+                {/* Tablet & Desktop View: Table */}
+                <Table className="hidden md:table w-full border-collapse">
+                  <TableHeader className="hidden md:table-header-group">
+                    <TableRow className="border-b border-primary-100 hover:bg-transparent">
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">Hình ảnh</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Định danh</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">Thông tin combo</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">Vị trí kho</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">Hình ảnh thực tế</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">Giá chi tiết</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Tổng cộng</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allCombos.map((combo) => (
+                      <ComboTableRows
+                        key={`${combo.variant_serials_id}-${combo.diamonds_id}`}
+                        combo={combo}
+                        brokenImages={brokenImages}
+                        onImageError={handleImageError}
+                        onPreview={handlePreview}
+                        onUploadSuccess={handleUploadSuccess}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
             )}
             <div ref={lastElementRef} className="h-4 w-full" />
             {isFetchingNextPage && (
@@ -137,12 +392,307 @@ export default function ComboPage() {
             )}
           </div>
         </div>
-      </div>
+      </main>
+
+      <MediaPreviewDialog
+        previewUrl={mediaPreviewUrl}
+        previewList={displayList}
+        previewIndex={previewIndex}
+        selectedMedia={selectedMedia}
+        brokenImages={brokenImages}
+        uploadConfig={uploadConfig}
+        onImageError={handleImageError}
+        onClose={closeMediaDialog}
+        onPreview={handlePreview}
+        onSelectMedia={setSelectedMedia}
+        onDownloadSingle={handleDownloadSingle}
+        onDownloadAll={handleDownloadAll}
+        onUploadSuccess={handleUploadSuccess}
+        isVideo={isVideo}
+        webImages={allWebImages}
+        actualImages={allActualImages}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
     </LayoutShell>
   );
 }
 
-import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
+function ComboTableRows({
+  combo,
+  brokenImages,
+  onImageError,
+  onPreview,
+  onUploadSuccess,
+}: {
+  combo: any;
+  brokenImages: Set<string>;
+  onImageError: (url: string) => void;
+  onPreview: (images: string[], index: number, config?: any) => void;
+  onUploadSuccess: () => void;
+  key?: string | number;
+}) {
+  const jewelry: ProductModel = combo.jewelry;
+  const diamond: DiamondModel = combo.diamond;
+  const variant: any = jewelry.variants?.[0] || {};
+
+  const fourView = jewelry.attributes?.["4view"];
+  const isBundle = jewelry.products && jewelry.products.length > 0;
+  const subProductNam = jewelry.products?.find(
+    (p: any) => p.attributes?.gender === "Nam"
+  );
+  const subProductNu = jewelry.products?.find(
+    (p: any) => p.attributes?.gender === "Nữ"
+  );
+  const fourViewNam = subProductNam?.attributes?.["4view"];
+  const fourViewNu = subProductNu?.attributes?.["4view"];
+  const hasSideStonesNam =
+    fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
+  const hasSideStonesNu =
+    fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
+
+  const [displayCount, setDisplayCount] = useState(4);
+
+  useEffect(() => {
+    const check = () => {
+      const width = window.innerWidth;
+      if (width < 1024) {
+        setDisplayCount(2);
+      } else if (width < 1280) {
+        setDisplayCount(3);
+      } else {
+        setDisplayCount(4);
+      }
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const totalBasePrice =
+    (variant?.basePrice || jewelry.basePrice || 0) + (diamond.basePrice || 0);
+  const totalSalePrice =
+    (variant?.salePrice || jewelry.salePrice || 0) + (diamond.salePrice || 0);
+
+  const formatPrice = (price: number) => {
+    return `${price.toLocaleString("vi-VN")} ₫`;
+  };
+
+  const jewelryPrice = variant?.salePrice || jewelry.salePrice || 0;
+  const jewelryOriginalPrice = variant?.basePrice || jewelry.basePrice || 0;
+  const diamondPrice = diamond.salePrice || 0;
+  const diamondOriginalPrice = diamond.basePrice || 0;
+
+  const jewelryImage = jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url;
+  const jewelryWebImages = jewelry.thumbnails?.map((t) => t.url) || [];
+  const jewelryActualImages = [
+    ...(jewelry.images?.map((img) => img.url) || []),
+    ...(jewelry.videos?.map((v) => v.url) || []),
+  ];
+
+  const diamondActualImages = [
+    ...(diamond.images?.map((img) => img.url) || []),
+    ...(diamond.videos?.map((v) => v.url) || []),
+  ];
+
+  const jewelrySpecs = [
+    variant.attributes?.fineness,
+    variant.attributes?.materialColor,
+    variant.attributes?.ringSize ? `Ni ${variant.attributes.ringSize}` : null,
+    formatGoldWeight(
+      variant.attributes?.serialNumber?.goldWeight ||
+      variant.attributes?.goldWeight
+    ) !== "-"
+      ? formatGoldWeight(
+        variant.attributes?.serialNumber?.goldWeight ||
+        variant.attributes?.goldWeight
+      )
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" - ");
+
+  const formatEdgeSize = (size: number) => {
+    return size % 1 === 0 ? size.toFixed(0) : size.toFixed(1);
+  };
+  const sizeStr = diamond.attributes?.edgeSize1
+    ? `${formatEdgeSize(Number(diamond.attributes.edgeSize1))}${diamond.attributes?.edgeSize2
+      ? `x${formatEdgeSize(Number(diamond.attributes.edgeSize2))}`
+      : ""
+    }`
+    : "";
+  const caratStr = diamond.attributes?.carat ? `${diamond.attributes.carat}ct` : "";
+  const diamondSpecs = [
+    sizeStr,
+    diamond.attributes?.color,
+    diamond.attributes?.clarity,
+    caratStr,
+    diamond.attributes?.fluorescence || "None",
+  ]
+    .filter(Boolean)
+    .join(" - ");
+
+  const diamondProduct = {
+    id: diamond.id,
+    attributes: {
+      designCode: `GIA${diamond.attributes?.giaId || ""}`,
+    },
+    products: [],
+  } as unknown as ProductModel;
+
+  return (
+    <>
+      {/* Row 1: Jewelry */}
+      <TableRow className="border-b border-primary-50 divide-x divide-primary-50 hover:bg-primary-50/10 transition-colors">
+        <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 border-r border-primary-50 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]">
+          <div className="w-10 h-10 lg:w-12 lg:h-12 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center mx-auto">
+            {jewelryImage ? (
+              <img
+                src={jewelryImage}
+                alt={jewelry.attributes?.designCode || ""}
+                className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => {
+                  const showActual = jewelryWebImages.length === 0;
+                  onPreview(showActual ? jewelryActualImages : jewelryWebImages, 0, {
+                    productId: jewelry.id,
+                    isActual: showActual,
+                    designCode: jewelry.attributes?.designCode || jewelry.title,
+                    showUpload: false,
+                  });
+                }}
+              />
+            ) : (
+              <div className="text-[10px] text-primary-300">No image</div>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-left w-[130px] lg:w-[130px] xl:w-[140px]">
+          <ProductCodes product={jewelry} isExpanded={false} className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start" />
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[10px] font-semibold text-primary-700">
+              {jewelrySpecs}
+            </span>
+            {
+              fourView && Array.isArray(fourView) && fourView.length > 0 && (
+                <div >
+                  <SideStoneTooltip
+                    fourView={fourView as any}
+                    isExpanded={false}
+                    className="text-[10px] px-1 py-0"
+                  />
+                </div>
+              )
+            }
+          </div>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words">
+          <span className="text-[10px] font-semibold text-secondary-900">
+            {formatWarehouseName(variant?.stockAt)}
+          </span>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-center w-[110px] lg:w-[145px] xl:w-[180px]">
+          <div className="flex justify-center">
+            <CompactGallery
+              images={jewelryActualImages}
+              showUpload={false}
+              brokenImages={brokenImages}
+              onImageError={onImageError}
+              onPreview={(images, index, config) => {
+                onPreview(images, index, {
+                  ...config,
+                  productId: jewelry.id,
+                  isActual: true,
+                });
+              }}
+              designCode={jewelry.attributes?.designCode || jewelry.title}
+              onUploadSuccess={onUploadSuccess}
+              displayCount={displayCount}
+            />
+          </div>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-right w-[100px] lg:w-[120px] xl:w-[140px]">
+          <div className="flex flex-col items-end leading-none">
+            {jewelryOriginalPrice > jewelryPrice && (
+              <span className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">
+                {formatPrice(jewelryOriginalPrice)}
+              </span>
+            )}
+            <span className="text-xs font-semibold text-secondary-900">
+              {formatPrice(jewelryPrice)}
+            </span>
+          </div>
+        </TableCell>
+        <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 text-right align-middle w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50">
+          <div className="flex flex-col items-end leading-none justify-center h-full">
+            {totalBasePrice > totalSalePrice && (
+              <span className="text-[11px] font-semibold text-primary-300 line-through opacity-60 mb-1">
+                {formatPrice(totalBasePrice)}
+              </span>
+            )}
+            <span className="text-sm font-black text-secondary-900">
+              {formatPrice(totalSalePrice)}
+            </span>
+          </div>
+        </TableCell>
+      </TableRow>
+
+      {/* Row 2: Diamond */}
+      <TableRow className="border-b-2 border-primary-100 divide-x divide-primary-50 hover:bg-primary-50/10 transition-colors">
+        <TableCell className="px-2 xl:px-4 py-2 text-left w-[130px] lg:w-[130px] xl:w-[140px]">
+          <ProductCodes product={diamondProduct} isExpanded={false} className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start" />
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words">
+          <span className="text-[10px] font-semibold text-primary-700">
+            {diamondSpecs}
+          </span>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words">
+          <span className="text-[10px] font-semibold text-secondary-900">
+            {formatWarehouseName(diamond.warehouses?.[0]?.name)}
+          </span>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-center w-[110px] lg:w-[145px] xl:w-[180px]">
+          <div className="flex justify-center">
+            {diamondActualImages.length > 0 ? (
+              <CompactGallery
+                images={diamondActualImages}
+                showUpload={false}
+                brokenImages={brokenImages}
+                onImageError={onImageError}
+                onPreview={(images, index, config) => {
+                  onPreview(images, index, {
+                    ...config,
+                    diamondId: diamond.id,
+                  });
+                }}
+                designCode={`GIA${diamond.attributes?.giaId}`}
+                onUploadSuccess={onUploadSuccess}
+                displayCount={displayCount}
+              />
+            ) : (
+              <span className="text-[10px] text-primary-300 italic">No images</span>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="px-2 xl:px-4 py-2 text-right w-[100px] lg:w-[120px] xl:w-[140px]">
+          <div className="flex flex-col items-end leading-none">
+            {diamondOriginalPrice > diamondPrice && (
+              <span className="text-[10px] font-semibold text-primary-300 line-through opacity-60 mb-0.5">
+                {formatPrice(diamondOriginalPrice)}
+              </span>
+            )}
+            <span className="text-xs font-semibold text-secondary-900">
+              {formatPrice(diamondPrice)}
+            </span>
+          </div>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
+
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (
@@ -238,7 +788,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
         className={cn(
           "border border-primary-100 bg-white flex flex-col overflow-hidden transition-colors duration-200 select-none",
           (!isDesktop) &&
-            "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30",
+          "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30",
         )}
         onClick={() => {
           if (isMobile) setDetailsOpen(true);
@@ -262,7 +812,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                   className={cn(
                     "w-full h-full object-cover",
                     product.type === "diamond" &&
-                      "object-contain w-8 h-8 md:w-9 md:h-9",
+                    "object-contain w-8 h-8 md:w-9 md:h-9",
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -325,7 +875,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                         {formatGoldWeight(
                           product.variant?.attributes?.serialNumber
                             ?.goldWeight ||
-                            product.variant?.attributes?.goldWeight,
+                          product.variant?.attributes?.goldWeight,
                         )}
                       </span>
                     </div>
@@ -404,7 +954,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                       {product.variant.attributes.fineness} -{" "}
                       {formatGoldWeight(
                         product.variant?.attributes?.serialNumber?.goldWeight ||
-                          product.variant?.attributes?.goldWeight,
+                        product.variant?.attributes?.goldWeight,
                       )}
                     </div>
                   )}
@@ -549,6 +1099,21 @@ function ComboDetailsSheetContent({
   const jewelrySale = variant?.salePrice || jewelry.salePrice || 0;
   const jewelryBase = variant?.basePrice || jewelry.basePrice || 0;
 
+  const fourView = jewelry.attributes?.["4view"];
+  const isBundle = jewelry.products && jewelry.products.length > 0;
+  const subProductNam = jewelry.products?.find(
+    (p: any) => p.attributes?.gender === "Nam"
+  );
+  const subProductNu = jewelry.products?.find(
+    (p: any) => p.attributes?.gender === "Nữ"
+  );
+  const fourViewNam = subProductNam?.attributes?.["4view"];
+  const fourViewNu = subProductNu?.attributes?.["4view"];
+  const hasSideStonesNam =
+    fourViewNam && Array.isArray(fourViewNam) && fourViewNam.length > 0;
+  const hasSideStonesNu =
+    fourViewNu && Array.isArray(fourViewNu) && fourViewNu.length > 0;
+
   const d = diamond.attributes;
   const fourCs = [
     d?.color,
@@ -559,7 +1124,7 @@ function ComboDetailsSheetContent({
     .filter(Boolean)
     .join(" · ");
   const diamondSize = d?.edgeSize1
-    ? `${Number(d.edgeSize1).toFixed(1)}${d?.edgeSize2 ? `×${Number(d.edgeSize2).toFixed(1)}` : ""}mm`
+    ? `${Number(d.edgeSize1).toFixed(1)}${d?.edgeSize2 ? `×${Number(d.edgeSize2).toFixed(1)}` : ""}`
     : null;
 
   return (
@@ -607,9 +1172,9 @@ function ComboDetailsSheetContent({
                 vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight,
               ) !== "-"
                 ? formatGoldWeight(
-                    vAttributes.serialNumber?.goldWeight ||
-                      vAttributes.goldWeight,
-                  )
+                  vAttributes.serialNumber?.goldWeight ||
+                  vAttributes.goldWeight,
+                )
                 : null,
             ]
               .filter(Boolean)
@@ -619,6 +1184,35 @@ function ComboDetailsSheetContent({
             label="Kho"
             value={formatWarehouseName(variant?.stockAt)}
           />
+          {isBundle ? (
+            <>
+              {hasSideStonesNam && (
+                <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
+                  <span className="text-primary-400 shrink-0">Đá tấm Nam</span>
+                  <div className="font-medium text-secondary-900 text-right">
+                    <SideStoneTooltip fourView={fourViewNam as any} isExpanded={false} label="Xem đá tấm Nam" />
+                  </div>
+                </div>
+              )}
+              {hasSideStonesNu && (
+                <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
+                  <span className="text-primary-400 shrink-0">Đá tấm Nữ</span>
+                  <div className="font-medium text-secondary-900 text-right">
+                    <SideStoneTooltip fourView={fourViewNu as any} isExpanded={false} label="Xem đá tấm Nữ" />
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            fourView && Array.isArray(fourView) && fourView.length > 0 && (
+              <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
+                <span className="text-primary-400 shrink-0">Đá tấm</span>
+                <div className="font-medium text-secondary-900 text-right">
+                  <SideStoneTooltip fourView={fourView as any} isExpanded={false} label="Xem đá tấm" />
+                </div>
+              </div>
+            )
+          )}
         </div>
       </div>
 
