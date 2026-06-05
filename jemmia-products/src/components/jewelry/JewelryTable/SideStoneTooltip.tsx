@@ -8,14 +8,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { formatLySize } from "./utils/formatters";
 
 interface SideStone {
-  round: string;
+  shape?: string;
+  round?: string;
   diamondCount: string;
+  [key: string]: any;
 }
 
 interface SideStoneTooltipProps {
   fourView: SideStone[];
   isExpanded: boolean;
   label?: string;
+}
+
+function getStoneSize(stone: SideStone): string {
+  if (stone.round) return stone.round;
+  if (stone.shape) {
+    const key = stone.shape.toLowerCase();
+    if (stone[key]) return stone[key];
+  }
+  const otherKey = Object.keys(stone).find(
+    (k) => k !== "shape" && k !== "diamondCount"
+  );
+  return otherKey ? stone[otherKey] : "";
 }
 
 export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneTooltipProps) {
@@ -38,10 +52,18 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
     }
   }, [open, isMobile]);
 
+  const getStoneSizeValue = (stone: SideStone) => {
+    return getStoneSize(stone);
+  };
+
   const handleCopyAll = (e: React.MouseEvent) => {
     e.stopPropagation();
     const text = fourView
-      .map((s) => `${formatLySize(s.round)}: ${s.diamondCount} viên`)
+      .map((s) => {
+        const sizeVal = getStoneSizeValue(s);
+        const prefix = s.shape ? `${s.shape} ` : "";
+        return `${prefix}${formatLySize(sizeVal)}: ${s.diamondCount} viên`;
+      })
       .join("\n");
     navigator.clipboard.writeText(text).then(() => {
       setCopiedAll(true);
@@ -52,14 +74,36 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
   const shouldShowAbove = coords ? (coords.bottom + 200 > window.innerHeight) : false;
   const title = `${count} loại đá`;
 
+  const hasAnyShape = fourView.some((stone) => stone.shape);
+  const containerMinWidthClass = hasAnyShape ? "min-w-[220px] md:min-w-[260px]" : "min-w-[150px]";
+
   const stonesPanel = (
     <div className="divide-y divide-primary-100">
-      {fourView.map((stone, idx) => (
-        <div key={idx} className="flex items-center justify-between px-0 md:px-4 py-2">
-          <span className="text-xs text-secondary-900">{formatLySize(stone.round)}</span>
-          <span className="text-xs text-primary-400">{stone.diamondCount} viên</span>
-        </div>
-      ))}
+      {fourView.map((stone, idx) => {
+        const sizeValue = getStoneSizeValue(stone);
+        return (
+          <div key={idx} className="flex items-center justify-between px-0 md:px-4 py-2 text-xs">
+            {hasAnyShape ? (
+              <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-2 w-full items-center">
+                <span className="text-xs text-secondary-900 truncate" title={stone.shape || ""}>
+                  {stone.shape || "--"}
+                </span>
+                <span className="text-xs text-secondary-900 truncate">
+                  {formatLySize(sizeValue)}
+                </span>
+                <span className="text-xs text-secondary-900 text-right">
+                  {stone.diamondCount} viên
+                </span>
+              </div>
+            ) : (
+              <>
+                <span className="text-xs text-secondary-900">{formatLySize(sizeValue)}</span>
+                <span className="text-xs text-secondary-900">{stone.diamondCount} viên</span>
+              </>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -84,13 +128,13 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
         style={isMobile && open ? { pointerEvents: "none" } : undefined}
       >
         <div className={cn(
-          "flex items-center gap-1 px-2 -mt-0.5 md:mt-0 md:px-2 md:py-3 text-[10px] md:text-[11px] font-semibold leading-none rounded transition-colors cursor-pointer select-none",
+          "flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal leading-none rounded-full transition-colors cursor-pointer select-none border border-transparent shadow-sm",
           isExpanded
-            ? "text-white/90 hover:text-white"
-            : "text-primary-400 hover:bg-primary-50 hover:text-secondary-900"
+            ? "bg-white/15 text-white hover:bg-white/25"
+            : "bg-slate-100 text-secondary-900 hover:bg-slate-200"
         )}>
           <span>{label || `${count} loại`}</span>
-          <CaretDown size={9} weight="bold" className="mt-px" />
+          <CaretDown size={9} weight="bold" className="mt-px flex-shrink-0" />
         </div>
 
         {isMobile && createPortal(
@@ -132,7 +176,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label }: SideStoneToolt
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
           >
-            <div className="bg-white border border-primary-200 shadow-lg min-w-[150px] animate-in fade-in zoom-in-95 duration-200">
+            <div className={cn("bg-white border border-primary-200 shadow-lg animate-in fade-in zoom-in-95 duration-200", containerMinWidthClass)}>
               <div className="px-3 py-1.5 border-b border-primary-100 flex items-center justify-between bg-primary-50/50">
                 <span className="text-[10px] font-bold text-secondary-900">{title}</span>
                 <button

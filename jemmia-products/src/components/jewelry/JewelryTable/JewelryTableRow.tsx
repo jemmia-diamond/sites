@@ -254,8 +254,7 @@ export function JewelryTableRow({
           "transition-all cursor-pointer group min-h-[3.5rem] relative hidden md:table-row",
           isExpanded
             ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-100 hover:bg-primary-50/30 divide-primary-50",
-          isBundle && !isExpanded && "bg-amber-50/20",
+            : "border-primary-100 hover:bg-primary-50/30 divide-primary-50"
         )}
         onClick={() => onToggleExpand(product.id)}
       >
@@ -312,7 +311,7 @@ export function JewelryTableRow({
 
         <TableCell className="px-6 md:px-3 py-2 text-left w-42.5">
           <div className="flex flex-col items-start justify-start gap-1">
-            <ProductCodes product={product} isExpanded={isExpanded} className="w-[120px] !justify-start align-caret-right" />
+            <ProductCodes product={product} isExpanded={isExpanded} className={`${isBundle ? "w-[140px]" : "w-[130px]"} md:gap-2 !justify-start`} />
           </div>
         </TableCell>
 
@@ -438,8 +437,7 @@ export function JewelryTableRow({
           "transition-all cursor-pointer group relative md:hidden",
           isExpanded
             ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
-            : "border-primary-100 hover:bg-primary-50/30",
-          isBundle && !isExpanded && "bg-amber-50/20",
+            : "border-primary-100 hover:bg-primary-50/30"
         )}
         onClick={() => onToggleExpand(product.id)}
       >
@@ -497,29 +495,7 @@ export function JewelryTableRow({
               <div className="w-full flex flex-col gap-2">
                 <div className="flex items-center gap-1 justify-between w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
-                    {isBundle ? (
-                      <div className="flex flex-wrap gap-1">
-                        {product.products?.map((subProduct, idx) => {
-                          const code = subProduct.attributes?.designCode;
-                          if (!code) return null;
-                          return (
-                            <Badge
-                              key={idx}
-                              className={cn(
-                                "flex items-center gap-1.5 rounded-full pl-2.5 pr-1.5 py-0.5 text-xs font-bold tracking-widest border-none shadow-sm uppercase w-fit",
-                                "bg-secondary-900 text-white",
-                              )}
-                            >
-                              <span className="truncate overflow-hidden whitespace-nowrap">
-                                {code}
-                              </span>
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <ProductCodes product={product} isExpanded={isExpanded} />
-                    )}
+                    <ProductCodes product={product} isExpanded={isExpanded} />
                   </div>
                 </div>
                 {/* Price */}
