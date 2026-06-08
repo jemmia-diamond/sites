@@ -113,6 +113,9 @@ export function cleanHtmlToMarkdown(htmlText, productsJson = null) {
   // 7. Link rules (javascript, empty, tracking params)
   cleanLinks(mainElement);
 
+  // Clean empty columns in tables
+  cleanTables(mainElement);
+
   // 8. Remove empty sections/elements recursively
   removeEmptyElements(mainElement);
 
@@ -214,7 +217,7 @@ function shouldRemoveElement(el) {
   const tagName = el.tagName.toLowerCase();
 
   // Always remove structural chrome tags & standard input controls
-  if (["nav", "aside", "header", "footer", "form", "button", "select", "textarea", "input", "option", "label", "noscript", "iframe", "object", "embed", "script", "style"].includes(tagName)) {
+  if (["nav", "aside", "header", "footer", "form", "button", "select", "textarea", "input", "option", "label", "noscript", "iframe", "object", "embed", "script", "style", "time"].includes(tagName)) {
     return true;
   }
 
@@ -241,6 +244,7 @@ function shouldRemoveElement(el) {
                       className.includes("product-grid") ||
                       className.includes("product-list") ||
                       className.includes("collection-desc") ||
+                      className.includes("author-box") ||
                       className.includes("main-content");
   if (isProtected) {
     return false;
@@ -266,7 +270,8 @@ function shouldRemoveElement(el) {
       /\btabs?\b/, /\btab-lists?\b/,
       /\bpopups?\b/, /\bmodals?\b/, /\btoasts?\b/, /\btooltips?\b/, /\bpopovers?\b/, /\bnotifications?\b/, /\balerts?\b/,
       /\blogin\b/, /\bregister\b/, /\bsignups?\b/, /\bsignins?\b/,
-      /\bwidgets?\b/
+      /\bwidgets?\b/,
+      /\btime-post\b/, /\bdate-time\b/, /\bpublish-date\b/, /\bpost-date\b/
     ];
     return patterns.some(p => p.test(str));
   };
@@ -280,6 +285,17 @@ function shouldRemoveElement(el) {
     const classWords = className.split(/\s+/);
     const isButtonClass = classWords.some(w => w === "btn" || w === "button" || w === "cta" || w.startsWith("btn-") || w.startsWith("button-") || w.startsWith("cta-"));
     if (isButtonClass) {
+      return true;
+    }
+  }
+
+  // Remove pagination count metadata and recently viewed products title text
+  const text = el.textContent.trim();
+  if (text.length < 100) {
+    if (/^hiển thị \d+ trên \d+/i.test(text)) {
+      return true;
+    }
+    if (text === "Sản phẩm vừa xem" || text === "Sản phẩm đã xem" || text === "Sản phẩm vừa xem:") {
       return true;
     }
   }
@@ -568,6 +584,19 @@ function normalizeHeadings(rootElement) {
       h.parentNode.replaceChild(newHeading, h);
     }
   });
+
+  // 3. Unwrap any bold tags (strong, b) inside all headings to prevent bold markers in headings
+  const finalHeadings = Array.from(rootElement.querySelectorAll("h1, h2, h3, h4, h5, h6"));
+  finalHeadings.forEach(h => {
+    const boldEls = Array.from(h.querySelectorAll("strong, b"));
+    boldEls.forEach(bold => {
+      const parent = bold.parentNode;
+      while (bold.firstChild) {
+        parent.insertBefore(bold.firstChild, bold);
+      }
+      bold.remove();
+    });
+  });
 }
 
 // --- Images Optimization ---
@@ -577,12 +606,27 @@ function cleanImages(rootElement) {
   const seenImageUrls = new Set();
 
   imgs.forEach(img => {
+    // Restore lazy loaded src
+    const lazySrc = img.getAttribute("data-src") || 
+                    img.getAttribute("data-lazy") || 
+                    img.getAttribute("data-lazy-src") || 
+                    img.getAttribute("data-original") || 
+                    img.getAttribute("srcset") || 
+                    img.getAttribute("data-srcset");
+    if (lazySrc) {
+      let realSrc = lazySrc.trim();
+      if (realSrc.includes(" ")) {
+        realSrc = realSrc.split(/\s+/)[0];
+      }
+      img.setAttribute("src", realSrc);
+    }
+
     const src = (img.getAttribute("src") || "").trim();
     const alt = (img.getAttribute("alt") || "").trim();
     const width = img.getAttribute("width");
     const height = img.getAttribute("height");
 
-    if (!src) {
+    if (!src || src.startsWith("data:image/")) {
       img.remove();
       return;
     }
@@ -689,6 +733,57 @@ function removeEmptyElements(element) {
   }
 }
 
+// --- Table Columns Optimization ---
+
+function cleanTables(rootElement) {
+  const tables = Array.from(rootElement.querySelectorAll("table"));
+  tables.forEach(table => {
+    const rows = Array.from(table.querySelectorAll("tr"));
+    if (rows.length === 0) return;
+    
+    // Find the maximum number of columns
+    let maxCols = 0;
+    rows.forEach(row => {
+      const cells = Array.from(row.querySelectorAll("th, td"));
+      if (cells.length > maxCols) {
+        maxCols = cells.length;
+      }
+    });
+    
+    // Check which columns are entirely empty (only whitespace or &nbsp;)
+    const emptyCols = [];
+    for (let c = 0; c < maxCols; c++) {
+      let isColumnEmpty = true;
+      for (let r = 0; r < rows.length; r++) {
+        const cells = Array.from(rows[r].querySelectorAll("th, td"));
+        const cell = cells[c];
+        if (cell) {
+          const text = cell.textContent.trim().replace(/\u00A0/g, ""); // replace &nbsp; (non-breaking space)
+          if (text !== "") {
+            isColumnEmpty = false;
+            break;
+          }
+        }
+      }
+      if (isColumnEmpty) {
+        emptyCols.push(c);
+      }
+    }
+    
+    // Remove the empty columns (in reverse order to avoid index shift)
+    for (let i = emptyCols.length - 1; i >= 0; i--) {
+      const colIdx = emptyCols[i];
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("th, td"));
+        const cell = cells[colIdx];
+        if (cell) {
+          cell.remove();
+        }
+      });
+    }
+  });
+}
+
 // --- Turndown Service Setup ---
 
 function createTurndownService() {
@@ -696,6 +791,42 @@ function createTurndownService() {
     headingStyle: "atx",
     bulletMarker: "-",
     codeBlockStyle: "fenced"
+  });
+
+  turndownService.addRule("author-box", {
+    filter: function (node) {
+      return node.nodeType === 1 && (node.getAttribute("class") || "").includes("author-box");
+    },
+    replacement: function (content, node) {
+      const imgEl = node.querySelector(".author-box__avatar img");
+      const nameEl = node.querySelector(".author-box__name");
+      const roleEl = node.querySelector(".author-box__role");
+      const bioEl = node.querySelector(".author-box__bio");
+      
+      const avatarSrc = imgEl ? imgEl.getAttribute("src") : "";
+      const avatarAlt = imgEl ? (imgEl.getAttribute("alt") || "Author Avatar") : "Author Avatar";
+      
+      let nameText = nameEl ? nameEl.textContent.trim() : "";
+      const roleText = roleEl ? roleEl.textContent.trim() : "";
+      const bioText = bioEl ? bioEl.textContent.trim() : "";
+      
+      if (nameText && !nameText.startsWith("Author:") && !nameText.startsWith("Tác giả:")) {
+        nameText = "Author: " + nameText;
+      }
+      const titleLine = roleText ? `${nameText} - ${roleText}` : nameText;
+      
+      const parts = [];
+      parts.push("### Thông tin tác giả");
+      if (avatarSrc) {
+        parts.push(`> ![${avatarAlt}](${avatarSrc})`);
+      }
+      parts.push(`> **${titleLine}**`);
+      if (bioText) {
+        parts.push(`> ${bioText}`);
+      }
+      
+      return "\n\n" + parts.join("\n") + "\n\n";
+    }
   });
 
   const convertCellToMarkdown = (cell) => {
