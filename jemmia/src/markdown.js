@@ -163,7 +163,10 @@ function injectProductGrid(document, productsJson) {
           const variant = p.variants && p.variants[0];
           const price = variant ? formatPrice(variant.price) : "";
           const originalPrice = variant && variant.compare_at_price ? formatPrice(variant.compare_at_price) : "";
-          const image = p.images && p.images[0] ? p.images[0].src : "";
+          let image = p.images && p.images[0] ? p.images[0].src : "";
+          if (image.startsWith("//")) {
+            image = "https:" + image;
+          }
           const status = p.available ? "Còn hàng" : "Hết hàng";
           return `
             <div class="product-item">
@@ -408,9 +411,13 @@ function extractItemFields(item) {
 
     // Handle image elements
     if (tagName === "img") {
-      const src = el.getAttribute("src");
+      let src = el.getAttribute("src") || "";
       const alt = el.getAttribute("alt") || "Product Image";
       if (src) {
+        src = src.trim();
+        if (src.startsWith("//")) {
+          src = "https:" + src;
+        }
         fields["Image"] = `![${alt}](${src})`;
       }
       return;
@@ -618,10 +625,17 @@ function cleanImages(rootElement) {
       if (realSrc.includes(" ")) {
         realSrc = realSrc.split(/\s+/)[0];
       }
+      if (realSrc.startsWith("//")) {
+        realSrc = "https:" + realSrc;
+      }
       img.setAttribute("src", realSrc);
     }
 
-    const src = (img.getAttribute("src") || "").trim();
+    let src = (img.getAttribute("src") || "").trim();
+    if (src.startsWith("//")) {
+      src = "https:" + src;
+      img.setAttribute("src", src);
+    }
     const alt = (img.getAttribute("alt") || "").trim();
     const width = img.getAttribute("width");
     const height = img.getAttribute("height");
