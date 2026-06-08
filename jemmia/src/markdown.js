@@ -842,7 +842,6 @@ function createTurndownService() {
       return "\n\n" + parts.join("\n") + "\n\n";
     }
   });
-
   const convertCellToMarkdown = (cell) => {
     return Array.from(cell.childNodes)
       .map(child => {
@@ -862,22 +861,204 @@ function createTurndownService() {
       const rows = Array.from(node.querySelectorAll("tr"));
       if (rows.length === 0) return "";
 
-      const markdownRows = [];
-      const firstRowCells = Array.from(rows[0].querySelectorAll("th, td"));
-      const headerCells = firstRowCells.map(convertCellToMarkdown);
-
-      markdownRows.push("| " + headerCells.join(" | ") + " |");
-      markdownRows.push("| " + headerCells.map(() => "---").join(" | ") + " |");
-
-      for (let i = 1; i < rows.length; i++) {
-        const cells = Array.from(rows[i].querySelectorAll("th, td")).map(convertCellToMarkdown);
-        while (cells.length < headerCells.length) {
-          cells.push("");
+      let titlePrefix = "";
+      if (rows.length > 1) {
+        const firstRowCells = Array.from(rows[0].querySelectorAll("th, td"));
+        if (firstRowCells.length === 1) {
+          const colspan = parseInt(firstRowCells[0].getAttribute("colspan") || "1", 10);
+          const maxGridWidth = Math.max(...rows.map(row => {
+            return Array.from(row.querySelectorAll("th, td")).reduce((sum, cell) => {
+              return sum + parseInt(cell.getAttribute("colspan") || "1", 10);
+            }, 0);
+          }));
+          if (colspan === maxGridWidth) {
+            const titleContent = convertCellToMarkdown(firstRowCells[0]);
+            if (titleContent.startsWith("**") && titleContent.endsWith("**")) {
+              titlePrefix = `${titleContent}\n\n`;
+            } else {
+              titlePrefix = `**${titleContent}**\n\n`;
+            }
+            rows.shift();
+          }
         }
-        markdownRows.push("| " + cells.slice(0, headerCells.length).join(" | ") + " |");
       }
 
-      return "\n\n" + markdownRows.join("\n") + "\n\n";
+      let sidebarContent = "";
+      if (rows.length > 1) {
+        const gridCells = [];
+        const cellRowspans = [];
+
+        rows.forEach((tr, r) => {
+          gridCells[r] = [];
+          const cells = Array.from(tr.querySelectorAll("th, td"));
+          let cellIdx = 0;
+          let c = 0;
+
+          while (cellIdx < cells.length || cellRowspans.some(rs => rs.col >= c && rs.remainingRows > 0)) {
+            const activeIdx = cellRowspans.findIndex(rs => rs.col === c && rs.remainingRows > 0);
+            if (activeIdx !== -1) {
+              gridCells[r][c] = cellRowspans[activeIdx].cell;
+              cellRowspans[activeIdx].remainingRows--;
+              c++;
+              continue;
+            }
+
+            if (cellIdx >= cells.length) {
+              gridCells[r][c] = null;
+              c++;
+              continue;
+            }
+
+            const cell = cells[cellIdx++];
+            const colspan = parseInt(cell.getAttribute("colspan") || "1", 10);
+            const rowspan = parseInt(cell.getAttribute("rowspan") || "1", 10);
+
+            for (let i = 0; i < colspan; i++) {
+              gridCells[r][c + i] = cell;
+            }
+
+            if (rowspan > 1) {
+              for (let i = 0; i < colspan; i++) {
+                cellRowspans.push({
+                  col: c + i,
+                  remainingRows: rowspan - 1,
+                  cell: cell
+                });
+              }
+            }
+            c += colspan;
+          }
+        });
+
+        const numCols = Math.max(...gridCells.map(row => row.length));
+        let targetColIndex = -1;
+        let rowspanCell = null;
+        let rowspanStartRow = -1;
+
+        for (let r = 0; r < gridCells.length; r++) {
+          for (let c = 0; c < gridCells[r].length; c++) {
+            const cell = gridCells[r][c];
+            if (cell) {
+              if (cell === rowspanCell) continue;
+              const rowspanAttr = parseInt(cell.getAttribute("rowspan") || "1", 10);
+              if (rowspanAttr > 1 && (r + rowspanAttr >= gridCells.length)) {
+                targetColIndex = c;
+                rowspanCell = cell;
+                rowspanStartRow = r;
+                break;
+              }
+            }
+          }
+          if (targetColIndex !== -1) break;
+        }
+
+        if (targetColIndex !== -1 && rowspanCell) {
+          const headerCell = rowspanStartRow > 0 ? gridCells[rowspanStartRow - 1][targetColIndex] : null;
+          const headerText = headerCell ? convertCellToMarkdown(headerCell).replace(/\*\*|_/g, "").trim() : "";
+          const rawCellContent = turndownService.turndown(rowspanCell);
+
+          const listItems = rawCellContent
+            .split("\n\n")
+            .map(para => para.trim())
+            .filter(para => para.length > 0)
+            .map(para => {
+              if (para.startsWith("- ") || para.startsWith("* ") || para.startsWith("+ ")) {
+                return para;
+              }
+              return `- ${para}`;
+            });
+          const listMarkdown = listItems.join("\n\n");
+
+          if (headerText) {
+            sidebarContent = `**${headerText}**\n\n${listMarkdown}\n\n`;
+          } else {
+            sidebarContent = `${listMarkdown}\n\n`;
+          }
+
+          // We use a set of processed cells to avoid modifying the same cell multiple times
+          const processedCells = new Set();
+          rows.forEach((tr, r) => {
+            const cell = gridCells[r][targetColIndex];
+            if (cell && !processedCells.has(cell)) {
+              processedCells.add(cell);
+              const colspan = parseInt(cell.getAttribute("colspan") || "1", 10);
+              if (colspan > 1) {
+                cell.setAttribute("colspan", (colspan - 1).toString());
+              } else {
+                if (cell.parentNode) {
+                  cell.remove();
+                }
+              }
+            }
+          });
+        }
+      }
+
+      const grid = [];
+      const rowspans = [];
+
+      rows.forEach((tr, r) => {
+        grid[r] = [];
+        const cells = Array.from(tr.querySelectorAll("th, td"));
+        let cellIdx = 0;
+        let c = 0;
+
+        while (cellIdx < cells.length || rowspans.some(rs => rs.col >= c && rs.remainingRows > 0)) {
+          const activeRowspanIdx = rowspans.findIndex(rs => rs.col === c && rs.remainingRows > 0);
+          if (activeRowspanIdx !== -1) {
+            grid[r][c] = "";
+            rowspans[activeRowspanIdx].remainingRows--;
+            c++;
+            continue;
+          }
+
+          if (cellIdx >= cells.length) {
+            grid[r][c] = "";
+            c++;
+            continue;
+          }
+
+          const cell = cells[cellIdx++];
+          const cellContent = convertCellToMarkdown(cell);
+          const colspan = parseInt(cell.getAttribute("colspan") || "1", 10);
+          const rowspan = parseInt(cell.getAttribute("rowspan") || "1", 10);
+
+          grid[r][c] = cellContent;
+          for (let i = 1; i < colspan; i++) {
+            grid[r][c + i] = "";
+          }
+
+          if (rowspan > 1) {
+            for (let i = 0; i < colspan; i++) {
+              rowspans.push({
+                col: c + i,
+                remainingRows: rowspan - 1,
+                val: ""
+              });
+            }
+          }
+          c += colspan;
+        }
+      });
+
+      const numCols = Math.max(...grid.map(row => row.length));
+      if (numCols === 0) return titlePrefix + sidebarContent;
+
+      grid.forEach(row => {
+        while (row.length < numCols) {
+          row.push("");
+        }
+      });
+
+      const markdownRows = [];
+      markdownRows.push("| " + grid[0].join(" | ") + " |");
+      markdownRows.push("| " + grid[0].map(() => "---").join(" | ") + " |");
+
+      for (let r = 1; r < grid.length; r++) {
+        markdownRows.push("| " + grid[r].join(" | ") + " |");
+      }
+
+      return "\n\n" + titlePrefix + markdownRows.join("\n") + "\n\n" + sidebarContent;
     }
   });
 
