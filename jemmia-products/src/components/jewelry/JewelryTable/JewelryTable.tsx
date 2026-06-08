@@ -14,6 +14,9 @@ import {
   CaretRight,
   X,
   DownloadSimple,
+  Copy,
+  Checks,
+  CircleNotch,
 } from "@phosphor-icons/react";
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
@@ -314,6 +317,75 @@ export function MediaPreviewDialog({
   );
 }
 
+interface SlideItemProps {
+  url: string;
+  isActive: boolean;
+  isVideo: boolean;
+  copyingUrl: string | null;
+  copiedUrl: string | null;
+  handleCopyImage: (url: string, e?: React.MouseEvent) => void;
+}
+
+function SlideItem({
+  url,
+  isActive,
+  isVideo,
+  copyingUrl,
+  copiedUrl,
+  handleCopyImage,
+}: SlideItemProps) {
+  const [aspectRatio, setAspectRatio] = React.useState<number | null>(null);
+
+  return (
+    <div className="w-full h-full flex items-center justify-center select-none pointer-events-none p-3 md:p-4 relative">
+      {isVideo ? (
+        <video
+          src={url}
+          controls
+          autoPlay={isActive}
+          playsInline
+          preload="metadata"
+          className="max-w-full max-h-full object-contain pointer-events-auto"
+        />
+      ) : (
+        <div
+          className="relative max-w-full max-h-full flex items-center justify-center"
+          style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : undefined }}
+        >
+          <img
+            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+            className="max-w-full max-h-full object-contain"
+            alt=""
+            draggable={false}
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              if (img.naturalWidth && img.naturalHeight) {
+                setAspectRatio(img.naturalWidth / img.naturalHeight);
+              }
+            }}
+          />
+          {isActive && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCopyImage(url, e); }}
+              disabled={copyingUrl === url}
+              className="absolute bottom-4 right-4 md:bottom-6 md:right-6 h-10 w-10 md:h-12 md:w-12 bg-white/90 hover:bg-secondary-900 rounded-full flex items-center justify-center border border-primary-200 hover:border-transparent z-40 transition-colors duration-200 group/copy disabled:opacity-50 shadow-md pointer-events-auto cursor-pointer"
+              title="Copy image"
+            >
+              {copyingUrl === url ? (
+                <CircleNotch size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
+              ) : copiedUrl === url ? (
+                <Checks size={18} className="text-green-600" />
+              ) : (
+                <Copy size={18} className="text-secondary-900 group-hover/copy:text-white" />
+              )}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface MediaViewerProps {
   selectedMedia: string;
   validPreviewList: string[];
@@ -335,9 +407,68 @@ function MediaViewer({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const trackRef = React.useRef<HTMLDivElement>(null);
   const dragState = React.useRef({ startX: 0, isDragging: false });
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [copyingUrl, setCopyingUrl] = useState<string | null>(null);
 
   const prevMedia = validPreviewList[(currentIndex - 1 + validPreviewList.length) % validPreviewList.length];
   const nextMedia = validPreviewList[(currentIndex + 1) % validPreviewList.length];
+
+  const handleCopyImage = async (url: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCopyingUrl(url);
+    try {
+      const isVid = isVideo(url);
+
+      if (isVid) {
+        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+        const response = await fetch(cacheBusterUrl, { mode: 'cors', cache: 'no-store' });
+        const blob = await response.blob();
+
+        try {
+          const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+          await navigator.clipboard.write([clipboardItem]);
+        } catch {
+          await navigator.clipboard.writeText(cacheBusterUrl);
+        }
+      } else {
+        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+        const response = await fetch(cacheBusterUrl, { mode: 'cors', cache: 'no-store' });
+        const blob = await response.blob();
+
+        let clipboardBlob = blob;
+        if (blob.type !== 'image/png') {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = URL.createObjectURL(blob);
+          });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(img.src);
+
+          clipboardBlob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas toBlob failed')), 'image/png');
+          });
+        }
+
+        const clipboardItem = new ClipboardItem({ 'image/png': clipboardBlob });
+        await navigator.clipboard.write([clipboardItem]);
+      }
+
+      setCopiedUrl(url);
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    } finally {
+      setCopyingUrl(null);
+    }
+  };
 
   React.useLayoutEffect(() => {
     const track = trackRef.current;
@@ -421,32 +552,6 @@ function MediaViewer({
     }
   };
 
-  const renderSlide = (url: string, key: string) => {
-    const isV = isVideo(url);
-    const isActive = key === 'current';
-    return (
-      <div key={key} className="w-full h-full flex items-center justify-center select-none pointer-events-none p-3 md:p-4">
-        {isV ? (
-          <video
-            src={url}
-            controls
-            autoPlay={isActive}
-            playsInline
-            preload="metadata"
-            className="max-w-full max-h-full object-contain pointer-events-auto"
-          />
-        ) : (
-          <img
-            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
-            className="max-w-full max-h-full object-contain"
-            alt=""
-            draggable={false}
-          />
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between px-4 md:px-4 py-4 md:py-4 bg-secondary-800 sticky top-0 z-50">
@@ -507,9 +612,30 @@ function MediaViewer({
           className="h-full grid grid-cols-3 grid-rows-1"
           style={{ width: '300%' }}
         >
-          {renderSlide(prevMedia, 'prev')}
-          {renderSlide(selectedMedia, 'current')}
-          {renderSlide(nextMedia, 'next')}
+          <SlideItem
+            url={prevMedia}
+            isActive={false}
+            isVideo={isVideo(prevMedia)}
+            copyingUrl={copyingUrl}
+            copiedUrl={copiedUrl}
+            handleCopyImage={handleCopyImage}
+          />
+          <SlideItem
+            url={selectedMedia}
+            isActive={true}
+            isVideo={isVideo(selectedMedia)}
+            copyingUrl={copyingUrl}
+            copiedUrl={copiedUrl}
+            handleCopyImage={handleCopyImage}
+          />
+          <SlideItem
+            url={nextMedia}
+            isActive={false}
+            isVideo={isVideo(nextMedia)}
+            copyingUrl={copyingUrl}
+            copiedUrl={copiedUrl}
+            handleCopyImage={handleCopyImage}
+          />
         </div>
       </div>
     </div>
