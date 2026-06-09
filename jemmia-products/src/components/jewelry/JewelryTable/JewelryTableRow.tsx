@@ -818,7 +818,7 @@ function ExpandedPanel({
         <div className="flex items-center justify-between">
           {/* Side Stones */}
           {(hasSideStones || hasSideStonesNam || hasSideStonesNu) && (
-            <div className="h-full flex items-center mt-1">
+            <div className="h-full gap-2 flex items-center mt-1">
               <p className="text-[9px] font-bold text-primary-300 uppercase tracking-wider">
                 Viên Tấm
               </p>

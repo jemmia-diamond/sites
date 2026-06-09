@@ -129,7 +129,7 @@ export function SideStoneTooltip({ fourView, isExpanded, label, className }: Sid
         style={isMobile && open ? { pointerEvents: "none" } : undefined}
       >
         <div className={cn(
-          "flex items-center gap-1.5 px-2.5 py-1 text-xs font-normal leading-none rounded-full transition-colors cursor-pointer select-none border border-transparent shadow-sm",
+          "flex items-center gap-1.5 -mt-0.5 md:mt-0 px-1 py-0.5 text-[10px] md:px-2.5 md:py-1 md:text-xs font-normal leading-none rounded-full transition-colors cursor-pointer select-none border border-transparent shadow-sm",
           isExpanded
             ? "bg-white/15 text-white hover:bg-white/25"
             : "bg-slate-100 text-secondary-900 hover:bg-slate-200",

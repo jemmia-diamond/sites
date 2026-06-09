@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowSquareOut, CaretDown } from "@phosphor-icons/react";
+import { ArrowSquareOut, CaretDown, Image } from "@phosphor-icons/react";
 import { DiamondModel, ProductModel } from "../../../types";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
@@ -203,6 +203,18 @@ export function DiamondTableRow({
               <div className="flex items-center gap-2 text-amber-600 text-[10px] font-semibold">
                 <AlertCircle className="h-3 w-3 text-amber-500 flex-shrink-0" />
                 <span>{fullNoteText}</span>
+                {diamond.attributes.diamondHistory?.attachment && diamond.attributes.diamondHistory.attachment.length > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPreview(diamond.attributes.diamondHistory!.attachment!, 0);
+                    }}
+                    className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100/70 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 text-[9px] font-bold cursor-pointer transition-all ml-1"
+                  >
+                    <Image size={10} weight="bold" />
+                    Xem ảnh
+                  </button>
+                )}
               </div>
             </div>
           </TableCell>
@@ -353,13 +365,25 @@ export function DiamondTableRow({
               </div>
               {/* Row 2: Diamond History */}
               {diamond.attributes.diamondHistory && (
-                <div className="flex items-center gap-1 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] text-primary-500 font-semibold">Ghi chú:</span>
                   <span className="text-[10px] text-primary-700 font-semibold">
                     {diamond.attributes.diamondHistory.errors}
                     {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
                     {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && `${diamond.attributes.diamondHistory.stage}`}
                   </span>
+                  {diamond.attributes.diamondHistory.attachment && diamond.attributes.diamondHistory.attachment.length > 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPreview(diamond.attributes.diamondHistory!.attachment!, 0);
+                      }}
+                      className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100/70 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 text-[9px] font-bold cursor-pointer transition-all"
+                    >
+                      <Image size={10} weight="bold" />
+                      Xem ảnh
+                    </button>
+                  )}
                 </div>
               )}
               {/* Actual Images */}
