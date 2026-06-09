@@ -156,6 +156,7 @@ export interface DiamondHistory {
   note: string;
   stage: string;
   status: string;
+  attachment?: string[] | null;
 }
 
 export interface DiamondAttribute {

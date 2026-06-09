@@ -188,19 +188,20 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
       onMouseLeave={onLeave}
       ref={triggerRef}
     >
-      {showCopyAlways ? (
+      {showCopyAlways || allItems.length === 1 ? (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (designCode) handleCopy(e, designCode);
+            const textToCopy = showCopyAlways ? (designCode || "N/A") : allItems[0].code;
+            handleCopy(e, textToCopy);
           }}
           className={cn(
             "flex justify-between items-center gap-1.5 rounded-full pl-2 pr-2 py-0.5 w-full text-[9.5px] md:text-[10px] font-bold tracking-widest border-none shadow-sm uppercase whitespace-nowrap transition-colors cursor-pointer",
             "bg-secondary-900 text-white active:opacity-90"
           )}
         >
-          <span className="truncate">{designCode || "N/A"}</span>
-          {copiedText === designCode ? (
+          <span className="truncate">{showCopyAlways ? (designCode || "N/A") : allItems[0].code}</span>
+          {copiedText === (showCopyAlways ? (designCode || "N/A") : allItems[0].code) ? (
             <Check weight="bold" className="text-green-400 text-[9px] md:text-[11px] flex-shrink-0" />
           ) : (
             <Copy weight="bold" className="text-white text-[10px] md:text-[11px] flex-shrink-0" />
@@ -247,29 +248,31 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
       )}
 
       {isMobile && createPortal(
-        <BottomSheet open={open} onOpenChange={handleOpenChange} title={`Mã sản phẩm`}>
-          <div className="pb-4">
-            <div className="px-4 pt-2">
+        <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+          <BottomSheet open={open} onOpenChange={handleOpenChange} title={`Mã sản phẩm`}>
+            <div className="pb-4">
               <CodesList items={allItems} />
             </div>
-          </div>
-        </BottomSheet>,
+          </BottomSheet>
+        </div>,
         document.body
       )}
 
       {isTablet && (
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="w-[95%] max-w-sm gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden">
-            <DialogHeader className="px-4 py-3 border-b border-primary-100 bg-white">
-              <DialogTitle className="text-sm font-bold text-secondary-900">
-                Mã sản phẩm
-              </DialogTitle>
-            </DialogHeader>
-            <div className="p-4">
-              <CodesList items={allItems} />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent className="w-[95%] max-w-sm gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden">
+              <DialogHeader className="px-4 py-3 border-b border-primary-100 bg-white">
+                <DialogTitle className="text-sm font-bold text-secondary-900">
+                  Mã sản phẩm
+                </DialogTitle>
+              </DialogHeader>
+              <div className="p-4">
+                <CodesList items={allItems} />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       )}
     </div>
   );
