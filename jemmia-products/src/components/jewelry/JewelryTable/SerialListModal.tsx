@@ -377,22 +377,34 @@ export function SerialListModal({
   const [cachedTotalHaravanQuantity, setCachedTotalHaravanQuantity] = useState<number | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"inStock" | "outOfStock">("inStock");
 
+  const threshold = new Date("2026-05-12T00:00:00+07:00").getTime();
+
   useEffect(() => {
     if (open) {
-      setCachedVariants(variants);
+      const filtered = (variants || []).filter(
+        (v) =>
+          v.attributes?.serialNumber !== null &&
+          v.attributes?.serialNumber !== undefined &&
+          v.attributes?.serialNumber !== ""
+      );
+      setCachedVariants(filtered);
       setCachedSku(_sku);
       setCachedTotalQuantity(totalQuantity);
       setCachedTotalHaravanQuantity(totalHaravanQuantity);
 
-      if (typeof totalQuantity === "number" && totalQuantity > 0) {
+      const hasInStock = filtered.some((v) => {
+        if ((v.quantity || 0) <= 0) return false;
+        if (!v.lastRfidScanTime) return false;
+        return new Date(v.lastRfidScanTime).getTime() > threshold;
+      });
+
+      if (hasInStock) {
         setActiveTab("inStock");
       } else {
         setActiveTab("outOfStock");
       }
     }
   }, [open, variants, _sku, totalQuantity, totalHaravanQuantity, stockStatus]);
-
-  const threshold = new Date("2026-05-12T00:00:00+07:00").getTime();
 
   const inStockSerials = cachedVariants
     .filter((v) => (v.quantity || 0) > 0)
