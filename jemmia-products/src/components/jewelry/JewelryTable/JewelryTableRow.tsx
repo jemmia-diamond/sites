@@ -990,12 +990,7 @@ function ExpandedPanel({
                     size="sm"
                     disabled={
                       !group.variants ||
-                      !group.variants.some(
-                        (v) =>
-                          v.attributes?.serialNumber !== null &&
-                          v.attributes?.serialNumber !== undefined &&
-                          v.attributes?.serialNumber !== "",
-                      )
+                      !group.variants.some((v) => v.attributes?.serialNumber !== null)
                     }
                     className="w-[110px] text-[9px] md:text-[10px] font-bold h-7 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center justify-center gap-1.5"
                     onClick={() =>
@@ -1104,12 +1099,7 @@ function ExpandedPanel({
                         size="sm"
                         disabled={
                           !group.variants ||
-                          !group.variants.some(
-                            (v) =>
-                              v.attributes?.serialNumber !== null &&
-                              v.attributes?.serialNumber !== undefined &&
-                              v.attributes?.serialNumber !== "",
-                          )
+                          !group.variants.some((v) => v.attributes?.serialNumber !== null)
                         }
                         className="w-[90px] text-[8px] font-bold h-6 border-secondary-900/20 text-secondary-900 hover:bg-secondary-900 hover:text-white transition-all duration-300 rounded-none disabled:opacity-40 disabled:cursor-not-allowed group flex items-center justify-center gap-1"
                         onClick={() =>

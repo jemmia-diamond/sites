@@ -381,12 +381,7 @@ export function SerialListModal({
 
   useEffect(() => {
     if (open) {
-      const filtered = (variants || []).filter(
-        (v) =>
-          v.attributes?.serialNumber !== null &&
-          v.attributes?.serialNumber !== undefined &&
-          v.attributes?.serialNumber !== ""
-      );
+      const filtered = (variants || []).filter((v) => v.attributes?.serialNumber !== null);
       setCachedVariants(filtered);
       setCachedSku(_sku);
       setCachedTotalQuantity(totalQuantity);
