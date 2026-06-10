@@ -755,6 +755,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
     {
       type: "jewelry" as const,
       product: jewelry,
+      codeProduct: jewelry,
       variant: variant,
       image: jewelry.thumbnails?.[0]?.url || jewelry.images?.[0]?.url,
       title: `${jewelry.attributes?.designCode || ""}`.trim(),
@@ -766,6 +767,13 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
     {
       type: "diamond" as const,
       product: diamond,
+      codeProduct: {
+        id: diamond.id,
+        attributes: {
+          designCode: `GIA${diamond.attributes?.giaId || ""}`,
+        },
+        products: [],
+      } as any,
       variant: undefined,
       image: getDiamondShapeImage(diamond.attributes?.shape || "Round"),
       title: `GIA${diamond.attributes?.giaId}`,
@@ -822,7 +830,11 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
             {/* Product info */}
             <div className="flex-1 ml-2 md:ml-3 min-w-0">
               <div className="font-medium text-xs text-primary-900 leading-tight flex items-center gap-2">
-                {product.title}
+                <ProductCodes
+                  product={product.codeProduct}
+                  isExpanded={false}
+                  className="w-[120px] md:w-[130px] !justify-start"
+                />
               </div>
 
               {/* Additional info - only visible on desktop */}
@@ -1190,7 +1202,7 @@ function ComboDetailsSheetContent({
                 <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                   <span className="text-primary-400 shrink-0">Đá tấm Nam</span>
                   <div className="font-medium text-secondary-900 text-right">
-                    <SideStoneTooltip fourView={fourViewNam as any} isExpanded={false} label="Xem đá tấm Nam" />
+                    <SideStoneTooltip fourView={fourViewNam as any} isExpanded={false} />
                   </div>
                 </div>
               )}
@@ -1198,7 +1210,7 @@ function ComboDetailsSheetContent({
                 <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                   <span className="text-primary-400 shrink-0">Đá tấm Nữ</span>
                   <div className="font-medium text-secondary-900 text-right">
-                    <SideStoneTooltip fourView={fourViewNu as any} isExpanded={false} label="Xem đá tấm Nữ" />
+                    <SideStoneTooltip fourView={fourViewNu as any} isExpanded={false} />
                   </div>
                 </div>
               )}
@@ -1208,7 +1220,7 @@ function ComboDetailsSheetContent({
               <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                 <span className="text-primary-400 shrink-0">Đá tấm</span>
                 <div className="font-medium text-secondary-900 text-right">
-                  <SideStoneTooltip fourView={fourView as any} isExpanded={false} label="Xem đá tấm" />
+                  <SideStoneTooltip fourView={fourView as any} isExpanded={false} />
                 </div>
               </div>
             )
@@ -1232,7 +1244,7 @@ function ComboDetailsSheetContent({
                 Kim cương
               </p>
               <p className="text-[12px] font-medium text-secondary-900 truncate leading-tight">
-                GIA {d?.giaId || "—"}
+                GIA{d?.giaId || "—"}
                 {d?.shape ? ` · ${d.shape}` : ""}
               </p>
             </div>
