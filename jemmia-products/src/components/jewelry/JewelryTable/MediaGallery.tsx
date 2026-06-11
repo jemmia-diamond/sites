@@ -271,7 +271,7 @@ export function MediaGallery({
 
     try {
       setUploading(true);
-      const endpoint = uploadConfig.uploadEndpoint || `/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
+      const endpoint = uploadConfig.uploadEndpoint || `/site/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
       await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -516,7 +516,7 @@ export function MediaGallery({
                       onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                     />
                   ) : (
-                    <img src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
+                    <img src={isHeicImg ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                   )}
                   {isVid && (
                     <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">

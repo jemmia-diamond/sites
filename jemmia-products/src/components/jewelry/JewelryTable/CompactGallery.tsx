@@ -110,7 +110,7 @@ export function CompactGallery({
 
     try {
       setUploading(true);
-      const endpoint = uploadEndpoint || `/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
+      const endpoint = uploadEndpoint || `/site/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
       await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -181,7 +181,7 @@ export function CompactGallery({
                       </div>
                     ) : (
                       <img
-                        src={isHeicImg ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+                        src={isHeicImg ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
                         className="h-full w-full object-cover"
                         alt=""
                         onError={() => onImageError(url)}

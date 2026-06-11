@@ -353,7 +353,7 @@ function SlideItem({
           style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : undefined }}
         >
           <img
-            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
             className="max-w-full max-h-full object-contain"
             alt=""
             draggable={false}

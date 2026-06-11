@@ -107,7 +107,7 @@ export function DiamondTableRow({
                 onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
                 designCode={`GIA${diamond.attributes.giaId}`}
                 onUploadSuccess={onUploadSuccess}
-                uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
+                uploadEndpoint={`/site/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
                 displayCount={3}
                 fixedWidth={false}
               />
@@ -399,7 +399,7 @@ export function DiamondTableRow({
                       onPreview={(images, index, config) => onPreview(images, index, { ...config, diamondId: diamond.id })}
                       designCode={`GIA${diamond.attributes.giaId}`}
                       onUploadSuccess={onUploadSuccess}
-                      uploadEndpoint={`/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
+                      uploadEndpoint={`/site/files/upload-diamond-images-multiple?barcode=${diamond.barcode}`}
                       displayCount={3}
                       fixedWidth={false}
                     />

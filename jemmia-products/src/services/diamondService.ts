@@ -6,8 +6,8 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
   const offset = ((filters.page || 1) - 1) * limit;
 
   const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
-  const warehouseIdsToUse = filters.warehouseIds && filters.warehouseIds.length > 0 
-    ? filters.warehouseIds 
+  const warehouseIdsToUse = filters.warehouseIds && filters.warehouseIds.length > 0
+    ? filters.warehouseIds
     : defaultWarehouses;
 
   let params: any = {};
@@ -106,7 +106,7 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
     }
   }
 
-  const response = await axios.get<PaginateResponse<DiamondModel>>("/products/diamonds", { 
+  const response = await axios.get<PaginateResponse<DiamondModel>>("/site/products/diamonds", {
     params,
     paramsSerializer: {
       indexes: null // to produce warehouseIds=1&warehouseIds=2 instead of warehouseIds[0]=1&warehouseIds[1]=2

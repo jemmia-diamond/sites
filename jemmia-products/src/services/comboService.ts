@@ -23,7 +23,7 @@ export async function fetchCombos(filters: ComboFilter): Promise<PaginateRespons
     offset,
   };
 
-  const response = await axios.get<PaginateResponse<ComboItem>>("/products/combos", {
+  const response = await axios.get<PaginateResponse<ComboItem>>("/site/products/combos", {
     params
   });
   return response.data;
