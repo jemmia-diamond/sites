@@ -31,8 +31,8 @@ export function FloatingSearch() {
       setIsLoading(true);
       try {
         const endpoint = import.meta.env.PROD
-          ? `/products/search-combine?query=${encodeURIComponent(query)}`
-          : `${API_BASE_URL}/products/search-combine?query=${encodeURIComponent(query)}`;
+          ? `/site/products/search-combine?query=${encodeURIComponent(query)}`
+          : `${API_BASE_URL}/site/products/search-combine?query=${encodeURIComponent(query)}`;
         const response = await axios.get(endpoint);
         setResults(response.data);
       } catch (error) {
