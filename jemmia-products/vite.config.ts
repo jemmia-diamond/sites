@@ -27,6 +27,11 @@ export default defineConfig(({mode}) => {
           changeOrigin: true,
           secure: true,
         },
+        '/image-generation': {
+          target: 'https://api.salesaya.com',
+          changeOrigin: true,
+          secure: true,
+        },
         '/site': {
           target: 'https://api.salesaya.com',
           changeOrigin: true,

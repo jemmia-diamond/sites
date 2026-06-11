@@ -48,6 +48,16 @@ export function BottomNav() {
           </Link>
         );
       })}
+
+      {/* Try on button */}
+      <button
+        onClick={() => window.dispatchEvent(new Event("tryon:open"))}
+        className="relative h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
+      >
+        <span className="nav-tab-item nav-tab-item-inactive">
+          Try on
+        </span>
+      </button>
     </nav>
   );
 }
