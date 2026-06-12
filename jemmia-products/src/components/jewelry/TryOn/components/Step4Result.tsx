@@ -16,6 +16,7 @@ interface MobileStep4Props {
   setIsFullscreen: (f: boolean) => void;
   handleTryOn: () => void;
   generationError?: string | null;
+  isTryingOn?: boolean;
 }
 
 export function MobileStep4({
@@ -28,6 +29,7 @@ export function MobileStep4({
   setIsFullscreen,
   handleTryOn,
   generationError,
+  isTryingOn = false,
 }: MobileStep4Props) {
   return (
     <div className="grow flex flex-col justify-between min-h-0 overflow-hidden">
@@ -68,7 +70,8 @@ export function MobileStep4({
         ) : !selectedGeneratedImage ? (
           <Button
             onClick={handleTryOn}
-            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            disabled={isTryingOn}
+            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
           >
             Tạo ảnh mới
             <ArrowCounterClockwise size={16} weight="bold" />
@@ -101,6 +104,7 @@ interface DesktopStep4BottomProps {
   isGenerating: boolean;
   selectedGeneratedImage: string | null;
   handleTryOn: () => void;
+  isTryingOn?: boolean;
 }
 
 export function DesktopStep4Bottom({
@@ -108,6 +112,7 @@ export function DesktopStep4Bottom({
   isGenerating,
   selectedGeneratedImage,
   handleTryOn,
+  isTryingOn = false,
 }: DesktopStep4BottomProps) {
   return (
     <div className="flex flex-col gap-2">
@@ -148,7 +153,8 @@ export function DesktopStep4Bottom({
         ) : !selectedGeneratedImage ? (
           <Button
             onClick={handleTryOn}
-            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            disabled={isTryingOn}
+            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
           >
             Tạo ảnh mới
             <ArrowCounterClockwise size={16} weight="bold" />
