@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { ProductModel, PaginateResponse } from "../../../types";
 import { NavLinks } from "./NavLinks";
 import { SearchDropdown } from "./SearchDropdown";
+import { Sparkle } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { TryOnDrawer } from "../../jewelry/TryOnDrawer";
 
 interface HeaderProps {
   searchPlaceholder: string;
@@ -25,6 +28,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isTryOnOpen, setIsTryOnOpen] = useState(false);
 
   useEffect(() => {
     const handleClearSearch = () => {
@@ -33,8 +37,16 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsOpen(false);
     };
 
+    const handleOpenTryOn = () => {
+      setIsTryOnOpen(true);
+    };
+
     window.addEventListener("search:clear", handleClearSearch);
-    return () => window.removeEventListener("search:clear", handleClearSearch);
+    window.addEventListener("tryon:open", handleOpenTryOn);
+    return () => {
+      window.removeEventListener("search:clear", handleClearSearch);
+      window.removeEventListener("tryon:open", handleOpenTryOn);
+    };
   }, []);
 
   useEffect(() => {
@@ -48,7 +60,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsLoading(true);
       setIsOpen(true);
       try {
-        const response = await axios.get(`/products/search-combine?query=${encodeURIComponent(query)}`);
+        const response = await axios.get(`/site/products/search-combine?query=${encodeURIComponent(query)}`);
         setResults(response.data);
       } catch (error) {
         console.error("Search error:", error);
@@ -75,7 +87,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         <NavLinks items={NAV_ITEMS} />
       </div>
 
-      <div className="flex flex-1 justify-end">
+      <div className="flex flex-1 justify-end items-center gap-3">
         <SearchDropdown
           query={query}
           isLoading={isLoading}
@@ -85,6 +97,14 @@ export function Header({ searchPlaceholder }: HeaderProps) {
           onClose={() => setIsOpen(false)}
           searchPlaceholder={searchPlaceholder}
         />
+        <Button
+          onClick={() => setIsTryOnOpen(true)}
+          className="bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer xl:hidden"
+        >
+          <Sparkle size={18} className="text-white" />
+          <span>Try on</span>
+        </Button>
+        <TryOnDrawer isOpen={isTryOnOpen} onClose={() => setIsTryOnOpen(false)} />
       </div>
     </header>
   );
