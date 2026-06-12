@@ -16,6 +16,7 @@ interface MobileStep3Props {
   mobileSentinelRef: React.RefObject<HTMLDivElement>;
   setToastMessage: (msg: string | null) => void;
   handleTryOn: () => void;
+  isTryingOn?: boolean;
 }
 
 export function MobileStep3({
@@ -29,6 +30,7 @@ export function MobileStep3({
   mobileSentinelRef,
   setToastMessage,
   handleTryOn,
+  isTryingOn = false,
 }: MobileStep3Props) {
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
@@ -55,7 +57,10 @@ export function MobileStep3({
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-10 text-xs font-semibold pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] placeholder-[#7A869A]"
         />
-        <MagnifyingGlass size={16} className="absolute right-4 top-3 text-[#7A869A]" />
+        <MagnifyingGlass
+          size={16}
+          className="absolute right-4 top-3 text-[#7A869A]"
+        />
       </div>
 
       {/* Catalog list area */}
@@ -127,6 +132,7 @@ export function MobileStep3({
       {/* Bottom Actions for Step 3 */}
       <div className="pt-2 shrink-0">
         <Button
+          disabled={isTryingOn}
           onClick={() => {
             if (!selectedRing) {
               setToastMessage("Vui lòng chọn 1 chiếc nhẫn để tiếp tục");
@@ -134,9 +140,9 @@ export function MobileStep3({
             }
             handleTryOn();
           }}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+          className="w-full bg-secondary-800 hover:bg-secondary-700 disabled:bg-secondary-800/50 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
         >
-          Thử Nhẫn
+          {isTryingOn ? "Đang xử lý ở tab khác..." : "Thử Nhẫn"}
           <Sparkle size={18} />
         </Button>
       </div>
@@ -172,8 +178,8 @@ export function DesktopStep3Left({
           Chọn trang sức của bạn
         </p>
         <p className="text-xs text-primary-600 font-normal mt-1">
-          Khám phá bộ sưu tập của chúng tôi và chọn một thiết kế để thử trực tiếp
-          trên tay bạn
+          Khám phá bộ sưu tập của chúng tôi và chọn một thiết kế để thử trực
+          tiếp trên tay bạn
         </p>
       </div>
       <div className="relative shrink-0 w-[400px] max-w-full">
@@ -184,7 +190,10 @@ export function DesktopStep3Left({
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-10 text-xs font-semibold pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] placeholder-[#7A869A]"
         />
-        <MagnifyingGlass size={16} className="absolute right-4 top-3.5 text-primary-400" />
+        <MagnifyingGlass
+          size={16}
+          className="absolute right-4 top-3.5 text-primary-400"
+        />
       </div>
 
       {/* Catalog list inside left panel */}
@@ -259,11 +268,13 @@ export function DesktopStep3Left({
 interface DesktopStep3RightProps {
   selectedRing: ProductModel | null;
   handleTryOn: () => void;
+  isTryingOn?: boolean;
 }
 
 export function DesktopStep3Right({
   selectedRing,
   handleTryOn,
+  isTryingOn = false,
 }: DesktopStep3RightProps) {
   return (
     <div className="grow h-full flex flex-col justify-between items-center min-w-0 overflow-y-auto">
@@ -307,7 +318,8 @@ export function DesktopStep3Right({
                 <Sparkle size={32} />
               </div>
               <p className="text-sm font-semibold text-primary-500">
-                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử nghiệm.
+                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử
+                nghiệm.
               </p>
             </div>
           )}
@@ -316,10 +328,10 @@ export function DesktopStep3Right({
         {/* Try On Button */}
         <Button
           onClick={handleTryOn}
-          disabled={!selectedRing}
-          className="w-full bg-[#004B49] text-white hover:bg-[#003C3A] font-bold uppercase tracking-widest text-sm h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+          disabled={!selectedRing || isTryingOn}
+          className="w-full bg-secondary-800 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
         >
-          Try On
+          Thử nhẫn
           <Sparkle size={16} weight="fill" />
         </Button>
       </div>

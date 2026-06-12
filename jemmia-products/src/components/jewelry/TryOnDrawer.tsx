@@ -58,6 +58,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [selectedGeneratedImage, setSelectedGeneratedImage] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [isTryingOn, setisTryingOn] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,33 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Monitor isTryingOn in localStorage across tabs/windows
+  useEffect(() => {
+    const checkStorage = () => {
+      setisTryingOn(localStorage.getItem("isTryingOn") === "true");
+    };
+    checkStorage();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "isTryingOn") {
+        setisTryingOn(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Reset the device isTryingOn lock if this tab unloads while generating
+  useEffect(() => {
+    const handleUnload = () => {
+      if (localStorage.getItem("isTryingOn") === "true") {
+        localStorage.setItem("isTryingOn", "false");
+      }
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
   // Custom Hooks
@@ -167,7 +195,19 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   };
 
   const handleTryOn = async () => {
-    if (!selectedRing || !uploadedImage) return;
+    if (localStorage.getItem("isTryingOn") === "true") {
+      setToastMessage("Hệ thống đang xử lý yêu cầu thử nhẫn trên một cửa sổ khác.");
+      return;
+    }
+
+    localStorage.setItem("isTryingOn", "true");
+    setisTryingOn(true);
+
+    if (!selectedRing || !uploadedImage) {
+      localStorage.setItem("isTryingOn", "false");
+      setisTryingOn(false);
+      return;
+    }
 
     setStep(4);
     setIsGenerating(true);
@@ -175,7 +215,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
-    const isFakeMode = false; // Set to true to mock image generation for UI development
+    const isFakeMode = true; // Set to true to mock image generation for UI development
 
     if (isFakeMode) {
       setTimeout(() => {
@@ -188,7 +228,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         setGeneratedImages(mockUrls);
         setGeneratedImage(mockUrls[0]);
         setIsGenerating(false);
-      }, 2000);
+      }, 10000);
       return;
     }
 
@@ -349,6 +389,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       }
     } finally {
       setIsGenerating(false);
+      localStorage.setItem("isTryingOn", "false");
+      setisTryingOn(false);
     }
   };
 
@@ -688,6 +730,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       mobileSentinelRef={mobileSentinelRef}
                       setToastMessage={setToastMessage}
                       handleTryOn={handleTryOn}
+                      isTryingOn={isTryingOn}
                     />
                   )}
                   {step === 4 && (
@@ -701,6 +744,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setIsFullscreen={setIsFullscreen}
                       handleTryOn={handleTryOn}
                       generationError={generationError}
+                      isTryingOn={isTryingOn}
                     />
                   )}
                 </div>
@@ -772,6 +816,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           isGenerating={isGenerating}
                           selectedGeneratedImage={selectedGeneratedImage}
                           handleTryOn={handleTryOn}
+                          isTryingOn={isTryingOn}
                         />
                       )}
                     </div>
@@ -782,6 +827,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     <DesktopStep3Right
                       selectedRing={selectedRing}
                       handleTryOn={handleTryOn}
+                      isTryingOn={isTryingOn}
                     />
                   ) : step === 4 ? (
                     /* Desktop Step 4 Right Panel */
