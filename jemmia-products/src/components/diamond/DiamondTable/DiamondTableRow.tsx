@@ -78,14 +78,18 @@ export function DiamondTableRow({
       <TableRow
         className={cn(
           "transition-all group min-h-[3.5rem] relative hidden md:table-row border-primary-100 hover:bg-primary-50/30 divide-primary-50",
-          diamond.inCombo && "bg-amber-50/30 hover:bg-amber-50/50",
           fullNoteText ? "border-b-white" : "border-primary-100",
         )}
       >
         <TableCell className="px-2 md:pl-3 md:pr-3 py-2 text-left w-[180px]">
           <div className="flex flex-col items-start gap-1">
-            <div className="flex items-center justify-start gap-0">
+            <div className="flex items-center justify-start gap-2">
               <ProductCodes product={codeProduct} isExpanded={false} className="w-[130px] !justify-start align-caret-right" />
+                  {diamond.inCombo && (
+                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
+                    Không bán lẻ
+                  </Badge>
+                )}
             </div>
           </div>
         </TableCell>
