@@ -72,43 +72,26 @@ export function ResultCanvas({
   }
 
   if (!selectedGeneratedImage) {
-    /* State B: Choose picture / 2x2 grid */
+    /* State B: Choose picture / single image preview or skeleton */
+    const firstImg = generatedImages[0];
+    if (firstImg) {
+      return (
+        <div className="w-full h-full relative overflow-hidden mx-auto flex items-center justify-center">
+          <div className="relative w-fit h-fit max-w-full max-h-full bg-white border border-slate-200 shadow-md rounded-lg overflow-hidden">
+            <img
+              src={firstImg}
+              className="max-w-full max-h-full block w-auto h-auto cursor-pointer"
+              alt="AI Generated Try On Result"
+              onClick={() => handleSelectGeneratedImage(firstImg)}
+            />
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div
-        className={`w-full h-full grid grid-cols-2 grid-rows-2 ${
-          isMobile ? "gap-2" : "gap-4"
-        } mx-auto`}
-      >
-        {Array.from({ length: 4 }).map((_, idx) => {
-          const img = generatedImages[idx];
-          if (img) {
-            return (
-              <div
-                key={idx}
-                onClick={() => handleSelectGeneratedImage(img)}
-                className={`w-full h-full bg-slate-50 border border-slate-100 rounded-lg overflow-hidden cursor-pointer shadow-sm ${
-                  isMobile
-                    ? "active:scale-98"
-                    : "hover:shadow-md hover:scale-[1.02] active:scale-98"
-                } transition-all duration-200`}
-              >
-                <img
-                  src={img}
-                  className="w-full h-full object-cover"
-                  alt={`Generated Option ${idx + 1}`}
-                />
-              </div>
-            );
-          }
-          return (
-            <div
-              key={idx}
-              className="w-full h-full bg-slate-100 border border-dashed border-slate-200 rounded-lg flex items-center justify-center"
-            >
-              <Skeleton className="w-full h-full rounded-lg" />
-            </div>
-          );
-        })}
+      <div className="w-full h-full bg-slate-100 border border-slate-200 shadow-md rounded-lg relative overflow-hidden flex items-center justify-center select-none mx-auto min-h-[300px]">
+        <Skeleton className="w-full h-full rounded-lg" />
       </div>
     );
   }

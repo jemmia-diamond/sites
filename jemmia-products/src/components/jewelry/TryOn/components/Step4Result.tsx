@@ -14,9 +14,8 @@ interface MobileStep4Props {
   handleSelectGeneratedImage: (img: string | null) => void;
   handleDownload: () => void;
   setIsFullscreen: (f: boolean) => void;
-  handleTryOn: () => void;
+  onBackToStep3: () => void;
   generationError?: string | null;
-  isTryingOn?: boolean;
 }
 
 export function MobileStep4({
@@ -27,9 +26,8 @@ export function MobileStep4({
   handleSelectGeneratedImage,
   handleDownload,
   setIsFullscreen,
-  handleTryOn,
+  onBackToStep3,
   generationError,
-  isTryingOn = false,
 }: MobileStep4Props) {
   return (
     <div className="grow flex flex-col justify-between min-h-0 overflow-hidden">
@@ -60,24 +58,6 @@ export function MobileStep4({
           generationError={generationError}
         />
       </div>
-
-      {/* Bottom Buttons */}
-      <div className="flex flex-col gap-2 shrink-0">
-        {isGenerating ? (
-          <div className="h-11 mt-4 flex items-center justify-center text-xs text-primary-400 font-semibold select-none animate-pulse">
-            Đang tạo hình ảnh...
-          </div>
-        ) : !selectedGeneratedImage ? (
-          <Button
-            onClick={handleTryOn}
-            disabled={isTryingOn}
-            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
-          >
-            Tạo ảnh mới
-            <ArrowCounterClockwise size={16} weight="bold" />
-          </Button>
-        ) : null}
-      </div>
     </div>
   );
 }
@@ -103,16 +83,14 @@ interface DesktopStep4BottomProps {
   selectedRing: ProductModel | null;
   isGenerating: boolean;
   selectedGeneratedImage: string | null;
-  handleTryOn: () => void;
-  isTryingOn?: boolean;
+  onBackToStep3: () => void;
 }
 
 export function DesktopStep4Bottom({
   selectedRing,
   isGenerating,
   selectedGeneratedImage,
-  handleTryOn,
-  isTryingOn = false,
+  onBackToStep3,
 }: DesktopStep4BottomProps) {
   return (
     <div className="flex flex-col gap-2">
@@ -144,23 +122,6 @@ export function DesktopStep4Bottom({
           </div>
         </div>
       )}
-      {/* Bottom Buttons */}
-      <div className="flex flex-col gap-2 shrink-0">
-        {isGenerating ? (
-          <div className="h-11 mt-4 flex items-center justify-center text-xs text-primary-400 font-semibold select-none animate-pulse">
-            Đang tạo hình ảnh...
-          </div>
-        ) : !selectedGeneratedImage ? (
-          <Button
-            onClick={handleTryOn}
-            disabled={isTryingOn}
-            className="w-full mt-4 mx-auto border border-primary-900 bg-white hover:bg-primary-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-300 text-primary-900 font-semibold text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer"
-          >
-            Tạo ảnh mới
-            <ArrowCounterClockwise size={16} weight="bold" />
-          </Button>
-        ) : null}
-      </div>
     </div>
   );
 }
