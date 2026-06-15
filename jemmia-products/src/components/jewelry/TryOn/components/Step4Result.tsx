@@ -1,10 +1,7 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
 import { ArrowCounterClockwise, ImageSquare } from "@phosphor-icons/react";
 import { ProductModel } from "../../../../types";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { ResultCanvas } from "./ResultCanvas";
-import { formatPrice } from "../utils";
 
 interface MobileStep4Props {
   isGenerating: boolean;
@@ -14,7 +11,6 @@ interface MobileStep4Props {
   handleSelectGeneratedImage: (img: string | null) => void;
   handleDownload: () => void;
   setIsFullscreen: (f: boolean) => void;
-  onBackToStep3: () => void;
   generationError?: string | null;
 }
 
@@ -26,7 +22,6 @@ export function MobileStep4({
   handleSelectGeneratedImage,
   handleDownload,
   setIsFullscreen,
-  onBackToStep3,
   generationError,
 }: MobileStep4Props) {
   return (
@@ -83,14 +78,12 @@ interface DesktopStep4BottomProps {
   selectedRing: ProductModel | null;
   isGenerating: boolean;
   selectedGeneratedImage: string | null;
-  onBackToStep3: () => void;
 }
 
 export function DesktopStep4Bottom({
   selectedRing,
   isGenerating,
   selectedGeneratedImage,
-  onBackToStep3,
 }: DesktopStep4BottomProps) {
   return (
     <div className="flex flex-col gap-2">

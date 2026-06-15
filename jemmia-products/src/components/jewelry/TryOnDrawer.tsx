@@ -653,6 +653,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 <button
                   onClick={() => {
                     stopCamera();
+                    if (step === 4) {
+                      setStep(1);
+                      setUploadedImage(null);
+                      setSelectedRing(null);
+                      setGeneratedImage(null);
+                      setGeneratedImages([]);
+                      setSelectedGeneratedImage(null);
+                      setGenerationError(null);
+                    }
                     onClose();
                   }}
                   className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
