@@ -215,20 +215,20 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
-    const isFakeMode = true; // Set to true to mock image generation for UI development
+    const isFakeMode = false; // Set to true to mock image generation for UI development
 
     if (isFakeMode) {
       setTimeout(() => {
         const mockUrls = [
           "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=600&auto=format&fit=crop",
         ];
         setGeneratedImages(mockUrls);
         setGeneratedImage(mockUrls[0]);
+        setSelectedGeneratedImage(mockUrls[0]);
         setIsGenerating(false);
-      }, 10000);
+        localStorage.setItem("isTryingOn", "false");
+        setisTryingOn(false);
+      }, 1000);
       return;
     }
 
@@ -332,7 +332,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         formData.append("isFake", "true");
       }
 
-      const promises = Array.from({ length: 4 }).map(() =>
+      const promises = Array.from({ length: 1 }).map(() =>
         axios.post<{
           base64: string;
           mimeType: string;
@@ -359,15 +359,13 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       if (urls.length === 0 && isFakeMode) {
         urls = [
           "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=600&auto=format&fit=crop",
         ];
       }
 
       if (urls.length > 0) {
         setGeneratedImages(urls);
         setGeneratedImage(urls[0]);
+        setSelectedGeneratedImage(urls[0]);
       } else {
         setToastMessage("Không thể tạo hình ảnh thử trực tuyến.");
         setGenerationError("Không thể tạo hình ảnh thử trực tuyến.");
@@ -376,12 +374,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       if (isFakeMode) {
         const mockUrls = [
           "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop",
-          "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=600&auto=format&fit=crop",
         ];
         setGeneratedImages(mockUrls);
         setGeneratedImage(mockUrls[0]);
+        setSelectedGeneratedImage(mockUrls[0]);
       } else {
         console.error("Image generation failed:", e);
         setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
@@ -623,12 +619,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 ) : (
                   <button
                     onClick={() => {
-                      if (step === 4 && selectedGeneratedImage) {
-                        handleSelectGeneratedImage(null);
-                      } else {
-                        if (step === 2) stopCamera();
-                        setStep(step - 1);
-                      }
+                      if (step === 2) stopCamera();
+                      setStep(step - 1);
                     }}
                     className="text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
                   >
@@ -661,6 +653,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 <button
                   onClick={() => {
                     stopCamera();
+                    if (step === 4) {
+                      setStep(1);
+                      setUploadedImage(null);
+                      setSelectedRing(null);
+                      setGeneratedImage(null);
+                      setGeneratedImages([]);
+                      setSelectedGeneratedImage(null);
+                      setGenerationError(null);
+                    }
                     onClose();
                   }}
                   className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
@@ -742,9 +743,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       handleSelectGeneratedImage={handleSelectGeneratedImage}
                       handleDownload={handleDownload}
                       setIsFullscreen={setIsFullscreen}
-                      handleTryOn={handleTryOn}
+                      onBackToStep3={() => setStep(3)}
                       generationError={generationError}
-                      isTryingOn={isTryingOn}
                     />
                   )}
                 </div>
@@ -815,8 +815,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           selectedRing={selectedRing}
                           isGenerating={isGenerating}
                           selectedGeneratedImage={selectedGeneratedImage}
-                          handleTryOn={handleTryOn}
-                          isTryingOn={isTryingOn}
+                          onBackToStep3={() => setStep(3)}
                         />
                       )}
                     </div>

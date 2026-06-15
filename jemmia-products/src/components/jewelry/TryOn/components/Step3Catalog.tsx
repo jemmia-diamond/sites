@@ -30,7 +30,7 @@ export function MobileStep3({
   mobileSentinelRef,
   setToastMessage,
   handleTryOn,
-  isTryingOn = false,
+  isTryingOn,
 }: MobileStep3Props) {
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
