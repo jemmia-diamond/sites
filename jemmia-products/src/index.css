@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 @theme {
+  --breakpoint-lg: 65rem; /* 1025px */
   --font-sans: "Inter", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
