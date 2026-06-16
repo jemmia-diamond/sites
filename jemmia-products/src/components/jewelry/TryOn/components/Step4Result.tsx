@@ -1,7 +1,10 @@
+import React, { useState } from "react";
 import { ArrowCounterClockwise, ImageSquare } from "@phosphor-icons/react";
 import { ProductModel } from "../../../../types";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { ResultCanvas } from "./ResultCanvas";
+import { Button } from "@/components/ui/button";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 interface MobileStep4Props {
   isGenerating: boolean;
@@ -12,6 +15,7 @@ interface MobileStep4Props {
   handleDownload: () => void;
   setIsFullscreen: (f: boolean) => void;
   generationError?: string | null;
+  selectedRing: ProductModel | null;
 }
 
 export function MobileStep4({
@@ -23,7 +27,9 @@ export function MobileStep4({
   handleDownload,
   setIsFullscreen,
   generationError,
+  selectedRing,
 }: MobileStep4Props) {
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   return (
     <div className="grow flex flex-col justify-between min-h-0 overflow-hidden">
       {/* Progress Bar & Info */}
@@ -53,6 +59,56 @@ export function MobileStep4({
           generationError={generationError}
         />
       </div>
+
+      {/* Bottom Actions for Step 4 */}
+      {selectedRing && (
+        <div className="pt-2 shrink-0">
+          <Button
+            onClick={() => setIsBottomSheetOpen(true)}
+            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+          >
+            Xem Sản Phẩm
+          </Button>
+        </div>
+      )}
+
+      <BottomSheet
+        open={isBottomSheetOpen}
+        onOpenChange={setIsBottomSheetOpen}
+        title="Thông tin sản phẩm đã chọn"
+        contentClassName="pb-6"
+      >
+        {selectedRing ? (
+          <div className="flex flex-col items-center gap-4 py-2">
+            {/* Image */}
+            <div className="overflow-hidden flex items-center justify-center">
+              {selectedRing.thumbnails?.[0]?.url ? (
+                <img
+                  src={selectedRing.thumbnails?.[0]?.url}
+                  className="w-full h-full object-cover"
+                  alt={selectedRing.title}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-xs text-slate-400 gap-1.5 select-none">
+                  <ImageSquare size={36} className="text-slate-400" />
+                  <span>No Image</span>
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="w-full text-center space-y-1 px-4">
+              <h4 className="text-secondary-900 font-bold text-sm leading-snug">
+                {selectedRing.type || "Loại nhẫn"} -  {selectedRing.attributes?.designCode || "--"}
+              </h4>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-center text-primary-400 py-6">
+            Chưa có sản phẩm nào được chọn
+          </p>
+        )}
+      </BottomSheet>
     </div>
   );
 }
