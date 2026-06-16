@@ -41,6 +41,16 @@ import { MoveableRedBox } from "./TryOn/components/MoveableRedBox";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
 import { formatPrice } from "./TryOn/utils";
 
+function getSimpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
 interface TryOnDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -209,6 +219,34 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       return;
     }
 
+    const cacheKey = `tryon_cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
+    const cachedData = sessionStorage.getItem(cacheKey);
+
+    if (cachedData) {
+      try {
+        const cachedUrls = JSON.parse(cachedData) as string[];
+        if (cachedUrls && cachedUrls.length > 0) {
+          setStep(4);
+          setIsGenerating(true);
+          setGeneratedImages([]);
+          setSelectedGeneratedImage(null);
+          setGenerationError(null);
+
+          setTimeout(() => {
+            setGeneratedImages(cachedUrls);
+            setGeneratedImage(cachedUrls[0]);
+            setSelectedGeneratedImage(cachedUrls[0]);
+            setIsGenerating(false);
+            localStorage.setItem("isTryingOn", "false");
+            setisTryingOn(false);
+          }, 3000);
+          return;
+        }
+      } catch (err) {
+        console.error("Error parsing cached data:", err);
+      }
+    }
+
     setStep(4);
     setIsGenerating(true);
     setGeneratedImages([]);
@@ -366,6 +404,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         setGeneratedImages(urls);
         setGeneratedImage(urls[0]);
         setSelectedGeneratedImage(urls[0]);
+        try {
+          const cacheKey = `tryon_cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
+          sessionStorage.setItem(cacheKey, JSON.stringify(urls));
+        } catch (err) {
+          console.warn("sessionStorage quota exceeded or error caching result:", err);
+        }
       } else {
         setToastMessage("Không thể tạo hình ảnh thử trực tuyến.");
         setGenerationError("Không thể tạo hình ảnh thử trực tuyến.");
@@ -619,10 +663,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 ) : (
                   <button
                     onClick={() => {
+                      if (step === 4 && isGenerating) return;
                       if (step === 2) stopCamera();
                       setStep(step - 1);
                     }}
-                    className="text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
+                    disabled={step === 4 && isGenerating}
+                    className={cn(
+                      "text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
+                      step === 4 && isGenerating && "opacity-20 cursor-not-allowed pointer-events-none"
+                    )}
                   >
                     <ArrowLeft size={18} weight="bold" />
                   </button>
@@ -652,6 +701,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 )}
                 <button
                   onClick={() => {
+                    if (step === 4 && isGenerating) return;
                     stopCamera();
                     if (step === 4) {
                       setStep(1);
@@ -664,7 +714,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     }
                     onClose();
                   }}
-                  className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
+                  disabled={step === 4 && isGenerating}
+                  className={cn(
+                    "text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
+                    step === 4 && isGenerating && "opacity-20 cursor-not-allowed pointer-events-none"
+                  )}
                 >
                   <X size={18} weight="bold" />
                 </button>
@@ -689,6 +743,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       handleFileUpload={handleFileUpload}
                       startCamera={startCamera}
                       capturePhoto={capturePhoto}
+                      stopCamera={stopCamera}
                     />
                   )}
                   {step === 2 && (
@@ -743,7 +798,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       handleSelectGeneratedImage={handleSelectGeneratedImage}
                       handleDownload={handleDownload}
                       setIsFullscreen={setIsFullscreen}
-                      onBackToStep3={() => setStep(3)}
                       generationError={generationError}
                     />
                   )}
@@ -815,7 +869,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           selectedRing={selectedRing}
                           isGenerating={isGenerating}
                           selectedGeneratedImage={selectedGeneratedImage}
-                          onBackToStep3={() => setStep(3)}
                         />
                       )}
                     </div>
