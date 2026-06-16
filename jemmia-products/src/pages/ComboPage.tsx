@@ -347,7 +347,7 @@ export default function ComboPage() {
             <div className="flex-shrink-0 xl:w-full">
               <PageHeader
                 title="Sản phẩm nguyên chiếc"
-                description={`Hiển thị ${data?.pages[0]?.meta?.totalItems || 0} kết quả`}
+                description={`Hiển thị ${data?.pages[0]?.meta?.totalRows || 0} kết quả`}
               />
             </div>
             {/* Tablet filters bar */}
