@@ -19,6 +19,10 @@ export const jewelryService = {
       offset,
     };
 
+    if (filters.missingMedia !== undefined) {
+      params.missingMedia = filters.missingMedia;
+    }
+
     if (filters.searchQuery) {
       params.searchQuery = filters.searchQuery;
       if (filters.sortBySalePrice) {

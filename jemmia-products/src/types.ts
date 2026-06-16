@@ -26,8 +26,8 @@ export interface ProductModel {
   id: string;
   title: string;
   type: string | null;
-  basePrice: number | null; 
-  salePrice: number | null; 
+  basePrice: number | null;
+  salePrice: number | null;
   discountType: string | null;
   discountValue: number | null;
   stockStatus: StockStatus;
@@ -37,9 +37,9 @@ export interface ProductModel {
   images: { url: string }[];
   videos: { url: string }[];
   attributes: Record<string, any>;
-  collections: { 
-    id: string; 
-    name: string; 
+  collections: {
+    id: string;
+    name: string;
   }[];
   isBookmarked: boolean;
   bookmark: Bookmark | null;
@@ -95,6 +95,7 @@ export interface JewelryFilter {
   searchQuery?: string;
   ringHeadStyles?: string[];
   ringBandStyles?: string[];
+  missingMedia?: boolean;
 }
 
 export interface JewelryVariant {

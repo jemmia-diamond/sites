@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getDiamondShapeImage(shape?: string): string {
@@ -69,8 +69,13 @@ export function formatWarehouseName(name: string | null | undefined): string {
   if (lower.includes("ct") || lower.includes("cần thơ")) {
     return "Cần Thơ";
   }
-  if(lower.includes("sc")) {
+  if (lower.includes("sc")) {
     return "Cung ứng";
   }
   return trimmed;
 }
+
+export const formatEdgeSize = (value: number | string) => {
+  const num = Number(value);
+  return (Math.floor(num * 10) / 10).toFixed(1);
+};

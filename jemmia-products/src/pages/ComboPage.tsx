@@ -6,12 +6,26 @@ import { PageHeader } from "../components/layout/PageHeader";
 
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { DiamondModel, ProductModel } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { cn, getDiamondShapeImage, formatWarehouseName } from "@/lib/utils";
+import { useFilterSidebarCollapse } from "@/hooks/useFilterSidebarCollapse";
+import { ComboFilterSidebar } from "../components/jewelry/JewelryFilterSidebar/ComboFilterSidebar";
+import { Filter, X } from "lucide-react";
+import {
+  cn,
+  getDiamondShapeImage,
+  formatWarehouseName,
+  formatEdgeSize,
+} from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -28,9 +42,101 @@ import {
 } from "../components/jewelry/JewelryTable";
 
 export default function ComboPage() {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { collapsed: isFilterCollapsed, toggle: toggleFilterCollapsed } =
+    useFilterSidebarCollapse("jemmia-combo-filter-collapsed");
+  const [activeChips, setActiveChips] = useState<
+    { key: string; value: any; label: string }[]
+  >([]);
+
   const [filters, setFilters] = useState<Omit<ComboFilter, "page">>({
-    limit: 100,
+    limit: 20,
+    warehouseIds: [],
+    storageSize: [],
+    salePriceFrom: undefined,
+    salePriceTo: undefined,
+    type: undefined,
   });
+
+  const handleApplyFilters = (newFilters: Omit<ComboFilter, "page">) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }));
+  };
+
+  const handleRemoveChip = (key: string) => {
+    let nextFilters = { ...filters };
+    if (key === "salePrice") {
+      nextFilters.salePriceFrom = undefined;
+      nextFilters.salePriceTo = undefined;
+    } else {
+      const getResetValue = (k: string): any => {
+        if (["warehouseIds", "storageSize"].includes(k)) return [];
+        return undefined;
+      };
+      (nextFilters as any)[key] = getResetValue(key);
+    }
+    handleApplyFilters(nextFilters);
+  };
+
+  const handleClearAllFilters = () => {
+    const resetFilters: Omit<ComboFilter, "page"> = {
+      limit: 20,
+      warehouseIds: [],
+      storageSize: [],
+      salePriceFrom: undefined,
+      salePriceTo: undefined,
+      type: undefined,
+    };
+    handleApplyFilters(resetFilters);
+    setActiveChips([]);
+  };
+
+  const filterSortContent = (
+    <>
+      <div className="flex items-center justify-end gap-3 w-full">
+        <Button
+          onClick={() => setIsFilterOpen(true)}
+          variant="outline"
+          className="h-8 px-2 rounded-none border-primary-100 font-bold text-xs gap-0 flex items-center"
+        >
+          <Filter size={14} className="mr-2" />
+          <span className="w-max">Bộ lọc</span>
+        </Button>
+      </div>
+
+      {activeChips.length > 0 && (
+        <div className="flex md:hidden flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
+          <div className="flex flex-wrap gap-2 flex-1">
+            {activeChips.map((chip) => (
+              <Badge
+                key={chip.key}
+                variant="default"
+                className="active-chip-badge"
+              >
+                <span>{chip.label}</span>
+                <button
+                  onClick={() => handleRemoveChip(chip.key)}
+                  className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearAllFilters}
+            className="clear-filters-btn flex-shrink-0"
+          >
+            Xóa bộ lọc
+          </Button>
+        </div>
+      )}
+    </>
+  );
 
   const queryClient = useQueryClient();
 
@@ -72,7 +178,7 @@ export default function ComboPage() {
     diamondId?: string;
     isActual?: boolean;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<'web' | 'actual'>('web');
+  const [activeTab, setActiveTab] = useState<"web" | "actual">("web");
 
   const activeProductId = uploadConfig?.productId;
   const activeDiamondId = uploadConfig?.diamondId;
@@ -93,25 +199,28 @@ export default function ComboPage() {
 
   const allActualImages = activeJewelry
     ? [
-      ...(activeJewelry.images?.map((img: any) => img.url) || []),
-      ...(activeJewelry.videos?.map((v: any) => v.url) || []),
-    ]
+        ...(activeJewelry.images?.map((img: any) => img.url) || []),
+        ...(activeJewelry.videos?.map((v: any) => v.url) || []),
+      ]
     : activeDiamond
       ? [
-        ...(activeDiamond.images?.map((img: any) => img.url) || []),
-        ...(activeDiamond.videos?.map((v: any) => v.url) || []),
-      ]
+          ...(activeDiamond.images?.map((img: any) => img.url) || []),
+          ...(activeDiamond.videos?.map((v: any) => v.url) || []),
+        ]
       : [];
 
-  const displayList = activeJewelry || activeDiamond
-    ? (activeTab === 'actual' ? allActualImages : allWebImages)
-    : previewList;
+  const displayList =
+    activeJewelry || activeDiamond
+      ? activeTab === "actual"
+        ? allActualImages
+        : allWebImages
+      : previewList;
 
   const handleImageError = (url: string) =>
     setBrokenImages((prev) => new Set(prev).add(url));
 
   const handlePreview = (images: string[], index: number, config?: any) => {
-    setActiveTab(config?.isActual ? 'actual' : 'web');
+    setActiveTab(config?.isActual ? "actual" : "web");
     setPreviewList(images);
     setPreviewIndex(index);
     setMediaPreviewUrl(images[index]);
@@ -132,31 +241,33 @@ export default function ComboPage() {
 
   const handleDownloadSingle = async (url: string) => {
     try {
-      const urlParts = url.split('/');
+      const urlParts = url.split("/");
       let fileName = urlParts[urlParts.length - 1];
-      if (fileName.includes('?')) {
-        fileName = fileName.split('?')[0];
+      if (fileName.includes("?")) {
+        fileName = fileName.split("?")[0];
       }
 
-      if (!fileName.includes('.')) {
-        const ext = (url.includes('.mp4') || url.includes('.mov')) ? 'mp4' : 'jpg';
+      if (!fileName.includes(".")) {
+        const ext =
+          url.includes(".mp4") || url.includes(".mov") ? "mp4" : "jpg";
         fileName = `media_${Date.now()}.${ext}`;
       }
 
-      const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+      const cacheBusterUrl =
+        url + (url.includes("?") ? "&" : "?") + "cb=" + new Date().getTime();
 
       try {
         const response = await fetch(cacheBusterUrl, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-store'
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
         });
 
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error("Network response was not ok");
 
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = blobUrl;
         link.download = fileName;
         document.body.appendChild(link);
@@ -168,7 +279,7 @@ export default function ComboPage() {
         }, 100);
       } catch (fetchError) {
         console.warn("Fetch failed, falling back to window.open", fetchError);
-        window.open(url, '_blank');
+        window.open(url, "_blank");
       }
     } catch (error) {
       console.error("Lỗi khi tải file:", url, error);
@@ -195,12 +306,89 @@ export default function ComboPage() {
 
   return (
     <LayoutShell searchPlaceholder="Nhập mã để bắt đầu tìm kiếm">
+      {/* Backdrop overlay for mobile/tablet filter drawer */}
+      {isFilterOpen && (
+        <div
+          className="xl:hidden fixed inset-0 bg-black/40 z-[9999] animate-in fade-in duration-200"
+          onClick={() => setIsFilterOpen(false)}
+        />
+      )}
+
+      <div
+        className={cn(
+          // Desktop: relative sidebar
+          "xl:relative xl:inset-auto xl:bg-transparent xl:translate-x-0 shrink-0",
+          // Mobile/Tablet: right-side fixed drawer
+          "fixed inset-y-0 right-0 bg-white transition-all duration-300 ease-out",
+          isFilterOpen
+            ? "translate-x-0 z-[10000]"
+            : "translate-x-full xl:translate-x-0 z-[60]",
+          // Width: full on phone, 380px on tablet, collapsed/expanded on desktop
+          "w-full md:w-[380px] h-full",
+          isFilterCollapsed ? "xl:w-16" : "xl:w-80",
+        )}
+      >
+        <div className="h-full relative flex flex-col">
+          <ComboFilterSidebar
+            onApply={handleApplyFilters}
+            currentFilters={filters}
+            onClose={() => setIsFilterOpen(false)}
+            onToggleCollapse={toggleFilterCollapsed}
+            onChipsChange={setActiveChips}
+            isCollapsed={isFilterCollapsed}
+            isOpen={isFilterOpen}
+          />
+        </div>
+      </div>
+
       <main className="flex-1 flex flex-col bg-white px-4 xl:px-6 pt-4 md:pt-0  xl:pt-4 pb-2 gap-4 md:gap-0 xl:gap-4 w-full max-w-full min-w-0 xl:overflow-hidden min-h-0">
         <div className="flex flex-col md:sticky md:top-12 xl:top-0 z-51 w-full bg-white justify-between md:gap-2 py-0 md:py-3 xl:py-0">
-          <PageHeader
-            title="Sản phẩm nguyên chiếc"
-            description={`Hiển thị ${data?.pages[0]?.meta.totalItems || 0} kết quả`}
-          />
+          <div className="flex justify-between items-center w-full">
+            <div className="flex-shrink-0 xl:w-full">
+              <PageHeader
+                title="Sản phẩm nguyên chiếc"
+                description={`Hiển thị ${data?.pages[0]?.meta?.totalItems || 0} kết quả`}
+              />
+            </div>
+            {/* Tablet filters bar */}
+            <div className="hidden md:flex xl:hidden bg-white flex-col md:gap-4 w-full border-b border-primary-50 md:border-none py-2">
+              {filterSortContent}
+            </div>
+          </div>
+          {activeChips.length > 0 && (
+            <div className="hidden md:flex xl:hidden flex-wrap gap-2 flex-shrink-0 pt-1 items-center pt-2 md:pt-0">
+              <div className="flex flex-wrap gap-2 flex-1">
+                {activeChips.map((chip) => (
+                  <Badge
+                    key={chip.key}
+                    variant="default"
+                    className="active-chip-badge"
+                  >
+                    <span>{chip.label}</span>
+                    <button
+                      onClick={() => handleRemoveChip(chip.key)}
+                      className="ml-1 rounded-full p-0.5 hover:bg-primary-200/50 cursor-pointer transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAllFilters}
+                className="clear-filters-btn flex-shrink-0"
+              >
+                Xóa bộ lọc
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile-only sticky filters bar */}
+        <div className="md:hidden sticky top-12 z-40 bg-white flex flex-col w-full border-b border-primary-50 py-2">
+          {filterSortContent}
         </div>
 
         <div className="flex-1 bg-white flex flex-col min-h-0 w-full max-w-full md:overflow-hidden md:border md:border-primary-100">
@@ -268,13 +456,27 @@ export default function ComboPage() {
                 <Table className="hidden md:table w-full border-collapse animate-pulse">
                   <TableHeader className="hidden md:table-header-group">
                     <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">Hình ảnh</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Định danh</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">Thông tin combo</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">Vị trí kho</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">Hình ảnh thực tế</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">Giá chi tiết</TableHead>
-                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Tổng cộng</TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">
+                        Hình ảnh
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">
+                        Định danh
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">
+                        Thông tin combo
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">
+                        Vị trí kho
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">
+                        Hình ảnh thực tế
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">
+                        Giá chi tiết
+                      </TableHead>
+                      <TableHead className="bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">
+                        Tổng cộng
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -282,7 +484,10 @@ export default function ComboPage() {
                       <Fragment key={groupIndex}>
                         {/* Row 1: Jewelry skeleton */}
                         <TableRow className="border-b border-primary-50 divide-x divide-primary-50">
-                          <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]">
+                          <TableCell
+                            rowSpan={2}
+                            className="px-2 xl:px-4 py-2 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]"
+                          >
                             <Skeleton className="h-10 w-10 lg:h-12 lg:w-12 bg-primary-100/50 rounded mx-auto" />
                           </TableCell>
                           <TableCell className="px-2 xl:px-4 py-2 w-[110px] lg:w-[125px] xl:w-[140px]">
@@ -303,7 +508,10 @@ export default function ComboPage() {
                           <TableCell className="px-2 xl:px-4 py-2 w-[100px] lg:w-[120px] xl:w-[140px]">
                             <Skeleton className="h-4 w-12 lg:w-16 bg-primary-100/50 ml-auto" />
                           </TableCell>
-                          <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 align-middle text-right w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50">
+                          <TableCell
+                            rowSpan={2}
+                            className="px-2 xl:px-4 py-2 align-middle text-right w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50"
+                          >
                             <div className="flex flex-col items-end gap-1 justify-center h-full">
                               <Skeleton className="h-3 w-12 lg:w-16 bg-primary-100/50" />
                               <Skeleton className="h-4 w-16 lg:w-24 bg-primary-100/50" />
@@ -357,13 +565,27 @@ export default function ComboPage() {
                 <Table className="hidden md:table w-full border-collapse">
                   <TableHeader className="hidden md:table-header-group">
                     <TableRow className="border-b border-primary-100 hover:bg-transparent">
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">Hình ảnh</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Định danh</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">Thông tin combo</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">Vị trí kho</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">Hình ảnh thực tế</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">Giá chi tiết</TableHead>
-                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">Tổng cộng</TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[70px] lg:w-[80px] xl:w-[90px]">
+                        Hình ảnh
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">
+                        Định danh
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-left text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[120px]">
+                        Thông tin combo
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 whitespace-normal min-w-[90px]">
+                        Vị trí kho
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-center text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[145px] xl:w-[180px]">
+                        Hình ảnh thực tế
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[100px] lg:w-[120px] xl:w-[140px]">
+                        Giá chi tiết
+                      </TableHead>
+                      <TableHead className="sticky top-0 z-50 bg-primary-50 h-10 px-2 xl:px-4 py-0 text-right text-[11px] font-bold uppercase tracking-wider text-primary-700 w-[110px] lg:w-[125px] xl:w-[140px]">
+                        Tổng cộng
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -439,10 +661,10 @@ function ComboTableRows({
   const fourView = jewelry.attributes?.["4view"];
   const isBundle = jewelry.products && jewelry.products.length > 0;
   const subProductNam = jewelry.products?.find(
-    (p: any) => p.attributes?.gender === "Nam"
+    (p: any) => p.attributes?.gender === "Nam",
   );
   const subProductNu = jewelry.products?.find(
-    (p: any) => p.attributes?.gender === "Nữ"
+    (p: any) => p.attributes?.gender === "Nữ",
   );
   const fourViewNam = subProductNam?.attributes?.["4view"];
   const fourViewNu = subProductNu?.attributes?.["4view"];
@@ -501,27 +723,31 @@ function ComboTableRows({
     variant.attributes?.ringSize ? `Ni ${variant.attributes.ringSize}` : null,
     formatGoldWeight(
       variant.attributes?.serialNumber?.goldWeight ||
-      variant.attributes?.goldWeight
+        variant.attributes?.goldWeight,
     ) !== "-"
       ? formatGoldWeight(
-        variant.attributes?.serialNumber?.goldWeight ||
-        variant.attributes?.goldWeight
-      )
+          variant.attributes?.serialNumber?.goldWeight ||
+            variant.attributes?.goldWeight,
+        )
       : null,
   ]
     .filter(Boolean)
     .join(" - ");
 
-  const formatEdgeSize = (size: number) => {
-    return size % 1 === 0 ? size.toFixed(0) : size.toFixed(1);
+  const formatEdgeSize = (value: number | string) => {
+    const num = Number(value);
+    return (Math.floor(num * 10) / 10).toFixed(1);
   };
   const sizeStr = diamond.attributes?.edgeSize1
-    ? `${formatEdgeSize(Number(diamond.attributes.edgeSize1))}${diamond.attributes?.edgeSize2
-      ? `x${formatEdgeSize(Number(diamond.attributes.edgeSize2))}`
-      : ""
-    }`
+    ? `${formatEdgeSize(Number(diamond.attributes.edgeSize1))}${
+        diamond.attributes?.edgeSize2
+          ? `x${formatEdgeSize(Number(diamond.attributes.edgeSize2))}`
+          : ""
+      }`
     : "";
-  const caratStr = diamond.attributes?.carat ? `${diamond.attributes.carat}ct` : "";
+  const caratStr = diamond.attributes?.carat
+    ? `${diamond.attributes.carat}ct`
+    : "";
   const diamondSpecs = [
     sizeStr,
     diamond.attributes?.color,
@@ -544,7 +770,10 @@ function ComboTableRows({
     <>
       {/* Row 1: Jewelry */}
       <TableRow className="border-b border-primary-50 divide-x divide-primary-50 hover:bg-primary-50/10 transition-colors">
-        <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 border-r border-primary-50 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]">
+        <TableCell
+          rowSpan={2}
+          className="px-2 xl:px-4 py-2 border-r border-primary-50 align-middle text-center w-[70px] lg:w-[80px] xl:w-[90px]"
+        >
           <div className="w-10 h-10 lg:w-12 lg:h-12 flex-shrink-0 overflow-hidden border border-primary-100 bg-primary-50/40 flex items-center justify-center mx-auto">
             {jewelryImage ? (
               <img
@@ -553,12 +782,17 @@ function ComboTableRows({
                 className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
                 onClick={() => {
                   const showActual = jewelryWebImages.length === 0;
-                  onPreview(showActual ? jewelryActualImages : jewelryWebImages, 0, {
-                    productId: jewelry.id,
-                    isActual: showActual,
-                    designCode: jewelry.attributes?.designCode || jewelry.title,
-                    showUpload: false,
-                  });
+                  onPreview(
+                    showActual ? jewelryActualImages : jewelryWebImages,
+                    0,
+                    {
+                      productId: jewelry.id,
+                      isActual: showActual,
+                      designCode:
+                        jewelry.attributes?.designCode || jewelry.title,
+                      showUpload: false,
+                    },
+                  );
                 }}
               />
             ) : (
@@ -567,24 +801,26 @@ function ComboTableRows({
           </div>
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-left w-[130px] lg:w-[130px] xl:w-[140px]">
-          <ProductCodes product={jewelry} isExpanded={false} className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start" />
+          <ProductCodes
+            product={jewelry}
+            isExpanded={false}
+            className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start"
+          />
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-semibold text-primary-700">
               {jewelrySpecs}
             </span>
-            {
-              fourView && Array.isArray(fourView) && fourView.length > 0 && (
-                <div >
-                  <SideStoneTooltip
-                    fourView={fourView as any}
-                    isExpanded={false}
-                    className="text-[10px] px-1 py-0"
-                  />
-                </div>
-              )
-            }
+            {fourView && Array.isArray(fourView) && fourView.length > 0 && (
+              <div>
+                <SideStoneTooltip
+                  fourView={fourView as any}
+                  isExpanded={false}
+                  className="text-[10px] px-1 py-0"
+                />
+              </div>
+            )}
           </div>
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words">
@@ -624,7 +860,10 @@ function ComboTableRows({
             </span>
           </div>
         </TableCell>
-        <TableCell rowSpan={2} className="px-2 xl:px-4 py-2 text-right align-middle w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50">
+        <TableCell
+          rowSpan={2}
+          className="px-2 xl:px-4 py-2 text-right align-middle w-[110px] lg:w-[125px] xl:w-[140px] border-l border-primary-50"
+        >
           <div className="flex flex-col items-end leading-none justify-center h-full">
             {totalBasePrice > totalSalePrice && (
               <span className="text-[11px] font-semibold text-primary-300 line-through opacity-60 mb-1">
@@ -641,7 +880,11 @@ function ComboTableRows({
       {/* Row 2: Diamond */}
       <TableRow className="border-b-2 border-primary-100 divide-x divide-primary-50 hover:bg-primary-50/10 transition-colors">
         <TableCell className="px-2 xl:px-4 py-2 text-left w-[130px] lg:w-[130px] xl:w-[140px]">
-          <ProductCodes product={diamondProduct} isExpanded={false} className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start" />
+          <ProductCodes
+            product={diamondProduct}
+            isExpanded={false}
+            className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start"
+          />
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words">
           <span className="text-[10px] font-semibold text-primary-700">
@@ -672,7 +915,9 @@ function ComboTableRows({
                 displayCount={displayCount}
               />
             ) : (
-              <span className="text-[10px] text-primary-300 italic">No images</span>
+              <span className="text-[10px] text-primary-300 italic">
+                No images
+              </span>
             )}
           </div>
         </TableCell>
@@ -692,7 +937,6 @@ function ComboTableRows({
     </>
   );
 }
-
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (
@@ -726,7 +970,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
   const variant: any = jewelry.variants?.[0] || {};
   const isMobile = useIsMobile();
   const [isDesktop, setIsDesktop] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 1280 : false
+    typeof window !== "undefined" ? window.innerWidth >= 1280 : false,
   );
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1280px)");
@@ -795,8 +1039,8 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
       <div
         className={cn(
           "border border-primary-100 bg-white flex flex-col overflow-hidden transition-colors duration-200 select-none",
-          (!isDesktop) &&
-          "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30",
+          !isDesktop &&
+            "cursor-pointer hover:bg-primary-50/15 active:bg-primary-50/30",
         )}
         onClick={() => {
           if (isMobile) setDetailsOpen(true);
@@ -820,7 +1064,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                   className={cn(
                     "w-full h-full object-cover",
                     product.type === "diamond" &&
-                    "object-contain w-8 h-8 md:w-9 md:h-9",
+                      "object-contain w-8 h-8 md:w-9 md:h-9",
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -887,7 +1131,7 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                         {formatGoldWeight(
                           product.variant?.attributes?.serialNumber
                             ?.goldWeight ||
-                          product.variant?.attributes?.goldWeight,
+                            product.variant?.attributes?.goldWeight,
                         )}
                       </span>
                     </div>
@@ -939,9 +1183,12 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                   <div>
                     <span className="font-semibold text-primary-700">
                       {product.product.attributes?.edgeSize1
-                        ? `${Number(product.product.attributes.edgeSize1).toFixed(1)}${product.product.attributes?.edgeSize2 ? `x${Number(product.product.attributes.edgeSize2).toFixed(1)}` : ""}`
-                        : "—"}{" "}
-                      -{" "}
+                        ? `${formatEdgeSize(product.product.attributes.edgeSize1)}${
+                            product.product.attributes?.edgeSize2
+                              ? `x${formatEdgeSize(product.product.attributes.edgeSize2)}`
+                              : ""
+                          }`
+                        : "—"}
                       {[
                         product.product.attributes.color,
                         product.product.attributes.clarity,
@@ -960,16 +1207,16 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
               {/* Mobile/tablet-only info (for jewelry: Ni, Vàng, TL vàng) */}
               {!isDesktop && product.type === "jewelry" && (
                 <div className="mt-1 flex flex-col gap-0.5 text-[10px] text-primary-500 leading-tight">
-                  {product.variant?.attributes?.fineness && (
-                    <div className="font-semibold text-primary-700">
-                      Ni {product.variant.attributes.ringSize} -{" "}
-                      {product.variant.attributes.fineness} -{" "}
-                      {formatGoldWeight(
-                        product.variant?.attributes?.serialNumber?.goldWeight ||
+                  <div className="font-semibold text-primary-700">
+                    {product.variant.attributes.ringSize > 0 && (
+                      <>Ni {product.variant.attributes.ringSize} - </>
+                    )}
+                    {product.variant.attributes.fineness} -{" "}
+                    {formatGoldWeight(
+                      product.variant?.attributes?.serialNumber?.goldWeight ||
                         product.variant?.attributes?.goldWeight,
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1114,10 +1361,10 @@ function ComboDetailsSheetContent({
   const fourView = jewelry.attributes?.["4view"];
   const isBundle = jewelry.products && jewelry.products.length > 0;
   const subProductNam = jewelry.products?.find(
-    (p: any) => p.attributes?.gender === "Nam"
+    (p: any) => p.attributes?.gender === "Nam",
   );
   const subProductNu = jewelry.products?.find(
-    (p: any) => p.attributes?.gender === "Nữ"
+    (p: any) => p.attributes?.gender === "Nữ",
   );
   const fourViewNam = subProductNam?.attributes?.["4view"];
   const fourViewNu = subProductNu?.attributes?.["4view"];
@@ -1184,9 +1431,9 @@ function ComboDetailsSheetContent({
                 vAttributes.serialNumber?.goldWeight || vAttributes.goldWeight,
               ) !== "-"
                 ? formatGoldWeight(
-                  vAttributes.serialNumber?.goldWeight ||
-                  vAttributes.goldWeight,
-                )
+                    vAttributes.serialNumber?.goldWeight ||
+                      vAttributes.goldWeight,
+                  )
                 : null,
             ]
               .filter(Boolean)
@@ -1202,7 +1449,10 @@ function ComboDetailsSheetContent({
                 <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                   <span className="text-primary-400 shrink-0">Đá tấm Nam</span>
                   <div className="font-medium text-secondary-900 text-right">
-                    <SideStoneTooltip fourView={fourViewNam as any} isExpanded={false} />
+                    <SideStoneTooltip
+                      fourView={fourViewNam as any}
+                      isExpanded={false}
+                    />
                   </div>
                 </div>
               )}
@@ -1210,17 +1460,25 @@ function ComboDetailsSheetContent({
                 <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                   <span className="text-primary-400 shrink-0">Đá tấm Nữ</span>
                   <div className="font-medium text-secondary-900 text-right">
-                    <SideStoneTooltip fourView={fourViewNu as any} isExpanded={false} />
+                    <SideStoneTooltip
+                      fourView={fourViewNu as any}
+                      isExpanded={false}
+                    />
                   </div>
                 </div>
               )}
             </>
           ) : (
-            fourView && Array.isArray(fourView) && fourView.length > 0 && (
+            fourView &&
+            Array.isArray(fourView) &&
+            fourView.length > 0 && (
               <div className="flex justify-between gap-2 py-px text-[11px] leading-snug">
                 <span className="text-primary-400 shrink-0">Đá tấm</span>
                 <div className="font-medium text-secondary-900 text-right">
-                  <SideStoneTooltip fourView={fourView as any} isExpanded={false} />
+                  <SideStoneTooltip
+                    fourView={fourView as any}
+                    isExpanded={false}
+                  />
                 </div>
               </div>
             )
