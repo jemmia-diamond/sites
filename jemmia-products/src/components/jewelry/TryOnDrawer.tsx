@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   X,
   WarningCircle,
+  Question,
 } from "@phosphor-icons/react";
 import { ProductModel } from "../../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -40,6 +41,8 @@ import { ResultCanvas } from "./TryOn/components/ResultCanvas";
 import { MoveableRedBox } from "./TryOn/components/MoveableRedBox";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
 import { formatPrice } from "./TryOn/utils";
+import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
+import { TryOnGuide } from "./TryOn/components/TryOnGuide";
 
 function getSimpleHash(str: string): string {
   let hash = 0;
@@ -69,6 +72,13 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [isTryingOn, setisTryingOn] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [guideStep, setGuideStep] = useState(1);
+
+  const handleOpenGuide = () => {
+    setShowGuide(true);
+    setGuideStep(1);
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
@@ -125,6 +135,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setUploadedImage(dataUrl);
       setDragTranslate([0, 0]);
       cumulativeTranslate.current = [0, 0];
+      const hasShownGuide = sessionStorage.getItem("tryon_guide_shown") === "true";
+      if (!hasShownGuide) {
+        setShowGuide(true);
+        setGuideStep(1);
+      }
       setStep(2);
     },
     onCameraFallback: () => {
@@ -253,7 +268,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
-    const isFakeMode = false; // Set to true to mock image generation for UI development
+    const isFakeMode = true; // Set to true to mock image generation for UI development
 
     if (isFakeMode) {
       setTimeout(() => {
@@ -266,7 +281,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         setIsGenerating(false);
         localStorage.setItem("isTryingOn", "false");
         setisTryingOn(false);
-      }, 1000);
+      }, 10000);
       return;
     }
 
@@ -518,6 +533,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setUploadedImage(event.target.result as string);
           setDragTranslate([0, 0]);
           cumulativeTranslate.current = [0, 0];
+          const hasShownGuide = sessionStorage.getItem("tryon_guide_shown") === "true";
+          if (!hasShownGuide) {
+            setShowGuide(true);
+            setGuideStep(1);
+          }
           setStep(2);
         }
       };
@@ -772,6 +792,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setDragTranslate={setDragTranslate}
                       setRingScale={setRingScale}
                       setRingRotation={setRingRotation}
+                      onOpenGuide={handleOpenGuide}
                     />
                   )}
                   {step === 3 && (
@@ -814,19 +835,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   >
                     <div className="space-y-5 flex flex-col min-h-0">
                       {/* Progress Tracker */}
-                      <div className="flex gap-2 shrink-0">
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 1 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 2 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 3 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 4 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
+                      <div className="w-full shrink-0 mb-2">
+                        <MobileProgressBar activeCount={step} />
                       </div>
 
                       {step === 1 && <DesktopStep1Left />}
@@ -902,7 +912,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     <div className="grow flex items-center justify-center bg-[#F8FAFC] p-6 relative overflow-hidden min-w-0">
                       <div
                         ref={ringContainerRef}
-                        className={`w-full aspect-square max-w-175 relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
+                        className={`w-full aspect-square max-w-250 relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
                           step === 1
                             ? "bg-transparent border-none"
                             : "bg-white border border-primary-200 shadow-lg"
@@ -952,6 +962,19 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           setRingScale={setRingScale}
                           setRingRotation={setRingRotation}
                         />
+
+                        {step === 2 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenGuide();
+                            }}
+                            className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
+                            title="Hướng dẫn cử chỉ"
+                          >
+                            <Question size={20} />
+                          </button>
+                        )}
 
                         {/* Visual Ring Overlay (Step 4 only, desktop fallback if no generatedImage) */}
                         {!generatedImage &&
@@ -1044,6 +1067,25 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             selectedGeneratedImage={selectedGeneratedImage}
             handleCloseFullscreen={handleCloseFullscreen}
           />
+
+          {/* Guide Modal Overlay */}
+          {showGuide && (
+            <TryOnGuide
+              guideStep={guideStep}
+              onNext={() => {
+                if (guideStep === 1) {
+                  setGuideStep(2);
+                } else {
+                  setShowGuide(false);
+                  sessionStorage.setItem("tryon_guide_shown", "true");
+                }
+              }}
+              onClose={() => {
+                setShowGuide(false);
+                sessionStorage.setItem("tryon_guide_shown", "true");
+              }}
+            />
+          )}
         </>
       )}
     </AnimatePresence>,

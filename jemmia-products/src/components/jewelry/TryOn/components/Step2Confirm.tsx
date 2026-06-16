@@ -1,6 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowCounterClockwise, LockSimple } from "@phosphor-icons/react";
+import {
+  Check,
+  ArrowCounterClockwise,
+  LockSimple,
+  Question,
+} from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { MoveableRedBox } from "./MoveableRedBox";
 
@@ -12,6 +17,7 @@ interface Step2ConfirmProps {
 }
 
 interface MobileStep2Props extends Step2ConfirmProps {
+  onOpenGuide: () => void;
   ringContainerRef: React.RefObject<HTMLDivElement>;
   handleContainerTouchStart: (e: React.TouchEvent) => void;
   handleContainerTouchMove: (e: React.TouchEvent) => void;
@@ -59,6 +65,7 @@ export function MobileStep2({
   setDragTranslate,
   setRingScale,
   setRingRotation,
+  onOpenGuide,
 }: MobileStep2Props) {
   return (
     <div className="grow flex flex-col justify-between gap-3 min-h-0">
@@ -70,8 +77,8 @@ export function MobileStep2({
             Xác nhận ảnh của bạn
           </h4>
           <p className="text-xs text-primary-600 leading-normal">
-            Đảm bảo bàn tay của bạn hiển thị rõ ràng để có kết quả dựng hình AI tốt
-            nhất
+            Đảm bảo bàn tay của bạn hiển thị rõ ràng để có kết quả dựng hình AI
+            tốt nhất
           </p>
         </div>
       </div>
@@ -120,19 +127,21 @@ export function MobileStep2({
             setRingScale={setRingScale}
             setRingRotation={setRingRotation}
           />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenGuide();
+            }}
+            className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
+            title="Hướng dẫn cử chỉ"
+          >
+            <Question size={20} />
+          </button>
         </div>
       </div>
 
       {/* Bottom Buttons */}
-      <div className="space-y-2 shrink-0">
-        <Button
-          onClick={() => setStep(3)}
-          disabled={!uploadedImage}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
-        >
-          Dùng hình ảnh này
-          <Check size={18} weight="bold" />
-        </Button>
+      <div className="flex gap-2">
         <Button
           variant="outline"
           onClick={() => {
@@ -144,6 +153,14 @@ export function MobileStep2({
         >
           Chụp lại
           <ArrowCounterClockwise size={18} />
+        </Button>
+        <Button
+          onClick={() => setStep(3)}
+          disabled={!uploadedImage}
+          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+        >
+          Xác nhận
+          <Check size={18} weight="bold" />
         </Button>
       </div>
     </div>
