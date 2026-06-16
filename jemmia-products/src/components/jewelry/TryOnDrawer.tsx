@@ -799,6 +799,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       handleDownload={handleDownload}
                       setIsFullscreen={setIsFullscreen}
                       generationError={generationError}
+                      selectedRing={selectedRing}
                     />
                   )}
                 </div>

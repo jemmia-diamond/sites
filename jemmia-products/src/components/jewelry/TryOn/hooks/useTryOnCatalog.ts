@@ -10,6 +10,7 @@ interface UseTryOnCatalogProps {
 export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
   const [rings, setRings] = useState<ProductModel[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isLoadingRings, setIsLoadingRings] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -18,12 +19,23 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
   const mobileSentinelRef = useRef<HTMLDivElement>(null);
   const desktopSentinelRef = useRef<HTMLDivElement>(null);
 
-  // Reset pagination when search query changes
+  // Debounce search query state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  // Reset pagination when debounced search query changes
   useEffect(() => {
     setPage(1);
     setHasNextPage(true);
     setRings([]);
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   // Load rings for Step 3
   useEffect(() => {
@@ -40,9 +52,10 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       try {
         const res = await jewelryService.getJewelries({
           page: page,
-          searchQuery: searchQuery || undefined,
+          searchQuery: debouncedSearchQuery || undefined,
           type: "Nhẫn Nữ",
           stockStatus: "IN_STOCK",
+          missingMedia: false,
         });
 
         if (isMounted) {
@@ -70,14 +83,12 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       }
     };
 
-    // Debounce search query changes
-    const timer = setTimeout(fetchRings, searchQuery && page === 1 ? 400 : 0);
+    fetchRings();
 
     return () => {
       isMounted = false;
-      clearTimeout(timer);
     };
-  }, [step, searchQuery, page, isOpen]);
+  }, [step, debouncedSearchQuery, page, isOpen]);
 
   // Infinite scroll intersection observers
   useEffect(() => {
