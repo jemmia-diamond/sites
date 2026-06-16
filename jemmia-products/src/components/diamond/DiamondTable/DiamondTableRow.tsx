@@ -371,7 +371,7 @@ export function DiamondTableRow({
               {diamond.attributes.diamondHistory && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] text-primary-500 font-semibold">Ghi chú:</span>
-                  <span className="text-[10px] text-primary-700 font-semibold">
+                  <span className="text-[10px] text-primary-700 font-semibold min-w-0 whitespace-break-spaces">
                     {diamond.attributes.diamondHistory.errors}
                     {diamond.attributes.diamondHistory.note ? ` - ${diamond.attributes.diamondHistory.note}` : ""}
                     {diamond.attributes.diamondHistory.status === "Bình thường (pass)" && `${diamond.attributes.diamondHistory.stage}`}

@@ -32,7 +32,14 @@ export function ProductTypeFilter({
   );
 
   return (
-    <div className="max-h-60 overflow-y-auto pr-2 space-y-2 scrollbar-hide">
+    <div
+      className={cn(
+        "pr-2 space-y-2",
+        uniqueTypes && uniqueTypes.length > 6
+          ? "max-h-60 overflow-y-auto"
+          : "overflow-y-visible"
+      )}
+    >
       {isLoadingTypes ? (
         Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-5 w-full rounded-none" />
