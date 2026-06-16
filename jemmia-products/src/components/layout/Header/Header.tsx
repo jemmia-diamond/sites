@@ -99,7 +99,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         />
         <Button
           onClick={() => setIsTryOnOpen(true)}
-          className="bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer xl:hidden"
+          className="bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer"
         >
           <Sparkle size={18} className="text-white" />
           <span>Try on</span>
