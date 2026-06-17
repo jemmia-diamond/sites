@@ -807,7 +807,7 @@ function ComboTableRows({
             className="w-[130px] lg:w-[130px] xl:w-[130px] !justify-start"
           />
         </TableCell>
-        <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words">
+        <TableCell className="px-2 xl:px-4 py-2 text-left whitespace-normal break-words min-w-75">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-semibold text-primary-700">
               {jewelrySpecs}
@@ -823,7 +823,7 @@ function ComboTableRows({
             )}
           </div>
         </TableCell>
-        <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words">
+        <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words min-w-32">
           <span className="text-[10px] font-semibold text-secondary-900">
             {formatWarehouseName(variant?.stockAt)}
           </span>
@@ -916,7 +916,7 @@ function ComboTableRows({
               />
             ) : (
               <span className="text-[10px] text-primary-300 italic">
-                No images
+                -
               </span>
             )}
           </div>

@@ -46,12 +46,7 @@ export function DiamondTableRow({
     !wh.name.toLowerCase().includes("trung gian")
   );
 
-  const isIncoming =
-    (diamond.attributes.qty_incoming ?? 0) > 0 ||
-    realWarehouses.length === 0 ||
-    diamond.attributes.isInComing ||
-    diamond.quantity === 0;
-
+  const isIncoming =  diamond.quantity === 0 && realWarehouses.length === 0;
   const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
   const hasStock = !isIncoming && realWarehouses.length > 0 && hasAvailableQty;
 
@@ -137,7 +132,7 @@ export function DiamondTableRow({
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
             )}
           >
-            {isIncoming ? "Về" : (hasStock ? "Có hàng" : "Hết hàng")}
+            {isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng")}
           </Badge>
         </TableCell>
 
@@ -347,7 +342,7 @@ export function DiamondTableRow({
                       : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
                   )}
                 >
-                  {isIncoming ? "Về" : (hasStock ? "Có hàng" : "Hết hàng")}
+                  {isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng")}
                 </Badge>
                 {/* GIA */}
                 {diamond.attributes.giaPdfUrl ? (
