@@ -49,7 +49,7 @@ export function MobileStep1({
         {/* Hand Overlay Guide */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center py-6 z-[305] pb-24">
           <img
-            src="https://cdn.hstatic.net/files/200000355853/file/20260608-151032.webp"
+            src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
             className="w-full h-full object-contain opacity-60"
             alt="Camera Overlay Hand"
           />
@@ -77,19 +77,19 @@ export function MobileStep1({
             <div className="flex flex-col items-center text-center">
               <SunDim size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">
-                Đặt bàn tay dưới <br/> ánh sáng tốt
+                Đặt bàn tay dưới <br /> ánh sáng tốt
               </span>
             </div>
             <div className="flex flex-col items-center text-center">
               <HandPalm size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">
-                Xòe nhẹ các <br/> ngón tay
+                Xòe nhẹ các <br /> ngón tay
               </span>
             </div>
             <div className="flex flex-col items-center text-center">
               <CornersOut size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">
-                Tránh bóng đổ và <br/> ảnh bị mờ
+                Tránh bóng đổ và <br /> ảnh bị mờ
               </span>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function MobileStep1({
               />
             ) : (
               <img
-                src="https://cdn.hstatic.net/files/200000355853/file/7427f60fa387debbcfd44bd25723ec19135a83a1.webp"
+                src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
                 className="w-full h-full object-contain opacity-40"
                 alt="Hand Silhouette"
                 draggable={false}
@@ -148,7 +148,7 @@ export function MobileStep1({
             {isCameraActive && (
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-20">
                 <img
-                  src="https://cdn.hstatic.net/files/200000355853/file/20260608-151032.webp"
+                  src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
                   className="w-full h-full object-contain opacity-60"
                   alt="Camera Overlay Hand"
                 />
@@ -164,19 +164,19 @@ export function MobileStep1({
             <div className="flex flex-col items-center text-center">
               <SunDim size={18} className="text-[#004B49] mb-1" />
               <span className="text-xs leading-tight text-primary-600 font-nornal">
-                Đặt bàn tay dưới <br/> ánh sáng tốt
+                Đặt bàn tay dưới <br /> ánh sáng tốt
               </span>
             </div>
             <div className="flex flex-col items-center text-center">
               <HandPalm size={18} className="text-[#004B49] mb-1" />
               <span className="text-xs leading-tight text-primary-600 font-nornal">
-                Xòe nhẹ các <br/> ngón tay
+                Xòe nhẹ các <br /> ngón tay
               </span>
             </div>
             <div className="flex flex-col items-center text-center">
               <CornersOut size={18} className="text-[#004B49] mb-1" />
               <span className="text-xs leading-tight text-primary-600 font-nornal">
-                Tránh bóng đổ và <br/> ảnh bị mờ
+                Tránh bóng đổ và <br /> ảnh bị mờ
               </span>
             </div>
           </div>
@@ -184,7 +184,7 @@ export function MobileStep1({
       </div>
 
       {/* Bottom Buttons */}
-      <div className="space-y-2 shrink-0">
+      <div className="flex gap-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -203,6 +203,19 @@ export function MobileStep1({
         />
         <Button
           onClick={() => {
+            const fileInput = document.getElementById(
+              "tryon-file-upload-drawer",
+            ) as HTMLInputElement;
+            fileInput?.click();
+          }}
+          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
+          variant="outline"
+        >
+          Upload Ảnh
+          <UploadSimple size={18} weight="bold" />
+        </Button>
+        <Button
+          onClick={() => {
             if (isCameraActive) {
               capturePhoto();
             } else {
@@ -213,19 +226,6 @@ export function MobileStep1({
         >
           {isCameraActive ? "Chụp Ảnh Ngay" : "Mở Camera"}
           <Camera size={18} weight="bold" />
-        </Button>
-        <Button
-          onClick={() => {
-            const fileInput = document.getElementById(
-              "tryon-file-upload-drawer",
-            ) as HTMLInputElement;
-            fileInput?.click();
-          }}
-          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
-          variant="outline"
-        >
-          Upload Ảnh
-          <UploadSimple size={18} weight="bold" />
         </Button>
       </div>
     </div>
@@ -240,8 +240,8 @@ export function DesktopStep1Left() {
           Chụp ảnh bàn tay của bạn
         </h4>
         <p className="text-sm text-primary-500 font-medium leading-relaxed">
-          Tải lên hình ảnh rõ nét để xem trang sức của chúng tôi hiển thị trên tay
-          bạn một cách chân thực
+          Tải lên hình ảnh rõ nét để xem trang sức của chúng tôi hiển thị trên
+          tay bạn một cách chân thực
         </p>
       </div>
       <div className="pt-2">
@@ -309,14 +309,14 @@ export function DesktopStep1Bottom({
             startCamera();
           }
         }}
-        className="w-full bg-secondary-900 hover:bg-secondary-800 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+        className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
       >
         {isCameraActive ? "Chụp Ảnh Ngay" : "Mở Camera"}
         <Camera size={18} weight="bold" />
       </Button>
       <Button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
         variant="outline"
       >
         Upload Ảnh
@@ -356,7 +356,7 @@ export function DesktopStep1Right({
         />
       ) : (
         <img
-          src="https://cdn.hstatic.net/files/200000355853/file/7427f60fa387debbcfd44bd25723ec19135a83a1.webp"
+          src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
           className="w-full h-full object-contain bg-slate-100 border-dashed border-2 rounded-lg border-slate-300"
           alt="Hand Silhouette"
           draggable={false}
@@ -366,7 +366,7 @@ export function DesktopStep1Right({
       {isCameraActive && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
           <img
-            src="https://cdn.hstatic.net/files/200000355853/file/20260608-151032.webp"
+            src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
             className="w-full h-full"
             alt="Hand overlay guide"
           />

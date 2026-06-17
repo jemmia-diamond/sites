@@ -6,6 +6,9 @@ import {
   ArrowLeft,
   X,
   WarningCircle,
+  Question,
+  ArrowRight,
+  LockSimple,
 } from "@phosphor-icons/react";
 import { ProductModel } from "../../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -25,7 +28,10 @@ import {
   DesktopStep1Bottom,
   DesktopStep1Right,
 } from "./TryOn/components/Step1Upload";
-import { MobileStep2, DesktopStep2Bottom } from "./TryOn/components/Step2Confirm";
+import {
+  MobileStep2,
+  DesktopStep2Bottom,
+} from "./TryOn/components/Step2Confirm";
 import {
   MobileStep3,
   DesktopStep3Left,
@@ -40,6 +46,8 @@ import { ResultCanvas } from "./TryOn/components/ResultCanvas";
 import { MoveableRedBox } from "./TryOn/components/MoveableRedBox";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
 import { formatPrice } from "./TryOn/utils";
+import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
+import { TryOnGuide } from "./TryOn/components/TryOnGuide";
 
 function getSimpleHash(str: string): string {
   let hash = 0;
@@ -65,10 +73,19 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
-  const [selectedGeneratedImage, setSelectedGeneratedImage] = useState<string | null>(null);
+  const [selectedGeneratedImage, setSelectedGeneratedImage] = useState<
+    string | null
+  >(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [isTryingOn, setisTryingOn] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [guideStep, setGuideStep] = useState(1);
+
+  const handleOpenGuide = () => {
+    setShowGuide(true);
+    setGuideStep(1);
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
@@ -125,6 +142,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setUploadedImage(dataUrl);
       setDragTranslate([0, 0]);
       cumulativeTranslate.current = [0, 0];
+      const hasShownGuide =
+        sessionStorage.getItem("tryon_guide_shown") === "true";
+      if (!hasShownGuide) {
+        setShowGuide(true);
+        setGuideStep(1);
+      }
       setStep(2);
     },
     onCameraFallback: () => {
@@ -206,7 +229,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
   const handleTryOn = async () => {
     if (localStorage.getItem("isTryingOn") === "true") {
-      setToastMessage("Hệ thống đang xử lý yêu cầu thử nhẫn trên một cửa sổ khác.");
+      setToastMessage(
+        "Hệ thống đang xử lý yêu cầu thử nhẫn trên một cửa sổ khác.",
+      );
       return;
     }
 
@@ -253,7 +278,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
-    const isFakeMode = false; // Set to true to mock image generation for UI development
+    const isFakeMode = true; // Set to true to mock image generation for UI development
 
     if (isFakeMode) {
       setTimeout(() => {
@@ -266,7 +291,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         setIsGenerating(false);
         localStorage.setItem("isTryingOn", "false");
         setisTryingOn(false);
-      }, 1000);
+      }, 10000);
       return;
     }
 
@@ -408,7 +433,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           const cacheKey = `tryon_cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
           sessionStorage.setItem(cacheKey, JSON.stringify(urls));
         } catch (err) {
-          console.warn("sessionStorage quota exceeded or error caching result:", err);
+          console.warn(
+            "sessionStorage quota exceeded or error caching result:",
+            err,
+          );
         }
       } else {
         setToastMessage("Không thể tạo hình ảnh thử trực tuyến.");
@@ -518,6 +546,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setUploadedImage(event.target.result as string);
           setDragTranslate([0, 0]);
           cumulativeTranslate.current = [0, 0];
+          const hasShownGuide =
+            sessionStorage.getItem("tryon_guide_shown") === "true";
+          if (!hasShownGuide) {
+            setShowGuide(true);
+            setGuideStep(1);
+          }
           setStep(2);
         }
       };
@@ -670,7 +704,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     disabled={step === 4 && isGenerating}
                     className={cn(
                       "text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
-                      step === 4 && isGenerating && "opacity-20 cursor-not-allowed pointer-events-none"
+                      step === 4 &&
+                        isGenerating &&
+                        "opacity-20 cursor-not-allowed pointer-events-none",
                     )}
                   >
                     <ArrowLeft size={18} weight="bold" />
@@ -694,11 +730,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
               )}
 
               <div className="flex items-center gap-4">
-                {!isMobile && (
-                  <span className="text-xs text-primary-400 font-mono tracking-widest uppercase select-none">
-                    Step {step} / 4
-                  </span>
-                )}
                 <button
                   onClick={() => {
                     if (step === 4 && isGenerating) return;
@@ -717,7 +748,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   disabled={step === 4 && isGenerating}
                   className={cn(
                     "text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
-                    step === 4 && isGenerating && "opacity-20 cursor-not-allowed pointer-events-none"
+                    step === 4 &&
+                      isGenerating &&
+                      "opacity-20 cursor-not-allowed pointer-events-none",
                   )}
                 >
                   <X size={18} weight="bold" />
@@ -772,6 +805,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setDragTranslate={setDragTranslate}
                       setRingScale={setRingScale}
                       setRingRotation={setRingRotation}
+                      onOpenGuide={handleOpenGuide}
                     />
                   )}
                   {step === 3 && (
@@ -814,23 +848,54 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   >
                     <div className="space-y-5 flex flex-col min-h-0">
                       {/* Progress Tracker */}
-                      <div className="flex gap-2 shrink-0">
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 1 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 2 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 3 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                        <div
-                          className={`h-1 w-9 transition-all rounded-full ${step >= 4 ? "bg-primary-900" : "bg-primary-100"}`}
-                        />
-                      </div>
+                      {!showGuide && (
+                        <div className="w-full shrink-0 mb-5">
+                          <MobileProgressBar activeCount={step} />
+                        </div>
+                      )}
 
                       {step === 1 && <DesktopStep1Left />}
-                      {step === 2 && <DesktopStep1Left />}
+                      {step === 2 &&
+                        (showGuide ? (
+                          <div className="space-y-4 text-left animate-in fade-in duration-300">
+                            <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-snug">
+                              {guideStep === 1
+                                ? "Dùng 2 ngón để phóng to/thu nhỏ"
+                                : "Dùng 1 ngón để chọn vị trí đeo nhẫn"}
+                            </h3>
+                            <ul className="text-sm text-slate-900 space-y-3 list-disc pl-4 leading-relaxed">
+                              {guideStep === 1 ? (
+                                <>
+                                  <li>
+                                    Đặt hai ngón tay lên màn hình để điều chỉnh
+                                    kích thước red mark
+                                  </li>
+                                  <li>
+                                    Kéo ra xa để phóng to, kéo lại gần để thu
+                                    nhỏ.
+                                  </li>
+                                </>
+                              ) : (
+                                <>
+                                  <li>
+                                    Kéo red mark đến vị trí ngón tay bạn muốn
+                                    thử nhẫn bằng 1 ngón tay
+                                  </li>
+                                  <li>
+                                    Bạn có thể kết hợp phóng to/thu nhỏ để đặt
+                                    khung chính xác hơn
+                                  </li>
+                                  <li>
+                                    Khi red box nằm đúng vị trí, hệ thống sẽ
+                                    hiển thị nhẫn trên ngón đó
+                                  </li>
+                                </>
+                              )}
+                            </ul>
+                          </div>
+                        ) : (
+                          <DesktopStep1Left />
+                        ))}
                       {step === 3 && (
                         <DesktopStep3Left
                           searchQuery={searchQuery}
@@ -857,14 +922,41 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           capturePhoto={capturePhoto}
                         />
                       )}
-                      {step === 2 && (
-                        <DesktopStep2Bottom
-                          uploadedImage={uploadedImage}
-                          setStep={setStep}
-                          setUploadedImage={setUploadedImage}
-                          startCamera={startCamera}
-                        />
-                      )}
+                      {step === 2 &&
+                        (showGuide ? (
+                          <div className="flex flex-col gap-2.5 animate-in fade-in duration-300">
+                            <Button
+                              onClick={() => {
+                                if (guideStep === 1) {
+                                  setGuideStep(2);
+                                } else {
+                                  setShowGuide(false);
+                                  sessionStorage.setItem(
+                                    "tryon_guide_shown",
+                                    "true",
+                                  );
+                                }
+                              }}
+                              className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+                            >
+                              Tiếp tục
+                              <ArrowRight size={16} weight="bold" />
+                            </Button>
+                            <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
+                              <LockSimple size={14} weight="regular" />
+                              <span>
+                                Ảnh của bạn là riêng tư và được bảo vệ
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <DesktopStep2Bottom
+                            uploadedImage={uploadedImage}
+                            setStep={setStep}
+                            setUploadedImage={setUploadedImage}
+                            startCamera={startCamera}
+                          />
+                        ))}
                       {step === 4 && (
                         <DesktopStep4Bottom
                           selectedRing={selectedRing}
@@ -900,137 +992,86 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   ) : (
                     /* Desktop Step 1 & 2 Right Panel Canvas */
                     <div className="grow flex items-center justify-center bg-[#F8FAFC] p-6 relative overflow-hidden min-w-0">
-                      <div
-                        ref={ringContainerRef}
-                        className={`w-full aspect-square max-w-175 relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
-                          step === 1
-                            ? "bg-transparent border-none"
-                            : "bg-white border border-primary-200 shadow-lg"
-                        }`}
-                        style={{ cursor: "default" }}
-                        onTouchStart={handleContainerTouchStart}
-                        onTouchMove={handleContainerTouchMove}
-                        onTouchEnd={handleContainerTouchEnd}
-                        onTouchCancel={handleContainerTouchEnd}
-                        onMouseDown={handleContainerMouseDown}
-                        onMouseMove={handleContainerMouseMove}
-                        onMouseUp={handleContainerMouseUp}
-                        onMouseLeave={handleContainerMouseUp}
-                        onClick={handleImageClick}
-                      >
-                        {step === 1 && (
-                          <DesktopStep1Right
-                            isCameraActive={isCameraActive}
-                            videoRef={videoRef}
-                            useMirror={useMirror}
-                          />
-                        )}
-
-                        {uploadedImage && step !== 1 && (
+                      {step === 2 && showGuide ? (
+                        <div className="h-auto max-w-160 xl:max-w-210 w-full rounded-lg overflow-hidden bg-white animate-in fade-in zoom-in duration-300">
                           <img
-                            src={generatedImage || uploadedImage}
-                            className="w-full h-full object-cover"
-                            alt="Hand Preview"
-                            draggable={false}
-                            onLoad={triggerUpdateRect}
+                            src={
+                              guideStep === 1
+                                ? "https://cdn.hstatic.net/files/200000355853/file/dropzone.png"
+                                : "https://cdn.hstatic.net/files/200000355853/file/dropzone__1_.png"
+                            }
+                            className="w-full h-full object-cover select-none"
+                            alt="Guide illustration"
                           />
-                        )}
-
-                        <MoveableRedBox
-                          step={step}
-                          uploadedImage={uploadedImage}
-                          redBoxRef={redBoxRef}
-                          fingerPosition={fingerPosition}
-                          ringScale={ringScale}
-                          dragTranslate={dragTranslate}
-                          ringRotation={ringRotation}
-                          moveableRedBoxRef={moveableRedBoxRef}
-                          cumulativeTranslate={cumulativeTranslate}
-                          latestScale={latestScale}
-                          latestRotation={latestRotation}
-                          setDragTranslate={setDragTranslate}
-                          setRingScale={setRingScale}
-                          setRingRotation={setRingRotation}
-                        />
-
-                        {/* Visual Ring Overlay (Step 4 only, desktop fallback if no generatedImage) */}
-                        {!generatedImage &&
-                          uploadedImage &&
-                          step === 4 &&
-                          selectedRing && (
-                            <>
-                              <div
-                                ref={ringTargetRef}
-                                className="absolute pointer-events-auto cursor-move select-none"
-                                style={{
-                                  left: `${fingerPosition.x}%`,
-                                  top: `${fingerPosition.y}%`,
-                                  width: `${36 * ringScale}px`,
-                                  height: `${36 * ringScale}px`,
-                                  transform: `translate(${dragTranslate[0]}px, ${dragTranslate[1]}px) rotate(${ringRotation}deg)`,
-                                }}
-                              >
-                                <img
-                                  src={selectedRing.thumbnails?.[0]?.url}
-                                  className="w-full h-full object-contain select-none"
-                                  alt={selectedRing.title}
-                                  draggable={false}
-                                />
-                              </div>
-                              <Moveable
-                                ref={moveableRingRef}
-                                target={ringTargetRef}
-                                draggable={true}
-                                resizable={true}
-                                rotatable={true}
-                                keepRatio={true}
-                                origin={false}
-                                throttleRotate={0}
-                                onDragStart={({ set }) => {
-                                  set(cumulativeTranslate.current);
-                                }}
-                                onResizeStart={({ dragStart }) => {
-                                  dragStart &&
-                                    dragStart.set(cumulativeTranslate.current);
-                                }}
-                                onRotateStart={({ dragStart }) => {
-                                  dragStart &&
-                                    dragStart.set(cumulativeTranslate.current);
-                                }}
-                                onDrag={(e) => {
-                                  cumulativeTranslate.current =
-                                    e.beforeTranslate;
-                                  e.target.style.transform = e.transform;
-                                }}
-                                onDragEnd={() => {
-                                  setDragTranslate(cumulativeTranslate.current);
-                                }}
-                                onResize={(e) => {
-                                  e.target.style.width = `${e.width}px`;
-                                  e.target.style.height = `${e.height}px`;
-                                  e.target.style.transform = e.transform;
-                                  cumulativeTranslate.current =
-                                    e.drag.beforeTranslate;
-                                  latestScale.current = e.width / 36;
-                                }}
-                                onResizeEnd={() => {
-                                  setRingScale(latestScale.current);
-                                  setDragTranslate(cumulativeTranslate.current);
-                                }}
-                                onRotate={(e) => {
-                                  e.target.style.transform = e.transform;
-                                  cumulativeTranslate.current =
-                                    e.drag.beforeTranslate;
-                                  latestRotation.current = e.rotation;
-                                }}
-                                onRotateEnd={() => {
-                                  setRingRotation(latestRotation.current);
-                                  setDragTranslate(cumulativeTranslate.current);
-                                }}
-                              />
-                            </>
+                        </div>
+                      ) : (
+                        <div
+                          ref={ringContainerRef}
+                          className={`w-full max-w-160 xl:max-w-210 h-auto aspect-square relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
+                            step === 1
+                              ? "bg-transparent border-none"
+                              : "bg-white border border-primary-200 shadow-lg"
+                          }`}
+                          style={{ cursor: "default" }}
+                          onTouchStart={handleContainerTouchStart}
+                          onTouchMove={handleContainerTouchMove}
+                          onTouchEnd={handleContainerTouchEnd}
+                          onTouchCancel={handleContainerTouchEnd}
+                          onMouseDown={handleContainerMouseDown}
+                          onMouseMove={handleContainerMouseMove}
+                          onMouseUp={handleContainerMouseUp}
+                          onMouseLeave={handleContainerMouseUp}
+                          onClick={handleImageClick}
+                        >
+                          {step === 1 && (
+                            <DesktopStep1Right
+                              isCameraActive={isCameraActive}
+                              videoRef={videoRef}
+                              useMirror={useMirror}
+                            />
                           )}
-                      </div>
+
+                          {uploadedImage && step !== 1 && (
+                            <img
+                              src={generatedImage || uploadedImage}
+                              className="w-full h-full object-cover"
+                              alt="Hand Preview"
+                              draggable={false}
+                              onLoad={triggerUpdateRect}
+                            />
+                          )}
+
+                          <MoveableRedBox
+                            step={step}
+                            uploadedImage={uploadedImage}
+                            redBoxRef={redBoxRef}
+                            fingerPosition={fingerPosition}
+                            ringScale={ringScale}
+                            dragTranslate={dragTranslate}
+                            ringRotation={ringRotation}
+                            moveableRedBoxRef={moveableRedBoxRef}
+                            cumulativeTranslate={cumulativeTranslate}
+                            latestScale={latestScale}
+                            latestRotation={latestRotation}
+                            setDragTranslate={setDragTranslate}
+                            setRingScale={setRingScale}
+                            setRingRotation={setRingRotation}
+                          />
+
+                          {step === 2 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenGuide();
+                              }}
+                              className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
+                              title="Hướng dẫn cử chỉ"
+                            >
+                              <Question size={20} />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -1044,6 +1085,25 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             selectedGeneratedImage={selectedGeneratedImage}
             handleCloseFullscreen={handleCloseFullscreen}
           />
+
+          {/* Guide Modal Overlay (Mobile only) */}
+          {showGuide && isMobile && (
+            <TryOnGuide
+              guideStep={guideStep}
+              onNext={() => {
+                if (guideStep === 1) {
+                  setGuideStep(2);
+                } else {
+                  setShowGuide(false);
+                  sessionStorage.setItem("tryon_guide_shown", "true");
+                }
+              }}
+              onClose={() => {
+                setShowGuide(false);
+                sessionStorage.setItem("tryon_guide_shown", "true");
+              }}
+            />
+          )}
         </>
       )}
     </AnimatePresence>,

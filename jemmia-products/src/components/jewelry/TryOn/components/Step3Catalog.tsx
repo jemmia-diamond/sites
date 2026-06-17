@@ -331,7 +331,7 @@ export function DesktopStep3Right({
           disabled={!selectedRing || isTryingOn}
           className="w-full bg-secondary-800 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
         >
-          Thử nhẫn
+          Thử Nhẫn
           <Sparkle size={16} weight="fill" />
         </Button>
       </div>
