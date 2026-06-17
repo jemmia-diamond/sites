@@ -17,6 +17,8 @@ interface MobileStep3Props {
   setToastMessage: (msg: string | null) => void;
   handleTryOn: () => void;
   isTryingOn?: boolean;
+  setStep?: (s: number) => void;
+  maxStep?: number;
 }
 
 export function MobileStep3({
@@ -31,12 +33,14 @@ export function MobileStep3({
   setToastMessage,
   handleTryOn,
   isTryingOn,
+  setStep,
+  maxStep,
 }: MobileStep3Props) {
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
       {/* Progress Bar & Info */}
       <div className="space-y-3">
-        <MobileProgressBar activeCount={3} />
+        <MobileProgressBar activeCount={3} onStepClick={setStep} maxStep={maxStep} />
         <div className="space-y-1 text-start">
           <h4 className="text-primary-900 font-bold text-base tracking-tight leading-tight">
             Chọn trang sức của bạn

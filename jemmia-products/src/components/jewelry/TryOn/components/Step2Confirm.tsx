@@ -38,6 +38,7 @@ interface MobileStep2Props extends Step2ConfirmProps {
   setDragTranslate: (t: number[]) => void;
   setRingScale: (s: number) => void;
   setRingRotation: (r: number) => void;
+  maxStep?: number;
 }
 
 export function MobileStep2({
@@ -66,12 +67,13 @@ export function MobileStep2({
   setRingScale,
   setRingRotation,
   onOpenGuide,
+  maxStep,
 }: MobileStep2Props) {
   return (
     <div className="grow flex flex-col justify-between gap-3 min-h-0">
       {/* Progress Bar & Info */}
       <div className="space-y-3">
-        <MobileProgressBar activeCount={2} />
+        <MobileProgressBar activeCount={2} onStepClick={setStep} maxStep={maxStep} />
         <div className="space-y-1 text-left">
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Xác nhận ảnh của bạn
@@ -194,7 +196,7 @@ export function DesktopStep2Bottom({
           setUploadedImage(null);
           startCamera();
         }}
-        className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+        className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
       >
         Chụp lại
         <ArrowCounterClockwise size={18} />

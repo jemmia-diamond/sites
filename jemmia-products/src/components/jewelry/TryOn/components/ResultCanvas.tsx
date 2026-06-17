@@ -50,7 +50,7 @@ export function ResultCanvas({
           alt="Hand Preview Blur"
           draggable={false}
         />
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-4 text-center px-6">
           {/* Radiating IOS Tick Spinner */}
           <svg
             className={`${
@@ -66,6 +66,9 @@ export function ResultCanvas({
               strokeLinecap="round"
             />
           </svg>
+          <span className="text-white text-base font-normal leading-relaxed select-none drop-shadow-md">
+            Quá trình tạo ảnh mất khoảng 90 giây, vui lòng chờ trong giây lát
+          </span>
         </div>
       </div>
     );

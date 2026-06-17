@@ -16,6 +16,8 @@ interface MobileStep4Props {
   setIsFullscreen: (f: boolean) => void;
   generationError?: string | null;
   selectedRing: ProductModel | null;
+  setStep?: (s: number) => void;
+  maxStep?: number;
 }
 
 export function MobileStep4({
@@ -28,13 +30,15 @@ export function MobileStep4({
   setIsFullscreen,
   generationError,
   selectedRing,
+  setStep,
+  maxStep,
 }: MobileStep4Props) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   return (
     <div className="grow flex flex-col justify-between min-h-0 overflow-hidden">
       {/* Progress Bar & Info */}
       <div className="space-y-3 mb-4">
-        <MobileProgressBar activeCount={4} />
+        <MobileProgressBar activeCount={4} onStepClick={setStep} disabled={isGenerating} maxStep={maxStep} />
         <div className="text-start">
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Hoàn tất tạo ảnh
