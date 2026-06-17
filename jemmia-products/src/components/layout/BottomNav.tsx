@@ -55,7 +55,7 @@ export function BottomNav() {
         className="relative h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
       >
         <span className="nav-tab-item nav-tab-item-inactive">
-          Try on
+          Thử Nhẫn
         </span>
       </button>
     </nav>
