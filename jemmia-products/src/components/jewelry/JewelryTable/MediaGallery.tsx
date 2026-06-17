@@ -36,8 +36,9 @@ export interface MediaGalleryProps {
   isVideo: (url: string) => boolean;
   webImages?: string[];
   actualImages?: string[];
-  activeTab?: 'web' | 'actual';
-  onTabChange?: (tab: 'web' | 'actual') => void;
+  tryOnImages?: string[];
+  activeTab?: 'web' | 'actual' | 'try_on';
+  onTabChange?: (tab: 'web' | 'actual' | 'try_on') => void;
   brokenImages?: Set<string>;
 }
 
@@ -53,6 +54,7 @@ export function MediaGallery({
   isVideo,
   webImages = [],
   actualImages = [],
+  tryOnImages = [],
   activeTab = 'web',
   onTabChange,
   brokenImages,
@@ -454,8 +456,8 @@ export function MediaGallery({
       </div>
 
       {/* Unified shadcn Tabs Bar (below headers) */}
-      {webImages && actualImages && (webImages.length > 0 || actualImages.length > 0) && (
-        <Tabs value={activeTab} onValueChange={(val) => onTabChange?.(val as 'web' | 'actual')} className="border-b border-primary-100 w-full bg-white shrink-0">
+      {webImages && actualImages && (webImages.length > 0 || actualImages.length > 0 || (tryOnImages && tryOnImages.length > 0)) && (
+        <Tabs value={activeTab} onValueChange={(val) => onTabChange?.(val as 'web' | 'actual' | 'try_on')} className="border-b border-primary-100 w-full bg-white shrink-0">
           <TabsList variant="line" className="px-4 xl:px-8 w-full md:w-fit py-5 justify-start h-11 bg-white rounded-none">
             <TabsTrigger value="web" className="text-xs font-black py-4 px-4 cursor-pointer">
               Ảnh Website ({webImages.filter(url => !brokenImages?.has(url)).length})
@@ -463,6 +465,11 @@ export function MediaGallery({
             <TabsTrigger value="actual" className="text-xs font-black py-4 px-4 cursor-pointer">
               Ảnh/Video Thực Tế ({actualImages.filter(url => !brokenImages?.has(url)).length})
             </TabsTrigger>
+            {tryOnImages && tryOnImages.length > 0 && (
+              <TabsTrigger value="try_on" className="text-xs font-black py-4 px-4 cursor-pointer">
+                Ảnh Thử Nhẫn AI ({tryOnImages.filter(url => !brokenImages?.has(url)).length})
+              </TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
       )}

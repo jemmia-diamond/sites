@@ -25,6 +25,15 @@ import { MediaGallery } from "./MediaGallery";
 import { API_BASE_URL } from "../../../config";
 import { cn } from "@/lib/utils";
 
+const extractUrls = (arr: any): string[] => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item: any) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
+    return null;
+  }).filter(Boolean) as string[];
+};
+
 interface JewelryTableProps {
   jewelries: ProductModel[];
   warehouseIds?: string[];
@@ -52,7 +61,7 @@ export function JewelryTable({
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; uploadOptions?: { label: string; designCode: string }[]; } | null>(null);
-  const [activeTab, setActiveTab] = useState<'web' | 'actual'>('web');
+  const [activeTab, setActiveTab] = useState<'web' | 'actual' | 'try_on'>('web');
 
   const activeProduct = uploadConfig?.productId
     ? jewelries.find((j) => j.id === uploadConfig.productId)
@@ -80,8 +89,21 @@ export function JewelryTable({
       ])
     : [];
 
+  const allTryOnImages: string[] = activeProduct
+    ? [
+        ...extractUrls(activeProduct.try_on_images),
+        ...extractUrls(activeProduct.attributes?.try_on_images),
+        ...(isBundle
+          ? activeProduct.products?.flatMap((p) => [
+              ...extractUrls(p.try_on_images),
+              ...extractUrls(p.attributes?.try_on_images),
+            ]) || []
+          : []),
+      ]
+    : [];
+
   const displayList = activeProduct
-    ? (activeTab === 'actual' ? allActualImages : allWebImages)
+    ? (activeTab === 'actual' ? allActualImages : (activeTab === 'try_on' ? allTryOnImages : allWebImages))
     : previewList;
 
   const handleImageError = (url: string) =>
@@ -230,6 +252,7 @@ export function JewelryTable({
         isVideo={isVideo}
         webImages={allWebImages}
         actualImages={allActualImages}
+        tryOnImages={allTryOnImages}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
@@ -254,8 +277,9 @@ interface MediaPreviewDialogProps {
   isVideo: (url: string) => boolean;
   webImages: string[];
   actualImages: string[];
-  activeTab: 'web' | 'actual';
-  onTabChange: (tab: 'web' | 'actual') => void;
+  tryOnImages: string[];
+  activeTab: 'web' | 'actual' | 'try_on';
+  onTabChange: (tab: 'web' | 'actual' | 'try_on') => void;
 }
 
 export function MediaPreviewDialog({
@@ -274,6 +298,7 @@ export function MediaPreviewDialog({
   isVideo,
   webImages,
   actualImages,
+  tryOnImages,
   activeTab,
   onTabChange,
 }: MediaPreviewDialogProps) {
@@ -307,6 +332,7 @@ export function MediaPreviewDialog({
             isVideo={isVideo}
             webImages={webImages}
             actualImages={actualImages}
+            tryOnImages={tryOnImages}
             activeTab={activeTab}
             onTabChange={onTabChange}
             brokenImages={brokenImages}

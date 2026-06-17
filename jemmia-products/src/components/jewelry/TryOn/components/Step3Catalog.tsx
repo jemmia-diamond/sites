@@ -1,9 +1,22 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { MagnifyingGlass, ImageSquare, Sparkle } from "@phosphor-icons/react";
+import { MagnifyingGlass, ImageSquare, Sparkle, X } from "@phosphor-icons/react";
 import { ProductModel } from "../../../../types";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { RingSkeleton } from "./RingSkeleton";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { formatPrice } from "../../JewelryTable/utils/formatters";
+import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
+
+const extractUrls = (arr: any): string[] => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item: any) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
+    return null;
+  }).filter(Boolean) as string[];
+};
 
 interface MobileStep3Props {
   searchQuery: string;
@@ -36,6 +49,88 @@ export function MobileStep3({
   setStep,
   maxStep,
 }: MobileStep3Props) {
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(!!selectedRing);
+  const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
+
+  // Auto-detect and set active tab when selectedRing changes
+  React.useEffect(() => {
+    if (selectedRing) {
+      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
+      const websiteUrls = extractUrls(selectedRing.thumbnails);
+
+      if (tryOnUrls.length > 0) {
+        setActiveTab('try_on');
+      } else if (websiteUrls.length > 0) {
+        setActiveTab('website');
+      } else {
+        setActiveTab('actual');
+      }
+    }
+  }, [selectedRing]);
+
+  // Set previewImage to always be the first website image when selectedRing changes
+  React.useEffect(() => {
+    if (selectedRing) {
+      const websiteUrls = extractUrls(selectedRing.thumbnails);
+      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
+      const actualUrls = [
+        ...extractUrls(selectedRing.images),
+        ...extractUrls(selectedRing.videos),
+      ];
+
+      // Always show the first website image; fall back to try-on or actual if not available
+      const defaultImage = websiteUrls[0] || tryOnUrls[0] || actualUrls[0] || null;
+      setPreviewImage(defaultImage);
+    } else {
+      setPreviewImage(null);
+    }
+  }, [selectedRing]);
+
+  // Helper to detect video URLs
+  const isVideoUrl = (url: string) => {
+    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
+  };
+
+  // Construct attribute description string
+  const attributesList: string[] = [];
+  if (selectedRing?.attributes?.fineness) {
+    attributesList.push(selectedRing.attributes.fineness);
+  }
+  if (selectedRing?.attributes?.materialColor) {
+    attributesList.push(selectedRing.attributes.materialColor);
+  }
+  if (selectedRing?.attributes?.ringSize && selectedRing.attributes.ringSize !== 0) {
+    attributesList.push(`Ni ${selectedRing.attributes.ringSize}`);
+  }
+  const erpCode = selectedRing?.attributes?.erpCode || selectedRing?.attributes?.code;
+  if (erpCode) {
+    attributesList.push(erpCode);
+  }
+  const attributesString = attributesList.join(" - ");
+
+  // Extract all media categories
+  const tryOnUrls = selectedRing ? extractUrls(selectedRing.attributes?.try_on_images) : [];
+  const websiteUrls = selectedRing ? extractUrls(selectedRing.thumbnails) : [];
+  const actualUrls = selectedRing ? [
+    ...extractUrls(selectedRing.images),
+    ...extractUrls(selectedRing.videos)
+  ] : [];
+
+  const activeImages =
+    activeTab === 'try_on'
+      ? tryOnUrls
+      : activeTab === 'website'
+      ? websiteUrls
+      : actualUrls;
+
+  const tabs = [
+    { id: 'try_on' as const, label: 'Ảnh thử nhẫn' },
+    { id: 'website' as const, label: 'Ảnh website' },
+    { id: 'actual' as const, label: 'Ảnh/video thực tế' },
+  ];
+
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
       {/* Progress Bar & Info */}
@@ -86,7 +181,10 @@ export function MobileStep3({
               return (
                 <div
                   key={ring.id}
-                  onClick={() => handleSelectRing(ring)}
+                  onClick={() => {
+                    handleSelectRing(ring);
+                    setIsBottomSheetOpen(true);
+                  }}
                   className={`bg-white border flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-300 hover:shadow-md ${
                     isSelected
                       ? "border-secondary-800"
@@ -133,23 +231,159 @@ export function MobileStep3({
         )}
       </div>
 
-      {/* Bottom Actions for Step 3 */}
-      <div className="pt-2 shrink-0">
-        <Button
-          disabled={isTryingOn}
-          onClick={() => {
-            if (!selectedRing) {
-              setToastMessage("Vui lòng chọn 1 chiếc nhẫn để tiếp tục");
-              return;
-            }
-            handleTryOn();
-          }}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 disabled:bg-secondary-800/50 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+      {/* Bottom Sheet Detail View */}
+      <BottomSheet
+        open={isBottomSheetOpen}
+        onOpenChange={setIsBottomSheetOpen}
+        title="Trang sức được lựa chọn"
+        contentClassName="overflow-y-hidden pt-0"
+      >
+        {selectedRing && (
+          <div className="flex flex-col text-start justify-between h-full max-h-[75vh] overflow-hidden">
+            {/* Top Content Area: Image, Text, Tabs, Gallery */}
+            <div className="flex flex-col min-h-0">
+              {/* Large Preview Image */}
+              <div
+                onClick={() => previewImage && setFullscreenImage(previewImage)}
+                className="w-full flex justify-center items-center py-2 bg-white select-none shrink-0 cursor-pointer"
+              >
+                {previewImage ? (
+                  isVideoUrl(previewImage) ? (
+                    <div className="relative h-36 aspect-square w-auto">
+                      <video src={previewImage} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
+                          <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-secondary-900 border-b-[4px] border-b-transparent ml-0.5" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={previewImage}
+                      className="h-60 object-contain w-auto aspect-square"
+                      alt={selectedRing.title}
+                    />
+                  )
+                ) : (
+                  <div className="w-full h-60 aspect-square flex flex-col items-center justify-center bg-slate-100 text-xs text-slate-400 gap-2">
+                    <ImageSquare size={32} className="text-slate-400" />
+                    <span>Chưa có hình ảnh</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Header Product Metadata */}
+              <div className="shrink-0 mt-1">
+                <h3 className="text-secondary-900 text-center font-bold text-sm leading-tight">
+                  {selectedRing.type || "Loại nhẫn"} - {selectedRing.attributes?.designCode || "--"}
+                </h3>
+              </div>
+
+              {/* Media Gallery Tab Bar */}
+              <div className="flex border-b border-primary-100 mt-2.5 shrink-0">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        "flex-1 text-center pb-1.5 text-xs font-medium border-b-2 transition-all duration-200 cursor-pointer",
+                        isActive
+                          ? "text-secondary-800 border-secondary-800"
+                          : "text-[#7A869A] border-transparent hover:text-secondary-800/80"
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Horizontal Scroll Gallery */}
+              <div className="flex gap-1.5 overflow-x-auto py-2.5 no-scrollbar scroll-smooth shrink-0">
+                {activeImages.map((url, idx) => {
+                  const isVideo = isVideoUrl(url);
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setFullscreenImage(url)}
+                      className="w-[62px] h-[62px] min-w-[62px] min-h-[62px] border border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden transition-all duration-200 relative"
+                    >
+                      <img
+                        src={url}
+                        className="w-full h-full object-cover"
+                        alt={`Thumbnail ${idx}`}
+                      />
+                      {isVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[3px] border-t-transparent border-l-[6px] border-l-secondary-900 border-b-[3px] border-b-transparent ml-0.5" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {activeImages.length === 0 && (
+                  <div className="w-full h-15.5 flex items-center justify-center text-center py-2 text-xs text-slate-400">
+                    Không có hình ảnh nào
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Try On Button inside Bottom Sheet */}
+            <div className="mt-2 shrink-0">
+              <Button
+                disabled={isTryingOn}
+                onClick={() => {
+                  handleTryOn();
+                }}
+                className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+              >
+                {isTryingOn ? "Đang xử lý ở tab khác..." : "Thử Nhẫn"}
+                <Sparkle size={16} />
+              </Button>
+            </div>
+          </div>
+        )}
+      </BottomSheet>
+
+      {/* Fullscreen Image/Video Overlay Viewer */}
+      {fullscreenImage && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+          onClick={() => setFullscreenImage(null)}
         >
-          {isTryingOn ? "Đang xử lý ở tab khác..." : "Thử Nhẫn"}
-          <Sparkle size={18} />
-        </Button>
-      </div>
+          {/* Close button */}
+          <button
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-4 right-4 text-white/80 hover:text-white p-2 cursor-pointer bg-white/10 rounded-full transition-colors z-[10000]"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Media Content */}
+          <div className="max-w-[95%] max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {isVideoUrl(fullscreenImage) ? (
+              <video
+                src={fullscreenImage}
+                controls
+                autoPlay
+                className="max-w-full max-h-[90vh] object-contain"
+              />
+            ) : (
+              <img
+                src={fullscreenImage}
+                className="max-w-full max-h-[90vh] object-contain select-none"
+                alt="Fullscreen preview"
+              />
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -280,40 +514,187 @@ export function DesktopStep3Right({
   handleTryOn,
   isTryingOn = false,
 }: DesktopStep3RightProps) {
+  const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
+  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
+
+  // Auto-detect and set active tab when selectedRing changes
+  React.useEffect(() => {
+    if (selectedRing) {
+      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
+      const websiteUrls = extractUrls(selectedRing.thumbnails);
+
+      if (tryOnUrls.length > 0) {
+        setActiveTab('try_on');
+      } else if (websiteUrls.length > 0) {
+        setActiveTab('website');
+      } else {
+        setActiveTab('actual');
+      }
+    }
+  }, [selectedRing]);
+
+  // Set previewImage to always be the first website image when selectedRing changes
+  React.useEffect(() => {
+    if (selectedRing) {
+      const websiteUrls = extractUrls(selectedRing.thumbnails);
+      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
+      const actualUrls = [
+        ...extractUrls(selectedRing.images),
+        ...extractUrls(selectedRing.videos),
+      ];
+
+      // Always show first website image; fallback to try-on or actual if not available
+      const defaultImage = websiteUrls[0] || tryOnUrls[0] || actualUrls[0] || null;
+      setPreviewImage(defaultImage);
+    } else {
+      setPreviewImage(null);
+    }
+  }, [selectedRing]);
+
+  // Helper to detect video URLs
+  const isVideoUrl = (url: string) => {
+    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
+  };
+
+  // Construct attribute description string
+  const attributesList: string[] = [];
+  if (selectedRing?.attributes?.fineness) {
+    attributesList.push(selectedRing.attributes.fineness);
+  }
+  if (selectedRing?.attributes?.materialColor) {
+    attributesList.push(selectedRing.attributes.materialColor);
+  }
+  if (selectedRing?.attributes?.ringSize && selectedRing.attributes.ringSize !== 0) {
+    attributesList.push(`Ni ${selectedRing.attributes.ringSize}`);
+  }
+  const erpCode = selectedRing?.attributes?.erpCode || selectedRing?.attributes?.code;
+  if (erpCode) {
+    attributesList.push(erpCode);
+  }
+  const attributesString = attributesList.join(" - ");
+
+  // Extract all media categories
+  const tryOnUrls = selectedRing ? extractUrls(selectedRing.attributes?.try_on_images) : [];
+  const websiteUrls = selectedRing ? extractUrls(selectedRing.thumbnails) : [];
+  const actualUrls = selectedRing ? [
+    ...extractUrls(selectedRing.images),
+    ...extractUrls(selectedRing.videos)
+  ] : [];
+
+  const activeImages =
+    activeTab === 'try_on'
+      ? tryOnUrls
+      : activeTab === 'website'
+      ? websiteUrls
+      : actualUrls;
+
+  const tabs = [
+    { id: 'try_on' as const, label: 'Ảnh Thử Nhẫn' },
+    { id: 'website' as const, label: 'Ảnh website' },
+    { id: 'actual' as const, label: 'Ảnh/video thực tế' },
+  ];
+
   return (
     <div className="grow h-full flex flex-col justify-between items-center min-w-0 overflow-y-auto">
       <div className="w-full flex flex-col justify-between grow pl-0 py-6 pr-6">
-        <div className="border border-primary-100 rounded p-4">
+        <div className="border border-primary-100 rounded p-4 bg-white flex flex-col">
           {/* Title */}
-          <h3 className="text-primary-900 font-bold text-base select-none">
+          <h3 className="text-primary-900 font-bold text-base select-none border-b border-primary-50 pb-2">
             Trang sức được lựa chọn
           </h3>
 
           {/* Selected product detail content */}
           {selectedRing ? (
-            <div className="flex flex-col justify-between py-3">
-              {/* Large image */}
-              <div className="flex items-center justify-center min-h-64 mb-6">
-                {selectedRing.thumbnails?.[0]?.url ? (
-                  <img
-                    src={selectedRing.thumbnails?.[0]?.url}
-                    className="h-auto w-full min-h-64 aspect-square object-cover"
-                    alt={selectedRing.title}
-                  />
+            <div className="flex flex-col text-start mt-3">
+              {/* Large Preview Image */}
+              <div
+                onClick={() => previewImage && setFullscreenImage(previewImage)}
+                className="w-full flex justify-center items-center py-4 bg-white select-none cursor-pointer border border-primary-50 hover:opacity-95"
+              >
+                {previewImage ? (
+                  isVideoUrl(previewImage) ? (
+                    <div className="relative h-64 aspect-square w-auto">
+                      <video src={previewImage} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center">
+                          <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[12px] border-l-secondary-900 border-b-[6px] border-b-transparent ml-1" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={previewImage}
+                      className="h-64 object-contain aspect-square w-auto"
+                      alt={selectedRing.title}
+                    />
+                  )
                 ) : (
-                  <div className="min-h-64 w-full aspect-square flex flex-col items-center justify-center bg-slate-100 border-slate-300 text-xs text-slate-400 gap-2 select-none">
+                  <div className="w-full h-64 flex flex-col items-center justify-center bg-slate-100 text-xs text-slate-400 gap-2">
                     <ImageSquare size={48} className="text-slate-400" />
-                    <span>No Image</span>
+                    <span>Chưa có hình ảnh</span>
                   </div>
                 )}
               </div>
 
-              {/* Details */}
-              <div className="space-y-3 text-left">
-                <h4 className="text-secondary-900 font-black text-base leading-snug">
-                  {selectedRing.type || "Loại nhẫn"} -{" "}
-                  {selectedRing.attributes?.designCode || "--"}
-                </h4>
+              {/* Header Product Metadata */}
+              <div className="mt-3">
+                <h3 className="text-secondary-900 font-bold text-base leading-tight text-center">
+                  {selectedRing.type || "Loại nhẫn"} - {selectedRing.attributes?.designCode || "--"}
+                </h3>
+              </div>
+
+              {/* Media Gallery Tab Bar */}
+              <div className="flex border-b border-primary-100 mt-4">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        "flex-1 text-center pb-2 text-xs font-bold border-b-2 transition-all duration-200 cursor-pointer",
+                        isActive
+                          ? "text-[#004B49] border-[#004B49]"
+                          : "text-[#7A869A] border-transparent hover:text-[#004B49]/80"
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Horizontal Scroll Gallery */}
+              <div className="flex gap-2 overflow-x-auto pt-3 no-scrollbar scroll-smooth">
+                {activeImages.map((url, idx) => {
+                  const isVideo = isVideoUrl(url);
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setFullscreenImage(url)}
+                      className="w-[62px] h-[62px] min-w-[62px] min-h-[62px] border border-slate-200 hover:border-slate-300 cursor-pointer overflow-hidden transition-all duration-200 relative"
+                    >
+                      <img
+                        src={url}
+                        className="w-full h-full object-cover"
+                        alt={`Thumbnail ${idx}`}
+                      />
+                      {isVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-secondary-900 border-b-[4px] border-b-transparent ml-0.5" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {activeImages.length === 0 && (
+                  <div className="w-full text-center py-4 text-xs text-slate-400 italic">
+                    Không có hình ảnh nào
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -322,8 +703,7 @@ export function DesktopStep3Right({
                 <Sparkle size={32} />
               </div>
               <p className="text-sm font-semibold text-primary-500">
-                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử
-                nghiệm.
+                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử nghiệm.
               </p>
             </div>
           )}
@@ -333,12 +713,47 @@ export function DesktopStep3Right({
         <Button
           onClick={handleTryOn}
           disabled={!selectedRing || isTryingOn}
-          className="w-full bg-secondary-800 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
         >
           Thử Nhẫn
-          <Sparkle size={16} weight="fill" />
+          <Sparkle size={16} />
         </Button>
       </div>
+
+      {/* Fullscreen Image/Video Overlay Viewer */}
+      {fullscreenImage && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+          onClick={() => setFullscreenImage(null)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-4 right-4 text-white/80 hover:text-white p-2 cursor-pointer bg-white/10 rounded-full transition-colors z-[10000]"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Media Content */}
+          <div className="max-w-[95%] max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {isVideoUrl(fullscreenImage) ? (
+              <video
+                src={fullscreenImage}
+                controls
+                autoPlay
+                className="max-w-full max-h-[90vh] object-contain"
+              />
+            ) : (
+              <img
+                src={fullscreenImage}
+                className="max-w-full max-h-[90vh] object-contain select-none"
+                alt="Fullscreen preview"
+              />
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
