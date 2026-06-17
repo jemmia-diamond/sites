@@ -11,7 +11,7 @@ export function MobileProgressBar({ activeCount, className }: MobileProgressBarP
   const linePercent = activeCount <= 1 ? 0 : ((activeCount - 1) / 3) * 100;
 
   return (
-    <div className={cn("relative flex items-center justify-between w-full md:max-w-[280px] mx-auto md:mx-0 select-none", className)}>
+    <div className={cn("relative flex items-center justify-between w-full md:max-w-75 mx-auto md:mx-0 select-none", className)}>
       {/* Background Line (Gray/Purple) */}
       <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[2px] bg-gray-400 z-0" />
 

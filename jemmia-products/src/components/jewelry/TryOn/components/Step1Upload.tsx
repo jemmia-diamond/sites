@@ -208,7 +208,7 @@ export function MobileStep1({
             ) as HTMLInputElement;
             fileInput?.click();
           }}
-          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
           variant="outline"
         >
           Upload Ảnh
@@ -316,7 +316,7 @@ export function DesktopStep1Bottom({
       </Button>
       <Button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
         variant="outline"
       >
         Upload Ảnh

@@ -182,7 +182,7 @@ export function DesktopStep2Bottom({
       <Button
         onClick={() => setStep(3)}
         disabled={!uploadedImage}
-        className="w-full bg-[#004B49] hover:bg-[#003C3A] text-white font-bold text-xs h-11 flex items-center justify-center gap-2 cursor-pointer rounded-lg border-none shadow-none"
+        className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
       >
         Dùng hình ảnh này
         <Check size={16} weight="bold" />
@@ -194,13 +194,13 @@ export function DesktopStep2Bottom({
           setUploadedImage(null);
           startCamera();
         }}
-        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+        className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
       >
         Chụp lại
         <ArrowCounterClockwise size={18} />
       </Button>
 
-      <div className="flex items-center justify-start gap-1.5 text-primary-400 text-xs mt-3 select-none">
+      <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
         <LockSimple size={14} weight="regular" />
         <span>Ảnh của bạn là riêng tư và được bảo vệ</span>
       </div>
