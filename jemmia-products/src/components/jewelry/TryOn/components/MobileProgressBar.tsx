@@ -4,9 +4,12 @@ import { cn } from "@/lib/utils";
 interface MobileProgressBarProps {
   activeCount: number;
   className?: string;
+  onStepClick?: (step: number) => void;
+  disabled?: boolean;
+  maxStep?: number;
 }
 
-export function MobileProgressBar({ activeCount, className }: MobileProgressBarProps) {
+export function MobileProgressBar({ activeCount, className, onStepClick, disabled, maxStep }: MobileProgressBarProps) {
   // segment progress percentage (3 segments between 4 circles)
   const linePercent = activeCount <= 1 ? 0 : ((activeCount - 1) / 3) * 100;
 
@@ -25,14 +28,22 @@ export function MobileProgressBar({ activeCount, className }: MobileProgressBarP
 
       {Array.from({ length: 4 }).map((_, i) => {
         const stepNum = i + 1;
-        const isCompleted = stepNum < activeCount;
+        const limitStep = maxStep ?? activeCount;
+        const isClickable = stepNum <= limitStep && stepNum !== activeCount;
+        const isCompleted = stepNum <= limitStep && stepNum !== activeCount;
         const isActive = stepNum === activeCount;
 
         return (
           <div
             key={i}
+            onClick={() => {
+              if (isClickable && onStepClick && !disabled) {
+                onStepClick(stepNum);
+              }
+            }}
             className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-medium text-xs transition-all duration-500 ease-in-out z-10",
+              isClickable && !disabled && "cursor-pointer hover:scale-105 active:scale-95",
               isCompleted && "bg-secondary-900 border-2 border-secondary-900 text-white shadow-sm",
               isActive && "bg-white border-2 border-secondary-900 text-secondary-900 shadow-sm",
               !isCompleted && !isActive && "bg-white border-2 border-gray-400 text-gray-400"

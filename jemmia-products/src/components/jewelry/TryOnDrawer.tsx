@@ -9,6 +9,7 @@ import {
   Question,
   ArrowRight,
   LockSimple,
+  ArrowCounterClockwise,
 } from "@phosphor-icons/react";
 import { ProductModel } from "../../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -81,6 +82,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [isTryingOn, setisTryingOn] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [guideStep, setGuideStep] = useState(1);
+  const [maxStep, setMaxStep] = useState(1);
+  const [showResumePopup, setShowResumePopup] = useState(false);
 
   const handleOpenGuide = () => {
     setShowGuide(true);
@@ -149,6 +152,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         setGuideStep(1);
       }
       setStep(2);
+      setMaxStep(2);
     },
     onCameraFallback: () => {
       document.getElementById("tryon-camera-capture")?.click();
@@ -208,6 +212,30 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     }
   }, [toastMessage]);
 
+  useEffect(() => {
+    if (step > maxStep) {
+      setMaxStep(step);
+    }
+  }, [step, maxStep]);
+
+  useEffect(() => {
+    if (!uploadedImage) {
+      setMaxStep(1);
+    }
+  }, [uploadedImage]);
+
+  useEffect(() => {
+    if (isOpen && step > 1) {
+      setShowResumePopup(true);
+    }
+  }, [isOpen]);
+
+  const handleStepClick = (targetStep: number) => {
+    if (step === 4 && isGenerating) return;
+    if (step === 2) stopCamera();
+    setStep(targetStep);
+  };
+
   const handleSelectRing = (ring: ProductModel) => {
     const ringType = ring.type || "";
     const isRing = ringType.toLowerCase().includes("nhẫn");
@@ -225,6 +253,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     }
 
     setSelectedRing(ring);
+    setMaxStep(3);
+    setGeneratedImage(null);
+    setGeneratedImages([]);
+    setSelectedGeneratedImage(null);
+    setGenerationError(null);
   };
 
   const handleTryOn = async () => {
@@ -278,7 +311,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
-    const isFakeMode = true; // Set to true to mock image generation for UI development
+    const isFakeMode = false; // Set to true to mock image generation for UI development
 
     if (isFakeMode) {
       setTimeout(() => {
@@ -391,6 +424,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           "",
       );
       formData.append("image3", file);
+      formData.append("designCode", selectedRing.attributes?.designCode || "");
       if (isFakeMode) {
         formData.append("isFake", "true");
       }
@@ -553,6 +587,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             setGuideStep(1);
           }
           setStep(2);
+          setMaxStep(2);
         }
       };
       reader.readAsDataURL(file);
@@ -683,7 +718,58 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 </div>
               )}
             </AnimatePresence>
+            {showResumePopup && (
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white shadow-2xl p-4 lg:p-6 max-w-sm w-full border border-slate-100 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+                >
+                  {/* Ring Icon Container */}
+                  <div className="w-20 h-20 rounded-full bg-[#E6F7F7] flex items-center justify-center mb-6">
+                    <img src="https://cdn.hstatic.net/files/200000355853/file/frame.svg" />
+                  </div>
 
+                  {/* Title */}
+                  <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
+                    Bạn đang thực hiện dở quá trình thử nhẫn (Bước {step}/4)
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
+                    Bạn có muốn tiếp tục từ bước này hay bắt đầu lại từ đầu?
+                  </p>
+
+                  {/* Buttons */}
+                  <Button
+                    onClick={() => setShowResumePopup(false)}
+                    className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+                  >
+                    <span>Tiếp tục</span>
+                    <ArrowRight size={16} weight="bold" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowResumePopup(false);
+                      setStep(1);
+                      setUploadedImage(null);
+                      setSelectedRing(null);
+                      setGeneratedImage(null);
+                      setGeneratedImages([]);
+                      setSelectedGeneratedImage(null);
+                      setGenerationError(null);
+                      setMaxStep(1);
+                    }}
+                    className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
+                  >
+                    Bắt đầu lại
+                    <ArrowCounterClockwise size={16} />
+                  </Button>
+                </motion.div>
+              </div>
+            )}
             {/* Header Title Bar */}
             <div className="h-12 px-4 bg-white border-b border-primary-100 flex items-center justify-between shrink-0 relative">
               <div className="flex items-center">
@@ -732,26 +818,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => {
-                    if (step === 4 && isGenerating) return;
                     stopCamera();
-                    if (step === 4) {
-                      setStep(1);
-                      setUploadedImage(null);
-                      setSelectedRing(null);
-                      setGeneratedImage(null);
-                      setGeneratedImages([]);
-                      setSelectedGeneratedImage(null);
-                      setGenerationError(null);
-                    }
                     onClose();
                   }}
-                  disabled={step === 4 && isGenerating}
-                  className={cn(
-                    "text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
-                    step === 4 &&
-                      isGenerating &&
-                      "opacity-20 cursor-not-allowed pointer-events-none",
-                  )}
+                  className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
                 >
                   <X size={18} weight="bold" />
                 </button>
@@ -782,7 +852,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   {step === 2 && (
                     <MobileStep2
                       uploadedImage={uploadedImage}
-                      setStep={setStep}
+                      setStep={handleStepClick}
                       setUploadedImage={setUploadedImage}
                       startCamera={startCamera}
                       ringContainerRef={ringContainerRef}
@@ -806,6 +876,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setRingScale={setRingScale}
                       setRingRotation={setRingRotation}
                       onOpenGuide={handleOpenGuide}
+                      maxStep={maxStep}
                     />
                   )}
                   {step === 3 && (
@@ -821,6 +892,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setToastMessage={setToastMessage}
                       handleTryOn={handleTryOn}
                       isTryingOn={isTryingOn}
+                      setStep={handleStepClick}
+                      maxStep={maxStep}
                     />
                   )}
                   {step === 4 && (
@@ -834,6 +907,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setIsFullscreen={setIsFullscreen}
                       generationError={generationError}
                       selectedRing={selectedRing}
+                      setStep={handleStepClick}
+                      maxStep={maxStep}
                     />
                   )}
                 </div>
@@ -850,7 +925,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       {/* Progress Tracker */}
                       {!showGuide && (
                         <div className="w-full shrink-0 mb-5">
-                          <MobileProgressBar activeCount={step} />
+                          <MobileProgressBar
+                            activeCount={step}
+                            onStepClick={handleStepClick}
+                            disabled={step === 4 && isGenerating}
+                            maxStep={maxStep}
+                          />
                         </div>
                       )}
 
@@ -1033,7 +1113,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
                           {uploadedImage && step !== 1 && (
                             <img
-                              src={generatedImage || uploadedImage}
+                              src={uploadedImage}
                               className="w-full h-full object-cover"
                               alt="Hand Preview"
                               draggable={false}
