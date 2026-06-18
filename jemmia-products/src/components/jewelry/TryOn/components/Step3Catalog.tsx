@@ -57,31 +57,17 @@ export function MobileStep3({
   // Auto-detect and set active tab when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
-      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
-      const websiteUrls = extractUrls(selectedRing.thumbnails);
-
-      if (tryOnUrls.length > 0) {
-        setActiveTab('try_on');
-      } else if (websiteUrls.length > 0) {
-        setActiveTab('website');
-      } else {
-        setActiveTab('actual');
-      }
+      setActiveTab('try_on');
     }
   }, [selectedRing]);
 
-  // Set previewImage to always be the first website image when selectedRing changes
+  // Set previewImage to always be the first try-on image when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
       const websiteUrls = extractUrls(selectedRing.thumbnails);
-      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
-      const actualUrls = [
-        ...extractUrls(selectedRing.images),
-        ...extractUrls(selectedRing.videos),
-      ];
 
-      // Always show the first website image; fall back to try-on or actual if not available
-      const defaultImage = websiteUrls[0] || tryOnUrls[0] || actualUrls[0] || null;
+      // Always show the first try-on image; fall back to website or actual if not available
+      const defaultImage = websiteUrls[0] || null
       setPreviewImage(defaultImage);
     } else {
       setPreviewImage(null);
@@ -111,7 +97,12 @@ export function MobileStep3({
   const attributesString = attributesList.join(" - ");
 
   // Extract all media categories
-  const tryOnUrls = selectedRing ? extractUrls(selectedRing.attributes?.try_on_images) : [];
+  const tryOnUrls = selectedRing
+    ? [
+        ...extractUrls(selectedRing.try_on_images),
+        ...extractUrls(selectedRing.attributes?.try_on_images),
+      ]
+    : [];
   const websiteUrls = selectedRing ? extractUrls(selectedRing.thumbnails) : [];
   const actualUrls = selectedRing ? [
     ...extractUrls(selectedRing.images),
@@ -513,31 +504,26 @@ export function DesktopStep3Right({
   // Auto-detect and set active tab when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
-      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
-      const websiteUrls = extractUrls(selectedRing.thumbnails);
-
-      if (tryOnUrls.length > 0) {
-        setActiveTab('try_on');
-      } else if (websiteUrls.length > 0) {
-        setActiveTab('website');
-      } else {
-        setActiveTab('actual');
-      }
+      setActiveTab('try_on');
     }
   }, [selectedRing]);
 
   // Set previewImage to always be the first website image when selectedRing changes
+  // Set previewImage to always be the first try-on image when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
       const websiteUrls = extractUrls(selectedRing.thumbnails);
-      const tryOnUrls = extractUrls(selectedRing.attributes?.try_on_images);
+      const tryOnUrls = [
+        ...extractUrls(selectedRing.try_on_images),
+        ...extractUrls(selectedRing.attributes?.try_on_images),
+      ];
       const actualUrls = [
         ...extractUrls(selectedRing.images),
         ...extractUrls(selectedRing.videos),
       ];
 
-      // Always show first website image; fallback to try-on or actual if not available
-      const defaultImage = websiteUrls[0] || tryOnUrls[0] || actualUrls[0] || null;
+      // Always show first try-on image; fallback to website or actual if not available
+      const defaultImage = websiteUrls[0] || null;
       setPreviewImage(defaultImage);
     } else {
       setPreviewImage(null);
@@ -567,7 +553,12 @@ export function DesktopStep3Right({
   const attributesString = attributesList.join(" - ");
 
   // Extract all media categories
-  const tryOnUrls = selectedRing ? extractUrls(selectedRing.attributes?.try_on_images) : [];
+  const tryOnUrls = selectedRing
+    ? [
+        ...extractUrls(selectedRing.try_on_images),
+        ...extractUrls(selectedRing.attributes?.try_on_images),
+      ]
+    : [];
   const websiteUrls = selectedRing ? extractUrls(selectedRing.thumbnails) : [];
   const actualUrls = selectedRing ? [
     ...extractUrls(selectedRing.images),
