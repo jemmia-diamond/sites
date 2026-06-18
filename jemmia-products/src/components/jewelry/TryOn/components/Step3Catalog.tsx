@@ -140,10 +140,6 @@ export function MobileStep3({
           <h4 className="text-primary-900 font-bold text-base tracking-tight leading-tight">
             Chọn trang sức của bạn
           </h4>
-          <p className="text-xs text-primary-600 font-normal mt-1">
-            Khám phá bộ sưu tập của chúng tôi và chọn một thiết kế để thử trực
-            tiếp trên tay bạn
-          </p>
         </div>
       </div>
 
@@ -342,7 +338,7 @@ export function MobileStep3({
                 }}
                 className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
               >
-                {isTryingOn ? "Đang xử lý ở tab khác..." : "Thử Nhẫn"}
+                {isTryingOn ? "Đang xử lý" : "Thử Nhẫn"}
                 <Sparkle size={16} />
               </Button>
             </div>
@@ -414,10 +410,6 @@ export function DesktopStep3Left({
       <div>
         <p className="text-primary-900 font-bold text-base tracking-tight leading-tight">
           Chọn trang sức của bạn
-        </p>
-        <p className="text-xs text-primary-600 font-normal mt-1">
-          Khám phá bộ sưu tập của chúng tôi và chọn một thiết kế để thử trực
-          tiếp trên tay bạn
         </p>
       </div>
       <div className="relative shrink-0 w-[400px] max-w-full">

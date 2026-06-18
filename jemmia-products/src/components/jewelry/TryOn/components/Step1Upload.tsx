@@ -47,10 +47,10 @@ export function MobileStep1({
         />
 
         {/* Hand Overlay Guide */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center py-6 z-[305] pb-24">
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-14 z-[305]">
           <img
             src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-            className="w-full h-full object-contain opacity-60"
+            className="w-full h-full object-contain opacity-60 scale-[165%]"
             alt="Camera Overlay Hand"
           />
         </div>
@@ -73,7 +73,7 @@ export function MobileStep1({
         {/* Footer Actions */}
         <div className="relative z-[310] flex flex-col items-center gap-4 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {/* 3 Guidelines */}
-          <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded bg-black/30 border border-white/10 backdrop-blur-sm">
+          {/* <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded bg-black/30 border border-white/10 backdrop-blur-sm">
             <div className="flex flex-col items-center text-center">
               <SunDim size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">
@@ -92,7 +92,7 @@ export function MobileStep1({
                 Tránh bóng đổ và <br /> ảnh bị mờ
               </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Capture Button */}
           <button
@@ -115,10 +115,6 @@ export function MobileStep1({
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Chụp ảnh bàn tay của bạn
           </h4>
-          <p className="text-xs text-primary-600 leading-normal">
-            Tải lên hình ảnh rõ nét để xem trang sức của chúng tôi hiển thị trên
-            tay bạn một cách chân thực
-          </p>
         </div>
       </div>
 
@@ -239,10 +235,6 @@ export function DesktopStep1Left() {
         <h4 className="text-primary-900 font-bold text-xl md:text-2xl tracking-tight leading-tight">
           Chụp ảnh bàn tay của bạn
         </h4>
-        <p className="text-sm text-primary-500 font-medium leading-relaxed">
-          Tải lên hình ảnh rõ nét để xem trang sức của chúng tôi hiển thị trên
-          tay bạn một cách chân thực
-        </p>
       </div>
       <div className="pt-2">
         <ul className="space-y-5 text-sm font-medium text-primary-600">

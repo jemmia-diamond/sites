@@ -46,7 +46,6 @@ import {
 import { ResultCanvas } from "./TryOn/components/ResultCanvas";
 import { MoveableRedBox } from "./TryOn/components/MoveableRedBox";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
-import { formatPrice } from "./TryOn/utils";
 import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
 import { TryOnGuide } from "./TryOn/components/TryOnGuide";
 
@@ -59,6 +58,98 @@ function getSimpleHash(str: string): string {
   }
   return Math.abs(hash).toString(36);
 }
+
+function freeStorageSpace(): void {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith("tryon_cache_")) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => sessionStorage.removeItem(key));
+    console.log(`Cleared ${keysToRemove.length} tryon cache items from sessionStorage to free up space.`);
+  } catch (e) {
+    console.error("Failed to free storage space:", e);
+  }
+}
+
+function resizeAndCompressImage(
+  base64OrUrl: string,
+  maxWidth = 1024,
+  maxHeight = 1024,
+  quality = 0.85
+): Promise<string> {
+  return new Promise((resolve) => {
+    if (!base64OrUrl || !base64OrUrl.startsWith("data:image")) {
+      resolve(base64OrUrl);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64OrUrl);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressedBase64);
+    };
+    img.onerror = () => {
+      resolve(base64OrUrl);
+    };
+    img.src = base64OrUrl;
+  });
+}
+
+function safeSessionStorageSetItem(key: string, value: string): boolean {
+  try {
+    sessionStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.warn(`sessionStorage setItem failed for key "${key}", attempting to free space...`, e);
+    freeStorageSpace();
+    try {
+      sessionStorage.setItem(key, value);
+      return true;
+    } catch (retryErr) {
+      console.error(`sessionStorage setItem failed again for key "${key}" after clearing cache:`, retryErr);
+      return false;
+    }
+  }
+}
+
+function safeLocalStorageSetItem(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.error(`localStorage setItem failed for key "${key}":`, e);
+    return false;
+  }
+}
+
 
 interface TryOnDrawerProps {
   isOpen: boolean;
@@ -84,6 +175,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [guideStep, setGuideStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
   const [showResumePopup, setShowResumePopup] = useState(false);
+  const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
 
   const handleOpenGuide = () => {
     setShowGuide(true);
@@ -93,6 +185,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const scrollPosition = useRef(0);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Responsive device width observer
   useEffect(() => {
@@ -120,11 +213,19 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Reset the device isTryingOn lock if this tab unloads while generating
+  // Reset the device isTryingOn lock if this tab unloads while generating (and no async task is active in step 4)
   useEffect(() => {
     const handleUnload = () => {
-      if (localStorage.getItem("isTryingOn") === "true") {
-        localStorage.setItem("isTryingOn", "false");
+      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
+      let isStep4 = false;
+      if (activeSessionStr) {
+        try {
+          const session = JSON.parse(activeSessionStr);
+          isStep4 = session && session.step === 4;
+        } catch (e) {}
+      }
+      if (!isStep4 && localStorage.getItem("isTryingOn") === "true") {
+        safeLocalStorageSetItem("isTryingOn", "false");
       }
     };
     window.addEventListener("beforeunload", handleUnload);
@@ -141,8 +242,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     capturePhoto,
   } = useTryOnCamera({
     isMobile,
-    onPhotoCaptured: (dataUrl) => {
-      setUploadedImage(dataUrl);
+    onPhotoCaptured: async (dataUrl) => {
+      const compressed = await resizeAndCompressImage(dataUrl);
+      setUploadedImage(compressed);
       setDragTranslate([0, 0]);
       cumulativeTranslate.current = [0, 0];
       const hasShownGuide =
@@ -198,6 +300,204 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     desktopSentinelRef,
   } = useTryOnCatalog({ step, isOpen });
 
+  const pollTaskStatus = (taskId: string, targetRing: ProductModel, targetImage: string) => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await axios.get<{
+          status: "queued" | "processing" | "completed" | "failed";
+          result?: { base64: string; mimeType: string };
+          error?: string;
+        }>(`/image-generation/status/${taskId}`);
+
+        const { status, result, error } = response.data;
+
+        if (status === "completed" && result?.base64) {
+          const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
+          const compressedResult = await resizeAndCompressImage(imageUrl);
+          setGeneratedImages([compressedResult]);
+          setGeneratedImage(compressedResult);
+          setSelectedGeneratedImage(compressedResult);
+          setIsGenerating(false);
+          safeLocalStorageSetItem("isTryingOn", "false");
+          setisTryingOn(false);
+
+          // Save cache
+          const cacheKey = `tryon_cache_${targetRing.id}_${getSimpleHash(targetImage)}`;
+          safeSessionStorageSetItem(cacheKey, JSON.stringify([compressedResult]));
+
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+        } else if (status === "failed") {
+          setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến.");
+          setGenerationError(error || "Không thể tạo hình ảnh thử trực tuyến.");
+          setIsGenerating(false);
+          safeLocalStorageSetItem("isTryingOn", "false");
+          setisTryingOn(false);
+
+          // Clean up session on failure
+          sessionStorage.removeItem("active_tryon_session");
+
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+        }
+      } catch (err: any) {
+        console.error("Error polling task status:", err);
+        if (err.response?.status === 404) {
+          setIsGenerating(false);
+          safeLocalStorageSetItem("isTryingOn", "false");
+          setisTryingOn(false);
+          sessionStorage.removeItem("active_tryon_session");
+
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+        }
+      }
+    }, 3000);
+  };
+
+  const handleResumeSession = () => {
+    setShowResumePopup(false);
+  };
+
+  // Open resume popup and load active session details immediately on mount/open
+  useEffect(() => {
+    if (isOpen) {
+      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
+      if (activeSessionStr) {
+        try {
+          const session = JSON.parse(activeSessionStr);
+          if (session) {
+            const resumeStep = session.maxStep || session.step;
+            if (resumeStep > 1) {
+              setStep(resumeStep);
+              setSelectedRing(session.selectedRing);
+              setUploadedImage(session.uploadedImage);
+              setFingerPosition(session.fingerPosition);
+              setRingScale(session.ringScale);
+              setRingRotation(session.ringRotation);
+              setDragTranslate(session.dragTranslate);
+              setMaxStep(resumeStep);
+
+              if (session.generatedImage) {
+                setGeneratedImage(session.generatedImage);
+                setGeneratedImages(session.generatedImages || [session.generatedImage]);
+                setSelectedGeneratedImage(session.selectedGeneratedImage || session.generatedImage);
+                setIsGenerating(false);
+                safeLocalStorageSetItem("isTryingOn", "false");
+                setisTryingOn(false);
+              } else if (resumeStep === 4) {
+                setIsGenerating(true);
+                safeLocalStorageSetItem("isTryingOn", "true");
+                setisTryingOn(true);
+                if (session.taskId) {
+                  pollTaskStatus(session.taskId, session.selectedRing, session.uploadedImage);
+                }
+              } else {
+                safeLocalStorageSetItem("isTryingOn", "false");
+                setisTryingOn(false);
+              }
+
+              setSavedSessionStep(resumeStep);
+              setShowResumePopup(true);
+              return;
+            }
+          }
+        } catch (err) {
+          console.error("Failed to parse saved session on open:", err);
+          sessionStorage.removeItem("active_tryon_session");
+        }
+      }
+
+      const resumeStep = Math.max(maxStep, step);
+      if (resumeStep > 1) {
+        setSavedSessionStep(resumeStep);
+        setShowResumePopup(true);
+      }
+    }
+  }, [isOpen]);
+
+  // Save active session to sessionStorage on any state changes
+  useEffect(() => {
+    if (step > 1 && uploadedImage) {
+      let existingTaskId = null;
+      try {
+        const existingSessionStr = sessionStorage.getItem("active_tryon_session");
+        if (existingSessionStr) {
+          const parsed = JSON.parse(existingSessionStr);
+          if (parsed && parsed.taskId) {
+            existingTaskId = parsed.taskId;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      const sessionData = {
+        taskId: existingTaskId,
+        step,
+        maxStep: Math.max(maxStep, step),
+        selectedRing,
+        uploadedImage,
+        fingerPosition,
+        ringScale,
+        ringRotation,
+        dragTranslate,
+        generatedImage,
+        generatedImages,
+        selectedGeneratedImage,
+      };
+      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
+    }
+  }, [
+    step,
+    selectedRing,
+    uploadedImage,
+    fingerPosition,
+    ringScale,
+    ringRotation,
+    dragTranslate,
+    generatedImage,
+    generatedImages,
+    selectedGeneratedImage,
+  ]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const handleResetAll = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    sessionStorage.removeItem("active_tryon_session");
+    safeLocalStorageSetItem("isTryingOn", "false");
+    setisTryingOn(false);
+    setStep(1);
+    setUploadedImage(null);
+    setSelectedRing(null);
+    setGeneratedImage(null);
+    setGeneratedImages([]);
+    setSelectedGeneratedImage(null);
+    setGenerationError(null);
+    setMaxStep(1);
+  };
+
   const handleSelectGeneratedImage = (img: string | null) => {
     setSelectedGeneratedImage(img);
     setGeneratedImage(img);
@@ -224,11 +524,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     }
   }, [uploadedImage]);
 
-  useEffect(() => {
-    if (isOpen && step > 1) {
-      setShowResumePopup(true);
-    }
-  }, [isOpen]);
+  // Removed old showResumePopup check since it is handled by the new mount/open session restoration effect
 
   const handleStepClick = (targetStep: number) => {
     if (step === 4 && isGenerating) return;
@@ -268,11 +564,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       return;
     }
 
-    localStorage.setItem("isTryingOn", "true");
+    safeLocalStorageSetItem("isTryingOn", "true");
     setisTryingOn(true);
 
     if (!selectedRing || !uploadedImage) {
-      localStorage.setItem("isTryingOn", "false");
+      safeLocalStorageSetItem("isTryingOn", "false");
       setisTryingOn(false);
       return;
     }
@@ -295,9 +591,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             setGeneratedImage(cachedUrls[0]);
             setSelectedGeneratedImage(cachedUrls[0]);
             setIsGenerating(false);
-            localStorage.setItem("isTryingOn", "false");
+            safeLocalStorageSetItem("isTryingOn", "false");
             setisTryingOn(false);
-          }, 3000);
+          }, 1000);
           return;
         }
       } catch (err) {
@@ -310,23 +606,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setGeneratedImages([]);
     setSelectedGeneratedImage(null);
     setGenerationError(null);
-
-    const isFakeMode = false; // Set to true to mock image generation for UI development
-
-    if (isFakeMode) {
-      setTimeout(() => {
-        const mockUrls = [
-          "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-        ];
-        setGeneratedImages(mockUrls);
-        setGeneratedImage(mockUrls[0]);
-        setSelectedGeneratedImage(mockUrls[0]);
-        setIsGenerating(false);
-        localStorage.setItem("isTryingOn", "false");
-        setisTryingOn(false);
-      }, 10000);
-      return;
-    }
 
     try {
       const canvas = document.createElement("canvas");
@@ -425,74 +704,41 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       );
       formData.append("image3", file);
       formData.append("designCode", selectedRing.attributes?.designCode || "");
-      if (isFakeMode) {
-        formData.append("isFake", "true");
+
+      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const taskId = response.data.taskId;
+      if (!taskId) {
+        throw new Error("Không nhận được taskId từ máy chủ.");
       }
 
-      const promises = Array.from({ length: 1 }).map(() =>
-        axios.post<{
-          base64: string;
-          mimeType: string;
-          caption: string | null;
-        }>("/image-generation/generate", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }),
-      );
+      // Save active try-on session
+      const sessionData = {
+        taskId,
+        step: 4,
+        selectedRing,
+        uploadedImage,
+        fingerPosition,
+        ringScale,
+        ringRotation,
+        dragTranslate,
+      };
+      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
 
-      const results = await Promise.allSettled(promises);
-      let urls = results
-        .filter(
-          (r): r is PromiseFulfilledResult<any> => r.status === "fulfilled",
-        )
-        .map((r) => r.value)
-        .filter((r) => r.data && r.data.base64)
-        .map(
-          (r) =>
-            `data:${r.data.mimeType || "image/png"};base64,${r.data.base64}`,
-        );
-
-      if (urls.length === 0 && isFakeMode) {
-        urls = [
-          "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-        ];
-      }
-
-      if (urls.length > 0) {
-        setGeneratedImages(urls);
-        setGeneratedImage(urls[0]);
-        setSelectedGeneratedImage(urls[0]);
-        try {
-          const cacheKey = `tryon_cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
-          sessionStorage.setItem(cacheKey, JSON.stringify(urls));
-        } catch (err) {
-          console.warn(
-            "sessionStorage quota exceeded or error caching result:",
-            err,
-          );
-        }
-      } else {
-        setToastMessage("Không thể tạo hình ảnh thử trực tuyến.");
-        setGenerationError("Không thể tạo hình ảnh thử trực tuyến.");
-      }
+      // Start polling
+      pollTaskStatus(taskId, selectedRing, uploadedImage);
     } catch (e) {
-      if (isFakeMode) {
-        const mockUrls = [
-          "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=600&auto=format&fit=crop",
-        ];
-        setGeneratedImages(mockUrls);
-        setGeneratedImage(mockUrls[0]);
-        setSelectedGeneratedImage(mockUrls[0]);
-      } else {
-        console.error("Image generation failed:", e);
-        setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
-        setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
-      }
-    } finally {
+      console.error("Image generation failed:", e);
+      setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
+      setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setIsGenerating(false);
-      localStorage.setItem("isTryingOn", "false");
+      safeLocalStorageSetItem("isTryingOn", "false");
       setisTryingOn(false);
+      sessionStorage.removeItem("active_tryon_session");
     }
   };
 
@@ -575,9 +821,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     if (file) {
       stopCamera();
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         if (event.target?.result) {
-          setUploadedImage(event.target.result as string);
+          const compressed = await resizeAndCompressImage(event.target.result as string);
+          setUploadedImage(compressed);
           setDragTranslate([0, 0]);
           cumulativeTranslate.current = [0, 0];
           const hasShownGuide =
@@ -718,8 +965,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 </div>
               )}
             </AnimatePresence>
-            {showResumePopup && (
-              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+            {showResumePopup && createPortal(
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -733,7 +980,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
                   {/* Title */}
                   <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
-                    Bạn đang thực hiện dở quá trình thử nhẫn (Bước {step}/4)
+                    Bạn đang thực hiện dở quá trình thử nhẫn (Bước {savedSessionStep || step}/4)
                   </h3>
 
                   {/* Description */}
@@ -743,7 +990,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
                   {/* Buttons */}
                   <Button
-                    onClick={() => setShowResumePopup(false)}
+                    onClick={handleResumeSession}
                     className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
                   >
                     <span>Tiếp tục</span>
@@ -753,14 +1000,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     variant="outline"
                     onClick={() => {
                       setShowResumePopup(false);
-                      setStep(1);
-                      setUploadedImage(null);
-                      setSelectedRing(null);
-                      setGeneratedImage(null);
-                      setGeneratedImages([]);
-                      setSelectedGeneratedImage(null);
-                      setGenerationError(null);
-                      setMaxStep(1);
+                      handleResetAll();
                     }}
                     className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
                   >
@@ -768,7 +1008,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                     <ArrowCounterClockwise size={16} />
                   </Button>
                 </motion.div>
-              </div>
+              </div>,
+              document.body
             )}
             {/* Header Title Bar */}
             <div className="h-12 px-4 bg-white border-b border-primary-100 flex items-center justify-between shrink-0 relative">
@@ -877,6 +1118,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       setRingRotation={setRingRotation}
                       onOpenGuide={handleOpenGuide}
                       maxStep={maxStep}
+                      showResumePopup={showResumePopup}
                     />
                   )}
                   {step === 3 && (
@@ -1121,22 +1363,24 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                             />
                           )}
 
-                          <MoveableRedBox
-                            step={step}
-                            uploadedImage={uploadedImage}
-                            redBoxRef={redBoxRef}
-                            fingerPosition={fingerPosition}
-                            ringScale={ringScale}
-                            dragTranslate={dragTranslate}
-                            ringRotation={ringRotation}
-                            moveableRedBoxRef={moveableRedBoxRef}
-                            cumulativeTranslate={cumulativeTranslate}
-                            latestScale={latestScale}
-                            latestRotation={latestRotation}
-                            setDragTranslate={setDragTranslate}
-                            setRingScale={setRingScale}
-                            setRingRotation={setRingRotation}
-                          />
+                          {!showResumePopup && (
+                            <MoveableRedBox
+                              step={step}
+                              uploadedImage={uploadedImage}
+                              redBoxRef={redBoxRef}
+                              fingerPosition={fingerPosition}
+                              ringScale={ringScale}
+                              dragTranslate={dragTranslate}
+                              ringRotation={ringRotation}
+                              moveableRedBoxRef={moveableRedBoxRef}
+                              cumulativeTranslate={cumulativeTranslate}
+                              latestScale={latestScale}
+                              latestRotation={latestRotation}
+                              setDragTranslate={setDragTranslate}
+                              setRingScale={setRingScale}
+                              setRingRotation={setRingRotation}
+                            />
+                          )}
 
                           {step === 2 && (
                             <button
