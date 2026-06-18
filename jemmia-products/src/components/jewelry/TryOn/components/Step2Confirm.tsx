@@ -39,10 +39,12 @@ interface MobileStep2Props extends Step2ConfirmProps {
   setRingScale: (s: number) => void;
   setRingRotation: (r: number) => void;
   maxStep?: number;
+  showResumePopup?: boolean;
 }
 
 export function MobileStep2({
   uploadedImage,
+  showResumePopup,
   setStep,
   setUploadedImage,
   startCamera,
@@ -78,10 +80,6 @@ export function MobileStep2({
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Xác nhận ảnh của bạn
           </h4>
-          <p className="text-xs text-primary-600 leading-normal">
-            Đảm bảo bàn tay của bạn hiển thị rõ ràng để có kết quả dựng hình AI
-            tốt nhất
-          </p>
         </div>
       </div>
 
@@ -113,22 +111,24 @@ export function MobileStep2({
               onLoad={triggerUpdateRect}
             />
           )}
-          <MoveableRedBox
-            step={2}
-            uploadedImage={uploadedImage}
-            redBoxRef={redBoxRef}
-            fingerPosition={fingerPosition}
-            ringScale={ringScale}
-            dragTranslate={dragTranslate}
-            ringRotation={ringRotation}
-            moveableRedBoxRef={moveableRedBoxRef}
-            cumulativeTranslate={cumulativeTranslate}
-            latestScale={latestScale}
-            latestRotation={latestRotation}
-            setDragTranslate={setDragTranslate}
-            setRingScale={setRingScale}
-            setRingRotation={setRingRotation}
-          />
+          {!showResumePopup && (
+            <MoveableRedBox
+              step={2}
+              uploadedImage={uploadedImage}
+              redBoxRef={redBoxRef}
+              fingerPosition={fingerPosition}
+              ringScale={ringScale}
+              dragTranslate={dragTranslate}
+              ringRotation={ringRotation}
+              moveableRedBoxRef={moveableRedBoxRef}
+              cumulativeTranslate={cumulativeTranslate}
+              latestScale={latestScale}
+              latestRotation={latestRotation}
+              setDragTranslate={setDragTranslate}
+              setRingScale={setRingScale}
+              setRingRotation={setRingRotation}
+            />
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

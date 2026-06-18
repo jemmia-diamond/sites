@@ -23,6 +23,8 @@ const NAV_ITEMS = [
   { name: "Nguyên chiếc", path: "/combos" },
 ];
 
+let reloadCheckPerformed = false;
+
 export function Header({ searchPlaceholder }: HeaderProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResponse | null>(null);
@@ -40,6 +42,31 @@ export function Header({ searchPlaceholder }: HeaderProps) {
     const handleOpenTryOn = () => {
       setIsTryOnOpen(true);
     };
+
+    // Auto open drawer if there is an active running try-on task AND the page was reloaded
+    const isReload = (() => {
+      if (typeof window === "undefined" || !window.performance) return false;
+      const navs = window.performance.getEntriesByType("navigation");
+      if (navs.length > 0) {
+        return (navs[0] as PerformanceNavigationTiming).type === "reload";
+      }
+      return (window.performance as any).navigation?.type === 1;
+    })();
+
+    if (isReload && !reloadCheckPerformed) {
+      reloadCheckPerformed = true;
+      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
+      if (activeSessionStr) {
+        try {
+          const session = JSON.parse(activeSessionStr);
+          if (session && session.step === 4) {
+            setIsTryOnOpen(true);
+          }
+        } catch (e) {
+          console.error("Error parsing reload session:", e);
+        }
+      }
+    }
 
     window.addEventListener("search:clear", handleClearSearch);
     window.addEventListener("tryon:open", handleOpenTryOn);

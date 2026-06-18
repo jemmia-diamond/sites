@@ -43,9 +43,6 @@ export function MobileStep4({
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Hoàn tất tạo ảnh
           </h4>
-          <p className="text-sm text-primary-600 leading-normal">
-            AI đã xử lý xong và tạo hình ảnh nhẫn trên tay bạn
-          </p>
         </div>
       </div>
 
@@ -125,9 +122,6 @@ export function DesktopStep4Left() {
           <h4 className="text-primary-900 font-bold text-lg leading-tight">
             Hoàn tất tạo ảnh
           </h4>
-          <p className="text-xs text-primary-500 leading-normal">
-            AI đã xử lý xong và tạo hình ảnh nhẫn trên tay bạn
-          </p>
         </div>
       </div>
     </div>
