@@ -695,14 +695,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       const file = await filePromise;
 
       const formData = new FormData();
-      formData.append("image1Url", selectedRing.thumbnails?.[0]?.url || "");
-      formData.append(
-        "image2Url",
-        selectedRing.thumbnails?.[1]?.url ||
-          selectedRing.images?.[0]?.url ||
-          "",
-      );
-      formData.append("image3", file);
+      selectedRing.thumbnails.forEach((t) => {
+        if (t?.url) {
+          formData.append("imageUrls", t.url);
+        }
+      });
+      formData.append("handImage", file);
       formData.append("designCode", selectedRing.attributes?.designCode || "");
 
       const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
