@@ -18,6 +18,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
 
   const mobileSentinelRef = useRef<HTMLDivElement>(null);
   const desktopSentinelRef = useRef<HTMLDivElement>(null);
+  const lastFetchedRef = useRef<{ query: string; page: number } | null>(null);
 
   // Debounce search query state
   useEffect(() => {
@@ -35,11 +36,21 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     setPage(1);
     setHasNextPage(true);
     setRings([]);
+    lastFetchedRef.current = null;
   }, [debouncedSearchQuery]);
 
   // Load rings for Step 3
   useEffect(() => {
     if (step !== 3 || !isOpen) return;
+
+    // If we have already successfully fetched this page and query, do not fetch again
+    if (
+      lastFetchedRef.current &&
+      lastFetchedRef.current.query === debouncedSearchQuery &&
+      lastFetchedRef.current.page === page
+    ) {
+      return;
+    }
 
     let isMounted = true;
     const fetchRings = async () => {
@@ -72,6 +83,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
             });
           }
           setHasNextPage(res.meta ? res.meta.hasNext : newRings.length > 0);
+          lastFetchedRef.current = { query: debouncedSearchQuery, page };
         }
       } catch (e) {
         console.error("Failed to load rings:", e);

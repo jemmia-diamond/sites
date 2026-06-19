@@ -4,7 +4,7 @@ import { X } from "@phosphor-icons/react";
 
 interface LightboxModalProps {
   isFullscreen: boolean;
-  lightboxRef: React.RefObject<HTMLDivElement>;
+  lightboxRef: React.RefObject<HTMLDivElement | null>;
   selectedGeneratedImage: string | null;
   handleCloseFullscreen: () => void;
 }

@@ -26,7 +26,7 @@ interface MobileStep3Props {
   rings: ProductModel[];
   selectedRing: ProductModel | null;
   handleSelectRing: (ring: ProductModel) => void;
-  mobileSentinelRef: React.RefObject<HTMLDivElement>;
+  mobileSentinelRef: React.RefObject<HTMLDivElement | null>;
   setToastMessage: (msg: string | null) => void;
   handleTryOn: () => void;
   isTryingOn?: boolean;
@@ -383,7 +383,7 @@ interface DesktopStep3LeftProps {
   rings: ProductModel[];
   selectedRing: ProductModel | null;
   handleSelectRing: (ring: ProductModel) => void;
-  desktopSentinelRef: React.RefObject<HTMLDivElement>;
+  desktopSentinelRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function DesktopStep3Left({
