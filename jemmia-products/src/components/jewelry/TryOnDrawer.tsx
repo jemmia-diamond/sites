@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import {
   ArrowLeft,
   X,
@@ -310,7 +310,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
     pollingIntervalRef.current = setInterval(async () => {
       try {
-        const response = await axios.get<{
+        const response = await apiClient.get<{
           status: "queued" | "processing" | "completed" | "failed";
           result?: { base64?: string; mimeType?: string; url?: string };
           error?: string;
@@ -822,7 +822,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       });
       formData.append("handImage", file);
 
-      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
+      const response = await apiClient.post<{ taskId: string }>("/image-generation/generate", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -865,7 +865,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     try {
       if (generatedImage && !generatedImage.startsWith("data:")) {
         const designCode = selectedRing?.attributes?.designCode || "";
-        await axios.post("/image-generation/save", {
+        await apiClient.post("/image-generation/save", {
           designCode,
           imageUrl: generatedImage,
         });
