@@ -54,7 +54,7 @@ export function TryOnGuide({ onClose }: TryOnGuideProps) {
         <div className="px-5 pb-5">
           <Button
             onClick={onClose}
-            className="w-full bg-[#004B49] hover:bg-[#003B39] text-white font-semibold text-sm h-11 flex items-center justify-center rounded-lg cursor-pointer border-none shadow-none"
+            className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none"
           >
             Đã hiểu
           </Button>
