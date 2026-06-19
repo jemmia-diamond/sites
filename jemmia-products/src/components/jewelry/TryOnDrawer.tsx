@@ -70,7 +70,6 @@ function freeStorageSpace(): void {
       }
     }
     keysToRemove.forEach((key) => sessionStorage.removeItem(key));
-    console.log(`Cleared ${keysToRemove.length} tryon cache items from sessionStorage to free up space.`);
   } catch (e) {
     console.error("Failed to free storage space:", e);
   }
@@ -80,7 +79,7 @@ function resizeAndCompressImage(
   base64OrUrl: string,
   maxWidth = 1024,
   maxHeight = 1024,
-  quality = 0.85
+  quality = 0.85,
 ): Promise<string> {
   return new Promise((resolve) => {
     if (!base64OrUrl || !base64OrUrl.startsWith("data:image")) {
@@ -129,25 +128,13 @@ function safeSessionStorageSetItem(key: string, value: string): boolean {
     sessionStorage.setItem(key, value);
     return true;
   } catch (e) {
-    console.warn(`sessionStorage setItem failed for key "${key}", attempting to free space...`, e);
     freeStorageSpace();
     try {
       sessionStorage.setItem(key, value);
       return true;
     } catch (retryErr) {
-      console.error(`sessionStorage setItem failed again for key "${key}" after clearing cache:`, retryErr);
       return false;
     }
-  }
-}
-
-function safeLocalStorageSetItem(key: string, value: string): boolean {
-  try {
-    localStorage.setItem(key, value);
-    return true;
-  } catch (e) {
-    console.error(`localStorage setItem failed for key "${key}":`, e);
-    return false;
   }
 }
 
@@ -176,12 +163,24 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [guideStep, setGuideStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
   const [showResumePopup, setShowResumePopup] = useState(false);
+  const [showExitPopup, setShowExitPopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
-  const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
+  const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(
+    null,
+  );
 
   const handleOpenGuide = () => {
     setShowGuide(true);
     setGuideStep(1);
+  };
+
+  const handleCloseAttempt = () => {
+    if (step > 1) {
+      setShowExitPopup(true);
+    } else {
+      stopCamera();
+      onClose();
+    }
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -200,40 +199,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Monitor isTryingOn in localStorage across tabs/windows
-  useEffect(() => {
-    const checkStorage = () => {
-      setisTryingOn(localStorage.getItem("isTryingOn") === "true");
-    };
-    checkStorage();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "isTryingOn") {
-        setisTryingOn(e.newValue === "true");
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  // Reset the device isTryingOn lock if this tab unloads while generating (and no async task is active in step 4)
-  useEffect(() => {
-    const handleUnload = () => {
-      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
-      let isStep4 = false;
-      if (activeSessionStr) {
-        try {
-          const session = JSON.parse(activeSessionStr);
-          isStep4 = session && session.step === 4;
-        } catch (e) {}
-      }
-      if (!isStep4 && localStorage.getItem("isTryingOn") === "true") {
-        safeLocalStorageSetItem("isTryingOn", "false");
-      }
-    };
-    window.addEventListener("beforeunload", handleUnload);
-    return () => window.removeEventListener("beforeunload", handleUnload);
-  }, []);
 
   // Custom Hooks
   const {
@@ -317,7 +282,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     desktopSentinelRef,
   } = useTryOnCatalog({ step, isOpen });
 
-  const pollTaskStatus = (taskId: string, targetRing: ProductModel, targetImage: string) => {
+  const pollTaskStatus = (
+    taskId: string,
+    targetRing: ProductModel,
+    targetImage: string,
+  ) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
@@ -339,12 +308,14 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setGeneratedImage(compressedResult);
           setSelectedGeneratedImage(compressedResult);
           setIsGenerating(false);
-          safeLocalStorageSetItem("isTryingOn", "false");
           setisTryingOn(false);
 
           // Save cache
           const cacheKey = `tryon_cache_${targetRing.id}_${getSimpleHash(targetImage)}`;
-          safeSessionStorageSetItem(cacheKey, JSON.stringify([compressedResult]));
+          safeSessionStorageSetItem(
+            cacheKey,
+            JSON.stringify([compressedResult]),
+          );
 
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -354,7 +325,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến.");
           setGenerationError(error || "Không thể tạo hình ảnh thử trực tuyến.");
           setIsGenerating(false);
-          safeLocalStorageSetItem("isTryingOn", "false");
           setisTryingOn(false);
 
           // Clean up session on failure
@@ -366,10 +336,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           }
         }
       } catch (err: any) {
-        console.error("Error polling task status:", err);
         if (err.response?.status === 404) {
           setIsGenerating(false);
-          safeLocalStorageSetItem("isTryingOn", "false");
           setisTryingOn(false);
           sessionStorage.removeItem("active_tryon_session");
 
@@ -414,20 +382,25 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
               if (session.generatedImage) {
                 setGeneratedImage(session.generatedImage);
-                setGeneratedImages(session.generatedImages || [session.generatedImage]);
-                setSelectedGeneratedImage(session.selectedGeneratedImage || session.generatedImage);
+                setGeneratedImages(
+                  session.generatedImages || [session.generatedImage],
+                );
+                setSelectedGeneratedImage(
+                  session.selectedGeneratedImage || session.generatedImage,
+                );
                 setIsGenerating(false);
-                safeLocalStorageSetItem("isTryingOn", "false");
                 setisTryingOn(false);
               } else if (resumeStep === 4) {
                 setIsGenerating(true);
-                safeLocalStorageSetItem("isTryingOn", "true");
                 setisTryingOn(true);
                 if (session.taskId) {
-                  pollTaskStatus(session.taskId, session.selectedRing, session.uploadedImage);
+                  pollTaskStatus(
+                    session.taskId,
+                    session.selectedRing,
+                    session.uploadedImage,
+                  );
                 }
               } else {
-                safeLocalStorageSetItem("isTryingOn", "false");
                 setisTryingOn(false);
               }
 
@@ -437,7 +410,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             }
           }
         } catch (err) {
-          console.error("Failed to parse saved session on open:", err);
           sessionStorage.removeItem("active_tryon_session");
         }
       }
@@ -455,7 +427,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     if (step > 1 && uploadedImage) {
       let existingTaskId = null;
       try {
-        const existingSessionStr = sessionStorage.getItem("active_tryon_session");
+        const existingSessionStr = sessionStorage.getItem(
+          "active_tryon_session",
+        );
         if (existingSessionStr) {
           const parsed = JSON.parse(existingSessionStr);
           if (parsed && parsed.taskId) {
@@ -484,7 +458,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         generatedImages,
         selectedGeneratedImage,
       };
-      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
+      safeSessionStorageSetItem(
+        "active_tryon_session",
+        JSON.stringify(sessionData),
+      );
     }
   }, [
     step,
@@ -601,7 +578,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       pollingIntervalRef.current = null;
     }
     sessionStorage.removeItem("active_tryon_session");
-    safeLocalStorageSetItem("isTryingOn", "false");
     setisTryingOn(false);
     setStep(1);
     setUploadedImage(null);
@@ -672,18 +648,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   };
 
   const handleTryOn = async () => {
-    if (localStorage.getItem("isTryingOn") === "true") {
-      setToastMessage(
-        "Hệ thống đang xử lý yêu cầu thử nhẫn trên một cửa sổ khác.",
-      );
-      return;
-    }
-
-    safeLocalStorageSetItem("isTryingOn", "true");
     setisTryingOn(true);
 
     if (!selectedRing || !uploadedImage) {
-      safeLocalStorageSetItem("isTryingOn", "false");
       setisTryingOn(false);
       return;
     }
@@ -706,7 +673,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             setGeneratedImage(cachedUrls[0]);
             setSelectedGeneratedImage(cachedUrls[0]);
             setIsGenerating(false);
-            safeLocalStorageSetItem("isTryingOn", "false");
             setisTryingOn(false);
           }, 1000);
           return;
@@ -800,7 +766,12 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
             ctx.strokeStyle = "rgb(239, 68, 68)";
             ctx.lineWidth = Math.max(2, 2 / S_total);
-            ctx.strokeRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
+            ctx.strokeRect(
+              -finalBoxW / 2,
+              -finalBoxH / 2,
+              finalBoxW,
+              finalBoxH,
+            );
             ctx.restore();
           }
 
@@ -834,11 +805,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       formData.append("handImage", file);
       formData.append("designCode", selectedRing.attributes?.designCode || "");
 
-      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post<{ taskId: string }>(
+        "/image-generation/generate",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
 
       const taskId = response.data.taskId;
       if (!taskId) {
@@ -860,16 +835,17 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         ringRotation: 0,
         dragTranslate: [0, 0],
       };
-      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
+      safeSessionStorageSetItem(
+        "active_tryon_session",
+        JSON.stringify(sessionData),
+      );
 
       // Start polling
       pollTaskStatus(taskId, selectedRing, uploadedImage);
     } catch (e) {
-      console.error("Image generation failed:", e);
       setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setIsGenerating(false);
-      safeLocalStorageSetItem("isTryingOn", "false");
       setisTryingOn(false);
       sessionStorage.removeItem("active_tryon_session");
     }
@@ -956,7 +932,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       const reader = new FileReader();
       reader.onload = async (event) => {
         if (event.target?.result) {
-          const compressed = await resizeAndCompressImage(event.target.result as string);
+          const compressed = await resizeAndCompressImage(
+            event.target.result as string,
+          );
           setUploadedImage(compressed);
           setImageTranslate([0, 0]);
           setImageScale(1.0);
@@ -996,7 +974,6 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
         }
       } catch (e) {
-        console.error("Download failed, fallback to direct link:", e);
         const link = document.createElement("a");
         link.target = "_blank";
         link.href = generatedImage;
@@ -1080,7 +1057,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             -finalBoxW / 2,
             -finalBoxH / 2,
             finalBoxW,
-            finalBoxH
+            finalBoxH,
           );
           ctx.restore();
 
@@ -1128,58 +1105,137 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 </div>
               )}
             </AnimatePresence>
-            {showResumePopup && createPortal(
-              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white shadow-2xl p-4 lg:p-6 max-w-sm w-full border border-slate-100 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+            {showResumePopup &&
+              createPortal(
+                <div
+                  onClick={() => setShowResumePopup(false)}
+                  className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
                 >
-                  {/* Ring Icon Container */}
-                  <div className="w-20 h-20 rounded-full bg-[#E6F7F7] flex items-center justify-center mb-6">
-                    <img src="https://cdn.hstatic.net/files/200000355853/file/frame.svg" />
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
-                    Bạn đang thực hiện dở quá trình thử nhẫn (Bước {savedSessionStep || step}/4)
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
-                    Bạn có muốn tiếp tục từ bước này hay bắt đầu lại từ đầu?
-                  </p>
-
-                  {/* Buttons */}
-                  <Button
-                    onClick={handleResumeSession}
-                    className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+                  <motion.div
+                    onClick={(e) => e.stopPropagation()}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white shadow-2xl p-4 lg:p-6 max-w-sm w-full border border-slate-100 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
                   >
-                    <span>Tiếp tục</span>
-                    <ArrowRight size={16} weight="bold" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowResumePopup(false);
-                      handleResetAll();
-                    }}
-                    className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
+                    {/* Ring Icon Container */}
+                    <div className="w-20 h-20 rounded-full bg-[#E6F7F7] flex items-center justify-center mb-6">
+                      <img src="https://cdn.hstatic.net/files/200000355853/file/frame.svg" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
+                      Bạn đang thực hiện quá trình thử nhẫn (Bước{" "}
+                      {savedSessionStep || step}/4)
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
+                      Bạn có muốn tiếp tục từ bước này hay bắt đầu lại từ đầu?
+                    </p>
+
+                    {/* Buttons */}
+                    <Button
+                      onClick={handleResumeSession}
+                      className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+                    >
+                      <span>Tiếp tục</span>
+                      <ArrowRight size={16} weight="bold" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowResumePopup(false);
+                        handleResetAll();
+                      }}
+                      className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
+                    >
+                      Bắt đầu lại
+                      <ArrowCounterClockwise size={16} />
+                    </Button>
+                  </motion.div>
+                </div>,
+                document.body,
+              )}
+            {showExitPopup &&
+              createPortal(
+                <div
+                  onClick={() => setShowExitPopup(false)}
+                  className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+                >
+                  <motion.div
+                    onClick={(e) => e.stopPropagation()}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="relative bg-white shadow-2xl p-4 lg:p-6 max-w-sm w-full border border-slate-100 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
                   >
-                    Bắt đầu lại
-                    <ArrowCounterClockwise size={16} />
-                  </Button>
-                </motion.div>
-              </div>,
-              document.body
-            )}
+                    {/* Close button X */}
+                    <button
+                      type="button"
+                      onClick={() => setShowExitPopup(false)}
+                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1"
+                    >
+                      <X size={20} weight="bold" />
+                    </button>
+
+                    {/* Ring Icon Container */}
+                    <div className="w-20 h-20 rounded-full bg-[#E6F7F7] flex items-center justify-center mb-6 mt-4">
+                      <img src="https://cdn.hstatic.net/files/200000355853/file/frame.svg" />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
+                      Thoát khỏi quá trình này?
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
+                      Bạn đang ở bước {step}/4. Nếu thoát, các thay đổi chưa lưu
+                      có thể bị mất
+                    </p>
+
+                    {/* Buttons */}
+                    <Button
+                      onClick={() => {
+                        stopCamera();
+                        onClose();
+                        setShowExitPopup(false);
+                      }}
+                      className="w-full bg-secondary-800 mb-2 text-white hover:bg-[#003C3A] disabled:bg-secondary-800/50 disabled:text-white h-12 rounded-none flex items-center justify-center gap-2 cursor-pointer border-none mt-6"
+                    >
+                      Lưu & Thoát
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowExitPopup(false)}
+                      className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
+                    >
+                      Ở lại
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => {
+                        setShowExitPopup(false);
+                        handleResetAll();
+                        stopCamera();
+                        onClose();
+                      }}
+                      className="w-full text-center py-3 mt-3 cursor-pointer"
+                    >
+                      Thoát không lưu
+                    </Button>
+                  </motion.div>
+                </div>,
+                document.body,
+              )}
             {/* Header Title Bar */}
             <div className="h-12 px-4 bg-white border-b border-primary-100 flex items-center justify-between shrink-0 relative">
               <div className="flex items-center">
                 {step === 1 ? (
                   <button
-                    onClick={onClose}
+                    onClick={handleCloseAttempt}
                     className="text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
                   >
                     <ArrowLeft size={18} weight="bold" />
@@ -1221,10 +1277,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => {
-                    stopCamera();
-                    onClose();
-                  }}
+                  onClick={handleCloseAttempt}
                   className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
                 >
                   <X size={18} weight="bold" />
@@ -1411,8 +1464,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                             : "bg-black border border-primary-200 shadow-lg"
                         }`}
                         style={{
-                        cursor: step === 2 ? "grab" : "default",
-                          touchAction: "none"
+                          cursor: step === 2 ? "grab" : "default",
+                          touchAction: "none",
                         }}
                         onTouchStart={handleContainerTouchStart}
                         onTouchMove={handleContainerTouchMove}
@@ -1423,103 +1476,117 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                         onMouseUp={handleContainerMouseUp}
                         onMouseLeave={handleContainerMouseUp}
                       >
-                          {step === 1 && (
-                            <DesktopStep1Right
-                              isCameraActive={isCameraActive}
-                              videoRef={videoRef}
-                              useMirror={useMirror}
-                            />
-                          )}
+                        {step === 1 && (
+                          <DesktopStep1Right
+                            isCameraActive={isCameraActive}
+                            videoRef={videoRef}
+                            useMirror={useMirror}
+                          />
+                        )}
 
-                          {uploadedImage && step !== 1 && (
-                            <div
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                transform: `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`,
-                                transformOrigin: "center center",
-                              }}
-                              className="flex items-center justify-center pointer-events-none select-none"
+                        {uploadedImage && step !== 1 && (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              transform: `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`,
+                              transformOrigin: "center center",
+                            }}
+                            className="flex items-center justify-center pointer-events-none select-none"
+                          >
+                            <img
+                              src={uploadedImage}
+                              className="w-full h-full object-cover"
+                              alt="Hand Preview"
+                              draggable={false}
+                            />
+                          </div>
+                        )}
+
+                        {/* Fixed, Non-editable Centered Red Box on Desktop */}
+                        {step === 2 && !showResumePopup && redBox && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              left: `${redBox.x}%`,
+                              top: `${redBox.y}%`,
+                              width: `${redBox.w}%`,
+                              height: `${redBox.h}%`,
+                              border: "2px solid rgb(239, 68, 68)",
+                              backgroundColor: "rgba(239, 68, 68, 0.5)",
+                              boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.5)",
+                              pointerEvents: "none",
+                              zIndex: 40,
+                            }}
+                          />
+                        )}
+
+                        {/* Vertical Zoom Slider on Desktop */}
+                        {step === 2 && !showResumePopup && (
+                          <div
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onMouseMove={(e) => e.stopPropagation()}
+                            onMouseUp={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onTouchMove={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-4 top-4 bottom-20 z-[100] py-4 rounded-full bg-black/60 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-right-4 duration-300 w-10"
+                          >
+                            <button
+                              type="button"
+                              onClick={handleZoomIn}
+                              className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                              title="Phóng to"
                             >
-                              <img
-                                src={uploadedImage}
-                                className="w-full h-full object-cover"
-                                alt="Hand Preview"
-                                draggable={false}
+                              <MagnifyingGlassPlus
+                                size={16}
+                                weight="bold"
+                                className="text-white"
+                              />
+                            </button>
+
+                            <div className="flex-1 w-full flex items-center justify-center relative">
+                              <input
+                                type="range"
+                                min="0"
+                                max="2"
+                                step="0.01"
+                                value={getSliderFromScale(imageScale)}
+                                onChange={(e) =>
+                                  setImageScale(
+                                    getScaleFromSlider(Number(e.target.value)),
+                                  )
+                                }
+                                style={{
+                                  width: `${Math.max(100, containerWidth - 210)}px`,
+                                  background: `linear-gradient(to right, #ffffff 0%, #ffffff ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 100%)`,
+                                }}
+                                className="custom-slider-vertical-rotated"
                               />
                             </div>
-                          )}
 
-                          {/* Fixed, Non-editable Centered Red Box on Desktop */}
-                          {step === 2 && !showResumePopup && redBox && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                left: `${redBox.x}%`,
-                                top: `${redBox.y}%`,
-                                width: `${redBox.w}%`,
-                                height: `${redBox.h}%`,
-                                border: "2px solid rgb(239, 68, 68)",
-                                backgroundColor: "rgba(239, 68, 68, 0.5)",
-                                boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.5)",
-                                pointerEvents: "none",
-                                zIndex: 40,
-                              }}
-                            />
-                          )}
-
-                          {/* Vertical Zoom Slider on Desktop */}
-                          {step === 2 && !showResumePopup && (
-                            <div
-                              onMouseDown={(e) => e.stopPropagation()}
-                              onMouseMove={(e) => e.stopPropagation()}
-                              onMouseUp={(e) => e.stopPropagation()}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchMove={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => e.stopPropagation()}
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute right-4 top-4 bottom-20 z-[100] py-4 rounded-full bg-black/60 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-right-4 duration-300 w-10"
+                            <button
+                              type="button"
+                              onClick={handleZoomOut}
+                              className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                              title="Thu nhỏ"
                             >
-                              <button
-                                type="button"
-                                onClick={handleZoomIn}
-                                className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-                                title="Phóng to"
-                              >
-                                <MagnifyingGlassPlus size={16} weight="bold" className="text-white" />
-                              </button>
+                              <MagnifyingGlassMinus
+                                size={16}
+                                weight="bold"
+                                className="text-white"
+                              />
+                            </button>
 
-                              <div className="flex-1 w-full flex items-center justify-center relative">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="2"
-                                  step="0.01"
-                                  value={getSliderFromScale(imageScale)}
-                                  onChange={(e) => setImageScale(getScaleFromSlider(Number(e.target.value)))}
-                                  style={{
-                                    width: `${Math.max(100, containerWidth - 210)}px`,
-                                    background: `linear-gradient(to right, #ffffff 0%, #ffffff ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 100%)`,
-                                  }}
-                                  className="custom-slider-vertical-rotated"
-                                />
-                              </div>
+                            <span className="font-mono text-[10px] text-white font-bold w-10 shrink-0 text-center select-none">
+                              {Math.round(imageScale * 100)}%
+                            </span>
+                          </div>
+                        )}
 
-                              <button
-                                type="button"
-                                onClick={handleZoomOut}
-                                className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-                                title="Thu nhỏ"
-                              >
-                                <MagnifyingGlassMinus size={16} weight="bold" className="text-white"/>
-                              </button>
-
-                              <span className="font-mono text-[10px] text-white font-bold w-10 shrink-0 text-center select-none">{Math.round(imageScale * 100)}%</span>
-                            </div>
-                          )}
-
-                          {/* Floating Rotation Slider on Desktop */}
-                          <div className="absolute bottom-4 w-full flex px-4 gap-4 z-[100]">
+                        {/* Floating Rotation Slider on Desktop */}
+                        <div className="absolute bottom-4 w-full flex px-4 gap-4 z-[100]">
                           {step === 2 && !showResumePopup && (
                             <div
                               onMouseDown={(e) => e.stopPropagation()}
@@ -1531,19 +1598,25 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                               onClick={(e) => e.stopPropagation()}
                               className="px-4 flex-1 select-none flex items-center gap-3 bg-black/60 rounded-full animate-in fade-in slide-in-from-bottom-4 duration-300"
                             >
-                              <span className="text-[10px] text-white font-bold whitespace-nowrap">Xoay:</span>
-                               <input
+                              <span className="text-[10px] text-white font-bold whitespace-nowrap">
+                                Xoay:
+                              </span>
+                              <input
                                 type="range"
                                 min="-180"
                                 max="180"
                                 value={imageRotation}
-                                onChange={(e) => setImageRotation(Number(e.target.value))}
+                                onChange={(e) =>
+                                  setImageRotation(Number(e.target.value))
+                                }
                                 style={{
                                   background: `linear-gradient(to right, #ffffff 0%, #ffffff ${((imageRotation + 180) / 360) * 100}%, #94a3b8 ${((imageRotation + 180) / 360) * 100}%, #94a3b8 100%)`,
                                 }}
                                 className="grow custom-slider"
                               />
-                              <span className="font-mono text-[10px] text-white font-bold text-right">{imageRotation}°</span>
+                              <span className="font-mono text-[10px] text-white font-bold text-right">
+                                {imageRotation}°
+                              </span>
                             </div>
                           )}
 
@@ -1559,8 +1632,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                               <Question size={20} />
                             </button>
                           )}
-                          </div>
                         </div>
+                      </div>
                     </div>
                   )}
                 </>
@@ -1584,13 +1657,20 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white p-5 max-w-sm lg:max-w-md w-full border border-slate-100 flex flex-col items-center select-none text-center animate-in fade-in zoom-in duration-200"
               >
-                <h3 className="text-slate-900 font-bold text-lg leading-snug mb-1">Ảnh gửi đi căn chỉnh</h3>
+                <h3 className="text-slate-900 font-bold text-lg leading-snug mb-1">
+                  Ảnh gửi đi căn chỉnh
+                </h3>
                 <p className="text-slate-500 text-xs leading-normal mb-5 px-3">
-                  Đây là kết quả hình ảnh thực tế sau khi bạn đã di chuyển, phóng to và xoay để khớp ngón tay với khung màu đỏ.
+                  Đây là kết quả hình ảnh thực tế sau khi bạn đã di chuyển,
+                  phóng to và xoay để khớp ngón tay với khung màu đỏ.
                 </p>
 
                 <div className="w-full aspect-square border border-slate-200 bg-slate-50 flex items-center justify-center relative mb-6">
-                  <img src={alignmentPreviewUrl} className="w-full h-full object-contain" alt="Alignment Preview" />
+                  <img
+                    src={alignmentPreviewUrl}
+                    className="w-full h-full object-contain"
+                    alt="Alignment Preview"
+                  />
                 </div>
 
                 <Button
