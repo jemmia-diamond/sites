@@ -49,6 +49,12 @@ import { ResultCanvas } from "./TryOn/components/ResultCanvas";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
 import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
 import { TryOnGuide } from "./TryOn/components/TryOnGuide";
+import {
+  TRYON_CACHE_PREFIX,
+  TRYON_GUIDE_SHOWN_KEY,
+  ACTIVE_TRYON_SESSION_KEY,
+  TRYON_CAMERA_CAPTURE_ID,
+} from "./TryOn/constants";
 
 function getSimpleHash(str: string): string {
   let hash = 0;
@@ -65,7 +71,7 @@ function freeStorageSpace(): void {
     const keysToRemove: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i);
-      if (key && key.startsWith("tryon_cache_")) {
+      if (key && key.startsWith(TRYON_CACHE_PREFIX)) {
         keysToRemove.push(key);
       }
     }
@@ -215,7 +221,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setImageScale(1.0);
       setImageRotation(0);
       const hasShownGuide =
-        sessionStorage.getItem("tryon_guide_shown") === "true";
+        sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
       if (!hasShownGuide) {
         setShowGuide(true);
         setGuideStep(1);
@@ -224,7 +230,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setMaxStep(2);
     },
     onCameraFallback: () => {
-      document.getElementById("tryon-camera-capture")?.click();
+      document.getElementById(TRYON_CAMERA_CAPTURE_ID)?.click();
     },
   });
 
@@ -305,7 +311,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setisTryingOn(false);
 
           // Save cache
-          const cacheKey = `tryon_cache_${targetRing.id}_${getSimpleHash(targetImage)}`;
+          const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
           safeSessionStorageSetItem(cacheKey, JSON.stringify([compressedResult]));
 
           if (pollingIntervalRef.current) {
@@ -319,7 +325,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
           setisTryingOn(false);
 
           // Clean up session on failure
-          sessionStorage.removeItem("active_tryon_session");
+          sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
 
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -330,7 +336,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         if (err.response?.status === 404) {
           setIsGenerating(false);
           setisTryingOn(false);
-          sessionStorage.removeItem("active_tryon_session");
+          sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
 
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -349,7 +355,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   useEffect(() => {
     if (isOpen && !sessionRestoredRef.current) {
       sessionRestoredRef.current = true;
-      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
+      const activeSessionStr = sessionStorage.getItem(ACTIVE_TRYON_SESSION_KEY);
       if (activeSessionStr) {
         try {
           const session = JSON.parse(activeSessionStr);
@@ -393,7 +399,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             }
           }
         } catch (err) {
-          sessionStorage.removeItem("active_tryon_session");
+          sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
         }
       }
 
@@ -410,7 +416,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     if (step > 1 && uploadedImage) {
       let existingTaskId = null;
       try {
-        const existingSessionStr = sessionStorage.getItem("active_tryon_session");
+        const existingSessionStr = sessionStorage.getItem(ACTIVE_TRYON_SESSION_KEY);
         if (existingSessionStr) {
           const parsed = JSON.parse(existingSessionStr);
           if (parsed && parsed.taskId) {
@@ -439,7 +445,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         generatedImages,
         selectedGeneratedImage,
       };
-      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
+      safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
     }
   }, [
     step,
@@ -555,7 +561,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
-    sessionStorage.removeItem("active_tryon_session");
+    sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
     setisTryingOn(false);
     setStep(1);
     setUploadedImage(null);
@@ -633,7 +639,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       return;
     }
 
-    const cacheKey = `tryon_cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
+    const cacheKey = `${TRYON_CACHE_PREFIX}${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
     const cachedData = sessionStorage.getItem(cacheKey);
 
     if (cachedData) {
@@ -804,7 +810,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         ringRotation: 0,
         dragTranslate: [0, 0],
       };
-      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
+      safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
 
       // Start polling
       pollTaskStatus(taskId, selectedRing, uploadedImage);
@@ -813,7 +819,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setIsGenerating(false);
       setisTryingOn(false);
-      sessionStorage.removeItem("active_tryon_session");
+      sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
     }
   };
 
@@ -1645,7 +1651,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             <TryOnGuide
               onClose={() => {
                 setShowGuide(false);
-                sessionStorage.setItem("tryon_guide_shown", "true");
+                sessionStorage.setItem(TRYON_GUIDE_SHOWN_KEY, "true");
               }}
             />
           )}

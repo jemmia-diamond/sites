@@ -10,6 +10,7 @@ import {
   ArrowLeft,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
+import { TRYON_CAMERA_CAPTURE_ID } from "../constants";
 
 interface Step1Props {
   isCameraActive: boolean;
@@ -193,7 +194,7 @@ export function MobileStep1({
           type="file"
           accept="image/*"
           capture="environment"
-          id="tryon-camera-capture"
+          id={TRYON_CAMERA_CAPTURE_ID}
           className="hidden"
           onChange={handleFileUpload}
         />
@@ -289,7 +290,7 @@ export function DesktopStep1Bottom({
         type="file"
         accept="image/*"
         capture="environment"
-        id="tryon-camera-capture"
+        id={TRYON_CAMERA_CAPTURE_ID}
         className="hidden"
         onChange={handleFileUpload}
       />

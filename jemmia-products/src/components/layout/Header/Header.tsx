@@ -7,6 +7,7 @@ import { SearchDropdown } from "./SearchDropdown";
 import { Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { TryOnDrawer } from "../../jewelry/TryOnDrawer";
+import { ACTIVE_TRYON_SESSION_KEY } from "../../jewelry/TryOn/constants";
 
 interface HeaderProps {
   searchPlaceholder: string;
@@ -55,7 +56,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
 
     if (isReload && !reloadCheckPerformed) {
       reloadCheckPerformed = true;
-      const activeSessionStr = sessionStorage.getItem("active_tryon_session");
+      const activeSessionStr = sessionStorage.getItem(ACTIVE_TRYON_SESSION_KEY);
       if (activeSessionStr) {
         try {
           const session = JSON.parse(activeSessionStr);
