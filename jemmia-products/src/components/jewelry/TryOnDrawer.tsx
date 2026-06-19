@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import apiClient from "../../services/apiClient";
+import axios from "axios";
 import {
   ArrowLeft,
   X,
@@ -310,7 +310,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
     pollingIntervalRef.current = setInterval(async () => {
       try {
-        const response = await apiClient.get<{
+        const response = await axios.get<{
           status: "queued" | "processing" | "completed" | "failed";
           result?: { base64?: string; mimeType?: string; url?: string };
           error?: string;
@@ -351,12 +351,25 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
               clearInterval(pollingIntervalRef.current);
               pollingIntervalRef.current = null;
             }
+          } else {
+            setToastMessage("Không tìm thấy dữ liệu hình ảnh kết quả. Quay lại bước 3.");
+            setGenerationError("Không tìm thấy dữ liệu hình ảnh kết quả.");
+            setIsGenerating(false);
+            setisTryingOn(false);
+            setStep(3); // Go back to step 3
+            sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
           }
         } else if (status === "failed") {
-          setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến.");
+          setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến. Quay lại bước 3.");
           setGenerationError(error || "Không thể tạo hình ảnh thử trực tuyến.");
           setIsGenerating(false);
           setisTryingOn(false);
+          setStep(3); // Go back to step 3
 
           // Clean up session on failure
           sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
@@ -368,8 +381,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         }
       } catch (err: any) {
         if (err.response?.status === 404) {
+          setToastMessage("Không tìm thấy phiên tạo ảnh cũ hoặc phiên đã hết hạn. Quay lại bước 3.");
+          setGenerationError("Không tìm thấy phiên tạo ảnh cũ hoặc phiên đã hết hạn.");
           setIsGenerating(false);
           setisTryingOn(false);
+          setStep(3); // Go back to step 3
           sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
 
           if (pollingIntervalRef.current) {
@@ -418,14 +434,18 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 setIsGenerating(false);
                 setisTryingOn(false);
               } else if (resumeStep === 4) {
-                setIsGenerating(true);
-                setisTryingOn(true);
                 if (session.taskId) {
+                  setIsGenerating(true);
+                  setisTryingOn(true);
                   pollTaskStatus({
                     taskId: session.taskId,
                     targetRing: session.selectedRing,
                     targetImage: session.uploadedImage,
                   });
+                } else {
+                  setStep(3);
+                  setIsGenerating(false);
+                  setisTryingOn(false);
                 }
               } else {
                 setisTryingOn(false);
@@ -822,7 +842,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       });
       formData.append("handImage", file);
 
-      const response = await apiClient.post<{ taskId: string }>("/image-generation/generate", formData, {
+      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -865,7 +885,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     try {
       if (generatedImage && !generatedImage.startsWith("data:")) {
         const designCode = selectedRing?.attributes?.designCode || "";
-        await apiClient.post("/image-generation/save", {
+        await axios.post("/image-generation/save", {
           designCode,
           imageUrl: generatedImage,
         });
