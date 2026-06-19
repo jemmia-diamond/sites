@@ -18,6 +18,8 @@ interface MobileStep4Props {
   selectedRing: ProductModel | null;
   setStep?: (s: number) => void;
   maxStep?: number;
+  onTryOn?: () => void;
+  onClose?: () => void;
 }
 
 export function MobileStep4({
@@ -32,6 +34,8 @@ export function MobileStep4({
   selectedRing,
   setStep,
   maxStep,
+  onTryOn,
+  onClose,
 }: MobileStep4Props) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   return (
@@ -58,17 +62,26 @@ export function MobileStep4({
           handleDownload={handleDownload}
           setIsFullscreen={setIsFullscreen}
           generationError={generationError}
+          onViewProduct={selectedRing ? () => setIsBottomSheetOpen(true) : undefined}
         />
       </div>
 
       {/* Bottom Actions for Step 4 */}
-      {selectedRing && (
-        <div className="pt-2 shrink-0">
+      {!isGenerating && !generationError && (
+        <div className="flex gap-3 pt-4 shrink-0">
           <Button
-            onClick={() => setIsBottomSheetOpen(true)}
-            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+            onClick={onTryOn}
+            variant="outline"
+            className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
           >
-            Xem Sản Phẩm
+            <span>Thử lại</span>
+            <ArrowCounterClockwise size={18} />
+          </Button>
+          <Button
+            onClick={onClose}
+            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+          >
+            Hoàn tất
           </Button>
         </div>
       )}
@@ -132,15 +145,21 @@ interface DesktopStep4BottomProps {
   selectedRing: ProductModel | null;
   isGenerating: boolean;
   selectedGeneratedImage: string | null;
+  onTryOn?: () => void;
+  onClose?: () => void;
+  generationError?: string | null;
 }
 
 export function DesktopStep4Bottom({
   selectedRing,
   isGenerating,
   selectedGeneratedImage,
+  onTryOn,
+  onClose,
+  generationError,
 }: DesktopStep4BottomProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {/* Selected Ring Card */}
       {selectedRing && (
         <div className="border border-primary-100 p-4 bg-white rounded relative w-full shadow-sm">
@@ -167,6 +186,26 @@ export function DesktopStep4Bottom({
               {selectedRing.attributes?.designCode || "--"}
             </h4>
           </div>
+        </div>
+      )}
+
+      {/* Desktop Actions */}
+      {!isGenerating && !generationError && (
+        <div className="flex gap-3 mt-2">
+          <Button
+            onClick={onTryOn}
+            variant="outline"
+            className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+          >
+            <span>Thử lại</span>
+            <ArrowCounterClockwise size={18} />
+          </Button>
+          <Button
+            onClick={onClose}
+            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+          >
+            Hoàn tất
+          </Button>
         </div>
       )}
     </div>

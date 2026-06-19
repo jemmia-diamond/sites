@@ -1,5 +1,5 @@
 import React from "react";
-import { DownloadSimple, CornersOut, WarningCircle } from "@phosphor-icons/react";
+import { DownloadSimple, WarningCircle } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ResultCanvasProps {
@@ -12,6 +12,7 @@ interface ResultCanvasProps {
   handleDownload: () => void;
   setIsFullscreen: (f: boolean) => void;
   generationError?: string | null;
+  onViewProduct?: () => void;
 }
 
 export function ResultCanvas({
@@ -24,6 +25,7 @@ export function ResultCanvas({
   handleDownload,
   setIsFullscreen,
   generationError,
+  onViewProduct,
 }: ResultCanvasProps) {
   if (generationError) {
     return (
@@ -105,8 +107,9 @@ export function ResultCanvas({
       <div className="relative w-fit h-fit max-w-full max-h-full bg-white border border-slate-200 shadow-md rounded-lg overflow-hidden">
         <img
           src={selectedGeneratedImage}
-          className="max-w-full max-h-full block w-auto h-auto"
+          className="max-w-full max-h-full block w-auto h-auto cursor-pointer"
           alt="AI Generated Try On Result"
+          onClick={() => setIsFullscreen(true)}
         />
         {/* Overlay actions inside the image */}
         <div
@@ -118,18 +121,20 @@ export function ResultCanvas({
             onClick={handleDownload}
             className={`${
               isMobile ? "w-11 h-11" : "w-12 h-12"
-            } bg-white hover:bg-slate-50 text-slate-800 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
           >
-            <DownloadSimple size={isMobile ? 20 : 22} weight="bold" />
+            <DownloadSimple size={isMobile ? 20 : 22} />
           </button>
-          <button
-            onClick={() => setIsFullscreen(true)}
-            className={`${
-              isMobile ? "w-11 h-11" : "w-12 h-12"
-            } bg-white hover:bg-slate-50 text-slate-800 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
-          >
-            <CornersOut size={isMobile ? 20 : 22} weight="bold" />
-          </button>
+          {onViewProduct && (
+            <button
+              onClick={onViewProduct}
+              className={`${
+                isMobile ? "w-11 h-11" : "w-12 h-12"
+            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            >
+                <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg"/>
+            </button>
+          )}
         </div>
       </div>
     </div>
