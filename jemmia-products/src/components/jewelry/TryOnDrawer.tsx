@@ -79,7 +79,7 @@ function resizeAndCompressImage(
   base64OrUrl: string,
   maxWidth = 1024,
   maxHeight = 1024,
-  quality = 0.85,
+  quality = 0.85
 ): Promise<string> {
   return new Promise((resolve) => {
     if (!base64OrUrl || !base64OrUrl.startsWith("data:image")) {
@@ -165,9 +165,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [showResumePopup, setShowResumePopup] = useState(false);
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
-  const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(
-    null,
-  );
+  const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
 
   const handleOpenGuide = () => {
     setShowGuide(true);
@@ -282,11 +280,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     desktopSentinelRef,
   } = useTryOnCatalog({ step, isOpen });
 
-  const pollTaskStatus = (
-    taskId: string,
-    targetRing: ProductModel,
-    targetImage: string,
-  ) => {
+  const pollTaskStatus = (taskId: string, targetRing: ProductModel, targetImage: string) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
@@ -312,10 +306,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
           // Save cache
           const cacheKey = `tryon_cache_${targetRing.id}_${getSimpleHash(targetImage)}`;
-          safeSessionStorageSetItem(
-            cacheKey,
-            JSON.stringify([compressedResult]),
-          );
+          safeSessionStorageSetItem(cacheKey, JSON.stringify([compressedResult]));
 
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -382,23 +373,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
               if (session.generatedImage) {
                 setGeneratedImage(session.generatedImage);
-                setGeneratedImages(
-                  session.generatedImages || [session.generatedImage],
-                );
-                setSelectedGeneratedImage(
-                  session.selectedGeneratedImage || session.generatedImage,
-                );
+                setGeneratedImages(session.generatedImages || [session.generatedImage]);
+                setSelectedGeneratedImage(session.selectedGeneratedImage || session.generatedImage);
                 setIsGenerating(false);
                 setisTryingOn(false);
               } else if (resumeStep === 4) {
                 setIsGenerating(true);
                 setisTryingOn(true);
                 if (session.taskId) {
-                  pollTaskStatus(
-                    session.taskId,
-                    session.selectedRing,
-                    session.uploadedImage,
-                  );
+                  pollTaskStatus(session.taskId, session.selectedRing, session.uploadedImage);
                 }
               } else {
                 setisTryingOn(false);
@@ -427,9 +410,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     if (step > 1 && uploadedImage) {
       let existingTaskId = null;
       try {
-        const existingSessionStr = sessionStorage.getItem(
-          "active_tryon_session",
-        );
+        const existingSessionStr = sessionStorage.getItem("active_tryon_session");
         if (existingSessionStr) {
           const parsed = JSON.parse(existingSessionStr);
           if (parsed && parsed.taskId) {
@@ -458,10 +439,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         generatedImages,
         selectedGeneratedImage,
       };
-      safeSessionStorageSetItem(
-        "active_tryon_session",
-        JSON.stringify(sessionData),
-      );
+      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
     }
   }, [
     step,
@@ -766,12 +744,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
             ctx.strokeStyle = "rgb(239, 68, 68)";
             ctx.lineWidth = Math.max(2, 2 / S_total);
-            ctx.strokeRect(
-              -finalBoxW / 2,
-              -finalBoxH / 2,
-              finalBoxW,
-              finalBoxH,
-            );
+            ctx.strokeRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
             ctx.restore();
           }
 
@@ -805,15 +778,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       formData.append("handImage", file);
       formData.append("designCode", selectedRing.attributes?.designCode || "");
 
-      const response = await axios.post<{ taskId: string }>(
-        "/image-generation/generate",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
 
       const taskId = response.data.taskId;
       if (!taskId) {
@@ -835,10 +804,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         ringRotation: 0,
         dragTranslate: [0, 0],
       };
-      safeSessionStorageSetItem(
-        "active_tryon_session",
-        JSON.stringify(sessionData),
-      );
+      safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
 
       // Start polling
       pollTaskStatus(taskId, selectedRing, uploadedImage);
@@ -932,9 +898,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       const reader = new FileReader();
       reader.onload = async (event) => {
         if (event.target?.result) {
-          const compressed = await resizeAndCompressImage(
-            event.target.result as string,
-          );
+          const compressed = await resizeAndCompressImage(event.target.result as string);
           setUploadedImage(compressed);
           setImageTranslate([0, 0]);
           setImageScale(1.0);
@@ -1057,7 +1021,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             -finalBoxW / 2,
             -finalBoxH / 2,
             finalBoxW,
-            finalBoxH,
+            finalBoxH
           );
           ctx.restore();
 
@@ -1465,7 +1429,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                         }`}
                         style={{
                           cursor: step === 2 ? "grab" : "default",
-                          touchAction: "none",
+                          touchAction: "none"
                         }}
                         onTouchStart={handleContainerTouchStart}
                         onTouchMove={handleContainerTouchMove}
@@ -1657,20 +1621,13 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white p-5 max-w-sm lg:max-w-md w-full border border-slate-100 flex flex-col items-center select-none text-center animate-in fade-in zoom-in duration-200"
               >
-                <h3 className="text-slate-900 font-bold text-lg leading-snug mb-1">
-                  Ảnh gửi đi căn chỉnh
-                </h3>
+                <h3 className="text-slate-900 font-bold text-lg leading-snug mb-1">Ảnh gửi đi căn chỉnh</h3>
                 <p className="text-slate-500 text-xs leading-normal mb-5 px-3">
-                  Đây là kết quả hình ảnh thực tế sau khi bạn đã di chuyển,
-                  phóng to và xoay để khớp ngón tay với khung màu đỏ.
+                  Đây là kết quả hình ảnh thực tế sau khi bạn đã di chuyển, phóng to và xoay để khớp ngón tay với khung màu đỏ.
                 </p>
 
                 <div className="w-full aspect-square border border-slate-200 bg-slate-50 flex items-center justify-center relative mb-6">
-                  <img
-                    src={alignmentPreviewUrl}
-                    className="w-full h-full object-contain"
-                    alt="Alignment Preview"
-                  />
+                    <img src={alignmentPreviewUrl} className="w-full h-full object-contain" alt="Alignment Preview" />
                 </div>
 
                 <Button
