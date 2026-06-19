@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   X,
@@ -180,6 +181,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
 
+  useEffect(() => {
+    (window as any).__tryon_is_generating = isGenerating;
+    window.dispatchEvent(
+      new CustomEvent("tryon:generating-change", {
+        detail: { isGenerating },
+      })
+    );
+  }, [isGenerating]);
+
   const handleOpenGuide = () => {
     setShowGuide(true);
     setGuideStep(1);
@@ -343,6 +353,24 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             setIsGenerating(false);
             setisTryingOn(false);
 
+            sessionStorage.setItem("tryon_unread_result", "true");
+            window.dispatchEvent(
+              new CustomEvent("tryon:unread-change", {
+                detail: { hasUnread: true },
+              })
+            );
+
+            toast.success("Thử nhẫn hoàn tất!", {
+              duration: 5000,
+              description: "Hình ảnh thử nhẫn đã sẵn sàng.",
+              action: {
+                label: "Xem kết quả",
+                onClick: () => {
+                  window.dispatchEvent(new Event("tryon:open"));
+                },
+              },
+            });
+
             // Save cache
             const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
             safeSessionStorageSetItem(cacheKey, JSON.stringify([finalImage]));
@@ -400,6 +428,56 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const handleResumeSession = () => {
     setShowResumePopup(false);
   };
+
+  // Restore background generation on mount (e.g. after reload)
+  useEffect(() => {
+    const activeSessionStr = sessionStorage.getItem(ACTIVE_TRYON_SESSION_KEY);
+    if (activeSessionStr) {
+      try {
+        const session = JSON.parse(activeSessionStr);
+        if (
+          session &&
+          (session.maxStep === 4 || session.step === 4) &&
+          session.taskId &&
+          !session.generatedImage
+        ) {
+          setStep(4);
+          setSelectedRing(session.selectedRing);
+          setUploadedImage(session.uploadedImage);
+          if (session.imageScale !== undefined) {
+            setImageScale(session.imageScale);
+          }
+          if (session.imageTranslate !== undefined) {
+            setImageTranslate(session.imageTranslate);
+          }
+          if (session.imageRotation !== undefined) {
+            setImageRotation(session.imageRotation);
+          }
+          setMaxStep(4);
+          setIsGenerating(true);
+          setisTryingOn(true);
+          pollTaskStatus({
+            taskId: session.taskId,
+            targetRing: session.selectedRing,
+            targetImage: session.uploadedImage,
+          });
+        }
+      } catch (err) {
+        console.error("Error restoring background generation:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      sessionStorage.removeItem("tryon_unread_result");
+      window.dispatchEvent(
+        new CustomEvent("tryon:unread-change", {
+          detail: { hasUnread: false },
+        })
+      );
+    }
+  }, [isOpen]);
 
   // Open resume popup and load active session details immediately on mount/open
   useEffect(() => {
@@ -620,6 +698,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       pollingIntervalRef.current = null;
     }
     sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+    setIsGenerating(false);
     setisTryingOn(false);
     setStep(1);
     setUploadedImage(null);
@@ -717,6 +796,24 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             setSelectedGeneratedImage(cachedUrls[0]);
             setIsGenerating(false);
             setisTryingOn(false);
+
+            sessionStorage.setItem("tryon_unread_result", "true");
+            window.dispatchEvent(
+              new CustomEvent("tryon:unread-change", {
+                detail: { hasUnread: true },
+              })
+            );
+
+            toast.success("Thử nhẫn hoàn tất!", {
+              duration: 5000,
+              description: "Hình ảnh thử nhẫn đã sẵn sàng.",
+              action: {
+                label: "Xem kết quả",
+                onClick: () => {
+                  window.dispatchEvent(new Event("tryon:open"));
+                },
+              },
+            });
           }, 1000);
           return;
         }
