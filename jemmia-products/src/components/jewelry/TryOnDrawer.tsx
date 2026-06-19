@@ -81,12 +81,19 @@ function freeStorageSpace(): void {
   }
 }
 
-function resizeAndCompressImage(
-  base64OrUrl: string,
+interface ResizeAndCompressOptions {
+  base64OrUrl: string;
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+}
+
+function resizeAndCompressImage({
+  base64OrUrl,
   maxWidth = 1024,
   maxHeight = 1024,
-  quality = 0.85
-): Promise<string> {
+  quality = 0.85,
+}: ResizeAndCompressOptions): Promise<string> {
   return new Promise((resolve) => {
     if (!base64OrUrl || !base64OrUrl.startsWith("data:image")) {
       resolve(base64OrUrl);
@@ -215,7 +222,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   } = useTryOnCamera({
     isMobile,
     onPhotoCaptured: async (dataUrl) => {
-      const compressed = await resizeAndCompressImage(dataUrl);
+      const compressed = await resizeAndCompressImage({ base64OrUrl: dataUrl });
       setUploadedImage(compressed);
       setImageTranslate([0, 0]);
       setImageScale(1.0);
@@ -286,7 +293,17 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     desktopSentinelRef,
   } = useTryOnCatalog({ step, isOpen });
 
-  const pollTaskStatus = (taskId: string, targetRing: ProductModel, targetImage: string) => {
+  interface PollTaskOptions {
+    taskId: string;
+    targetRing: ProductModel;
+    targetImage: string;
+  }
+
+  const pollTaskStatus = ({
+    taskId,
+    targetRing,
+    targetImage,
+  }: PollTaskOptions) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
@@ -303,7 +320,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
         if (status === "completed" && result?.base64) {
           const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-          const compressedResult = await resizeAndCompressImage(imageUrl);
+          const compressedResult = await resizeAndCompressImage({ base64OrUrl: imageUrl });
           setGeneratedImages([compressedResult]);
           setGeneratedImage(compressedResult);
           setSelectedGeneratedImage(compressedResult);
@@ -387,7 +404,11 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                 setIsGenerating(true);
                 setisTryingOn(true);
                 if (session.taskId) {
-                  pollTaskStatus(session.taskId, session.selectedRing, session.uploadedImage);
+                  pollTaskStatus({
+                    taskId: session.taskId,
+                    targetRing: session.selectedRing,
+                    targetImage: session.uploadedImage,
+                  });
                 }
               } else {
                 setisTryingOn(false);
@@ -813,7 +834,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
 
       // Start polling
-      pollTaskStatus(taskId, selectedRing, uploadedImage);
+      pollTaskStatus({ taskId, targetRing: selectedRing, targetImage: uploadedImage });
     } catch (e) {
       setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
@@ -904,13 +925,13 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       const reader = new FileReader();
       reader.onload = async (event) => {
         if (event.target?.result) {
-          const compressed = await resizeAndCompressImage(event.target.result as string);
+          const compressed = await resizeAndCompressImage({ base64OrUrl: event.target.result as string });
           setUploadedImage(compressed);
           setImageTranslate([0, 0]);
           setImageScale(1.0);
           setImageRotation(0);
           const hasShownGuide =
-            sessionStorage.getItem("tryon_guide_shown") === "true";
+            sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
           if (!hasShownGuide) {
             setShowGuide(true);
             setGuideStep(1);
