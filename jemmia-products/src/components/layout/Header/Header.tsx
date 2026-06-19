@@ -7,7 +7,6 @@ import { SearchDropdown } from "./SearchDropdown";
 import { Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { TryOnDrawer } from "../../jewelry/TryOnDrawer";
-import { ACTIVE_TRYON_SESSION_KEY } from "../../jewelry/TryOn/constants";
 
 interface HeaderProps {
   searchPlaceholder: string;
@@ -24,7 +23,7 @@ const NAV_ITEMS = [
   { name: "Nguyên chiếc", path: "/combos" },
 ];
 
-let reloadCheckPerformed = false;
+
 
 export function Header({ searchPlaceholder }: HeaderProps) {
   const [query, setQuery] = useState("");
@@ -32,6 +31,9 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isTryOnOpen, setIsTryOnOpen] = useState(false);
+  const [hasUnreadResult, setHasUnreadResult] = useState(() => {
+    return sessionStorage.getItem("tryon_unread_result") === "true";
+  });
 
   useEffect(() => {
     const handleClearSearch = () => {
@@ -44,36 +46,18 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsTryOnOpen(true);
     };
 
-    // Auto open drawer if there is an active running try-on task AND the page was reloaded
-    const isReload = (() => {
-      if (typeof window === "undefined" || !window.performance) return false;
-      const navs = window.performance.getEntriesByType("navigation");
-      if (navs.length > 0) {
-        return (navs[0] as PerformanceNavigationTiming).type === "reload";
-      }
-      return (window.performance as any).navigation?.type === 1;
-    })();
-
-    if (isReload && !reloadCheckPerformed) {
-      reloadCheckPerformed = true;
-      const activeSessionStr = sessionStorage.getItem(ACTIVE_TRYON_SESSION_KEY);
-      if (activeSessionStr) {
-        try {
-          const session = JSON.parse(activeSessionStr);
-          if (session && session.step === 4) {
-            setIsTryOnOpen(true);
-          }
-        } catch (e) {
-          console.error("Error parsing reload session:", e);
-        }
-      }
-    }
+    const handleUnreadChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ hasUnread: boolean }>;
+      setHasUnreadResult(customEvent.detail.hasUnread);
+    };
 
     window.addEventListener("search:clear", handleClearSearch);
     window.addEventListener("tryon:open", handleOpenTryOn);
+    window.addEventListener("tryon:unread-change", handleUnreadChange);
     return () => {
       window.removeEventListener("search:clear", handleClearSearch);
       window.removeEventListener("tryon:open", handleOpenTryOn);
+      window.removeEventListener("tryon:unread-change", handleUnreadChange);
     };
   }, []);
 
@@ -127,10 +111,16 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         />
         <Button
           onClick={() => setIsTryOnOpen(true)}
-          className="bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer"
+          className="relative bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer"
         >
           <Sparkle size={18} className="text-white" />
           <span>Thử Nhẫn</span>
+          {hasUnreadResult && (
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+          )}
         </Button>
         <TryOnDrawer isOpen={isTryOnOpen} onClose={() => setIsTryOnOpen(false)} />
       </div>

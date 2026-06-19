@@ -42,7 +42,7 @@ export function MobileStep1({
           autoPlay
           playsInline
           muted
-          className={`absolute inset-0 w-full h-full object-cover ${
+          className={`absolute inset-0 w-full h-full ${
             useMirror ? "transform scale-x-[-1]" : ""
           }`}
         />
@@ -74,7 +74,7 @@ export function MobileStep1({
         {/* Footer Actions */}
         <div className="relative z-[310] flex flex-col items-center gap-4 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {/* 3 Guidelines */}
-          <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded bg-black/30 border border-white/10 backdrop-blur-sm">
+          <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded border border-white/10">
             <div className="flex flex-col items-center text-center">
               <SunDim size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">

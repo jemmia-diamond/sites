@@ -1,8 +1,24 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 export function BottomNav() {
   const location = useLocation();
+
+  const [hasUnreadResult, setHasUnreadResult] = useState(() => {
+    return sessionStorage.getItem("tryon_unread_result") === "true";
+  });
+
+  useEffect(() => {
+    const handleUnreadChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ hasUnread: boolean }>;
+      setHasUnreadResult(customEvent.detail.hasUnread);
+    };
+    window.addEventListener("tryon:unread-change", handleUnreadChange);
+    return () => {
+      window.removeEventListener("tryon:unread-change", handleUnreadChange);
+    };
+  }, []);
 
   const navItems = [
     {
@@ -52,10 +68,16 @@ export function BottomNav() {
       {/* Try on button */}
       <button
         onClick={() => window.dispatchEvent(new Event("tryon:open"))}
-        className="relative h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
+        className="h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
       >
-        <span className="nav-tab-item nav-tab-item-inactive">
+        <span className="relative nav-tab-item nav-tab-item-inactive">
           Thử Nhẫn
+          {hasUnreadResult && (
+            <span className="absolute -top-1 -right-2 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          )}
         </span>
       </button>
     </nav>

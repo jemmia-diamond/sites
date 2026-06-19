@@ -7,6 +7,7 @@ import JewelryPage from "./pages/JewelryPage";
 import DiamondPage from "./pages/DiamondPage";
 import ComboPage from "./pages/ComboPage";
 import { PasswordGate } from "./components/auth/PasswordGate";
+import { Toaster } from "sonner";
 
 import { API_BASE_URL } from "./config";
 
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/jewelry" replace />} />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
 }
