@@ -36,6 +36,7 @@ export interface ProductModel {
   thumbnails: { url: string }[];
   images: { url: string }[];
   videos: { url: string }[];
+  try_on_images?: { url: string }[] | string[] | null;
   attributes: Record<string, any>;
   collections: {
     id: string;

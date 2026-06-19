@@ -14,8 +14,8 @@ import { MobileProgressBar } from "./MobileProgressBar";
 interface Step1Props {
   isCameraActive: boolean;
   useMirror: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   startCamera: () => void;
   capturePhoto: () => void;
@@ -50,7 +50,7 @@ export function MobileStep1({
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-14 z-[305]">
           <img
             src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-            className="w-full h-full object-contain opacity-60 scale-[165%]"
+            className="w-full h-full object-contain opacity-60 scale-[165%] rotate-180"
             alt="Camera Overlay Hand"
           />
         </div>
@@ -73,7 +73,7 @@ export function MobileStep1({
         {/* Footer Actions */}
         <div className="relative z-[310] flex flex-col items-center gap-4 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {/* 3 Guidelines */}
-          {/* <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded bg-black/30 border border-white/10 backdrop-blur-sm">
+          <div className="grid grid-cols-3 gap-2 w-full max-w-sm px-2 py-2 rounded bg-black/30 border border-white/10 backdrop-blur-sm">
             <div className="flex flex-col items-center text-center">
               <SunDim size={18} className="text-amber-400 mb-1" />
               <span className="text-[10px] leading-tight text-white/90 font-normal">
@@ -92,7 +92,7 @@ export function MobileStep1({
                 Tránh bóng đổ và <br /> ảnh bị mờ
               </span>
             </div>
-          </div> */}
+          </div>
 
           {/* Capture Button */}
           <button
@@ -136,7 +136,7 @@ export function MobileStep1({
             ) : (
               <img
                 src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
-                className="w-full h-full object-contain opacity-40"
+                className="w-full h-full object-contain opacity-40 rotate-180"
                 alt="Hand Silhouette"
                 draggable={false}
               />
@@ -145,7 +145,7 @@ export function MobileStep1({
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-20">
                 <img
                   src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-                  className="w-full h-full object-contain opacity-60"
+                  className="w-full h-full object-contain opacity-60 rotate-180"
                   alt="Camera Overlay Hand"
                 />
               </div>
@@ -325,7 +325,7 @@ export function DesktopStep1Bottom({
 
 interface DesktopStep1RightProps {
   isCameraActive: boolean;
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   useMirror: boolean;
 }
 

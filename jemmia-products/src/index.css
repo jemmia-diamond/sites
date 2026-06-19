@@ -270,3 +270,104 @@ img, .select-none img {
   user-select: none !important; /* Standard */
   -webkit-user-drag: none !important; /* Chrome/Safari */
 }
+
+/* Custom range slider styling with circular thumb and transparent track (uses inline linear-gradient for active progress coloring) */
+.custom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Webkit Track - transparent to show input background gradient */
+.custom-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+/* Webkit Thumb - circular, no clipping */
+.custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff; /* bg-white */
+  border: 2px solid #004B49; /* border-accent */
+  margin-top: -6px; /* center it vertically on 6px track */
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Mozilla Firefox Track */
+.custom-slider::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+/* Mozilla Firefox Thumb */
+.custom-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff; /* bg-white */
+  border: 2px solid #004B49; /* border-accent */
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom vertical range slider styling using rotated horizontal input */
+.custom-slider-vertical-rotated {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  transform: rotate(-90deg);
+  position: absolute;
+}
+
+/* Webkit Track */
+.custom-slider-vertical-rotated::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+/* Webkit Thumb */
+.custom-slider-vertical-rotated::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff; /* bg-white */
+  border: 2px solid #004B49; /* border-accent */
+  margin-top: -6px; /* center it vertically on 6px track */
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Mozilla Firefox Track */
+.custom-slider-vertical-rotated::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+/* Mozilla Firefox Thumb */
+.custom-slider-vertical-rotated::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff; /* bg-white */
+  border: 2px solid #004B49; /* border-accent */
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

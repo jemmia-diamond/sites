@@ -10,12 +10,13 @@ import {
   ArrowRight,
   LockSimple,
   ArrowCounterClockwise,
+  MagnifyingGlassPlus,
+  MagnifyingGlassMinus,
 } from "@phosphor-icons/react";
 import { ProductModel } from "../../types";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import screenfull from "screenfull";
-import Moveable from "react-moveable";
 
 // Hooks
 import { useTryOnCamera } from "./TryOn/hooks/useTryOnCamera";
@@ -32,6 +33,7 @@ import {
 import {
   MobileStep2,
   DesktopStep2Bottom,
+  DesktopStep2Left,
 } from "./TryOn/components/Step2Confirm";
 import {
   MobileStep3,
@@ -44,7 +46,6 @@ import {
   DesktopStep4Bottom,
 } from "./TryOn/components/Step4Result";
 import { ResultCanvas } from "./TryOn/components/ResultCanvas";
-import { MoveableRedBox } from "./TryOn/components/MoveableRedBox";
 import { LightboxModal } from "./TryOn/components/LightboxModal";
 import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
 import { TryOnGuide } from "./TryOn/components/TryOnGuide";
@@ -176,6 +177,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const [maxStep, setMaxStep] = useState(1);
   const [showResumePopup, setShowResumePopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
+  const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
 
   const handleOpenGuide = () => {
     setShowGuide(true);
@@ -186,6 +188,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   const lightboxRef = useRef<HTMLDivElement>(null);
   const scrollPosition = useRef(0);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const sessionRestoredRef = useRef(false);
 
   // Responsive device width observer
   useEffect(() => {
@@ -245,8 +248,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     onPhotoCaptured: async (dataUrl) => {
       const compressed = await resizeAndCompressImage(dataUrl);
       setUploadedImage(compressed);
-      setDragTranslate([0, 0]);
-      cumulativeTranslate.current = [0, 0];
+      setImageTranslate([0, 0]);
+      setImageScale(1.0);
+      setImageRotation(0);
       const hasShownGuide =
         sessionStorage.getItem("tryon_guide_shown") === "true";
       if (!hasShownGuide) {
@@ -262,33 +266,46 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   });
 
   const {
-    ringScale,
-    setRingScale,
-    ringRotation,
-    setRingRotation,
-    dragTranslate,
-    setDragTranslate,
-    fingerPosition,
-    setFingerPosition,
+    imageScale,
+    setImageScale,
+    imageTranslate,
+    setImageTranslate,
+    imageRotation,
+    setImageRotation,
+    redBox,
     containerWidth,
     setContainerWidth,
     ringContainerRef,
-    redBoxRef,
-    ringTargetRef,
-    moveableRedBoxRef,
-    moveableRingRef,
-    cumulativeTranslate,
-    latestScale,
-    latestRotation,
     handleContainerTouchStart,
     handleContainerTouchMove,
     handleContainerTouchEnd,
     handleContainerMouseDown,
     handleContainerMouseMove,
     handleContainerMouseUp,
-    handleImageClick,
-    triggerUpdateRect,
+    resetZoom,
   } = useTryOnGestures({ step, uploadedImage });
+
+  const getScaleFromSlider = (v: number): number => {
+    if (v <= 1) {
+      return 0.5 + v * 0.5; // Maps [0, 1] to [0.5, 1.0]
+    }
+    return 1.0 + (v - 1) * 3.0; // Maps [1, 2] to [1.0, 4.0]
+  };
+
+  const getSliderFromScale = (scale: number): number => {
+    if (scale <= 1.0) {
+      return Math.max(0, (scale - 0.5) / 0.5); // Maps [0.5, 1.0] to [0, 1]
+    }
+    return Math.min(2, 1.0 + (scale - 1.0) / 3.0); // Maps [1.0, 4.0] to [1, 2]
+  };
+
+  const handleZoomIn = () => {
+    setImageScale((prev) => Math.min(prev + 0.15, 4.0));
+  };
+
+  const handleZoomOut = () => {
+    setImageScale((prev) => Math.max(prev - 0.15, 0.5));
+  };
 
   const {
     rings,
@@ -371,7 +388,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
   // Open resume popup and load active session details immediately on mount/open
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !sessionRestoredRef.current) {
+      sessionRestoredRef.current = true;
       const activeSessionStr = sessionStorage.getItem("active_tryon_session");
       if (activeSessionStr) {
         try {
@@ -382,10 +400,16 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
               setStep(resumeStep);
               setSelectedRing(session.selectedRing);
               setUploadedImage(session.uploadedImage);
-              setFingerPosition(session.fingerPosition);
-              setRingScale(session.ringScale);
-              setRingRotation(session.ringRotation);
-              setDragTranslate(session.dragTranslate);
+              if (session.imageScale !== undefined) {
+                setImageScale(session.imageScale);
+              }
+              if (session.imageTranslate !== undefined) {
+                setImageTranslate(session.imageTranslate);
+              }
+              if (session.imageRotation !== undefined) {
+                setImageRotation(session.imageRotation);
+              }
+
               setMaxStep(resumeStep);
 
               if (session.generatedImage) {
@@ -448,10 +472,14 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         maxStep: Math.max(maxStep, step),
         selectedRing,
         uploadedImage,
-        fingerPosition,
-        ringScale,
-        ringRotation,
-        dragTranslate,
+        imageScale,
+        imageTranslate,
+        imageRotation,
+        redBox,
+        fingerPosition: { x: 0, y: 0 },
+        ringScale: 1.0,
+        ringRotation: 0,
+        dragTranslate: [0, 0],
         generatedImage,
         generatedImages,
         selectedGeneratedImage,
@@ -462,10 +490,10 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     step,
     selectedRing,
     uploadedImage,
-    fingerPosition,
-    ringScale,
-    ringRotation,
-    dragTranslate,
+    imageScale,
+    imageTranslate,
+    imageRotation,
+    redBox,
     generatedImage,
     generatedImages,
     selectedGeneratedImage,
@@ -479,6 +507,93 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       }
     };
   }, []);
+
+  const handleGenerateAlignmentPreview = () => {
+    if (!uploadedImage) return;
+
+    const canvas = document.createElement("canvas");
+    const imgHand = new Image();
+    imgHand.crossOrigin = "anonymous";
+
+    imgHand.onload = () => {
+      canvas.width = imgHand.naturalWidth || 600;
+      canvas.height = imgHand.naturalHeight || 600;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // Draw original hand background (original size, no zoom/pan/rotate)
+      ctx.drawImage(imgHand, 0, 0);
+
+      const W_orig = canvas.width;
+      const H_orig = canvas.height;
+      const C_orig_x = W_orig / 2;
+      const C_orig_y = H_orig / 2;
+
+      const containerWidthVal =
+        ringContainerRef.current?.getBoundingClientRect().width || 400;
+
+      const r_orig = W_orig / H_orig;
+      let S_base = 1;
+      if (r_orig < 1) {
+        S_base = containerWidthVal / W_orig;
+      } else {
+        S_base = containerWidthVal / H_orig;
+      }
+      const S_total = S_base * imageScale;
+
+      const redBoxLeft = (redBox.x / 100) * containerWidthVal;
+      const redBoxTop = (redBox.y / 100) * containerWidthVal;
+      const redBoxWidth = (redBox.w / 100) * containerWidthVal;
+      const redBoxHeight = (redBox.h / 100) * containerWidthVal;
+
+      const redBoxCenterX = redBoxLeft + redBoxWidth / 2;
+      const redBoxCenterY = redBoxTop + redBoxHeight / 2;
+
+      const containerCenterX = containerWidthVal / 2;
+      const containerCenterY = containerWidthVal / 2;
+
+      const p_screen_x = redBoxCenterX - containerCenterX;
+      const p_screen_y = redBoxCenterY - containerCenterY;
+
+      const p_double_prime_x = p_screen_x - imageTranslate[0];
+      const p_double_prime_y = p_screen_y - imageTranslate[1];
+
+      const p_prime_x = p_double_prime_x / S_total;
+      const p_prime_y = p_double_prime_y / S_total;
+
+      const angleRad = (-imageRotation * Math.PI) / 180;
+      const cosA = Math.cos(angleRad);
+      const sinA = Math.sin(angleRad);
+      const p_orig_x = p_prime_x * cosA - p_prime_y * sinA;
+      const p_orig_y = p_prime_x * sinA + p_prime_y * cosA;
+
+      const finalCenterX = C_orig_x + p_orig_x;
+      const finalCenterY = C_orig_y + p_orig_y;
+
+      const finalBoxW = redBoxWidth / S_total;
+      const finalBoxH = redBoxHeight / S_total;
+
+      // Draw red box overlay mapped to original coordinates and rotated
+      if (redBox) {
+        ctx.save();
+        ctx.translate(finalCenterX, finalCenterY);
+        ctx.rotate((-imageRotation * Math.PI) / 180);
+
+        ctx.fillStyle = "rgba(239, 68, 68, 0.5)";
+        ctx.fillRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
+
+        ctx.strokeStyle = "rgb(239, 68, 68)";
+        ctx.lineWidth = Math.max(2, 2 / S_total);
+        ctx.strokeRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
+        ctx.restore();
+      }
+
+      const previewUrl = canvas.toDataURL("image/png");
+      setAlignmentPreviewUrl(previewUrl);
+    };
+
+    imgHand.src = uploadedImage;
+  };
 
   const handleResetAll = () => {
     if (pollingIntervalRef.current) {
@@ -622,56 +737,72 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             return;
           }
 
-          // Draw hand background
-          ctx.drawImage(imgHand, 0, 0, canvas.width, canvas.height);
+          // Draw original hand background (original size, no zoom/pan/rotate)
+          ctx.drawImage(imgHand, 0, 0);
 
-          // Draw red box overlay
-          ctx.save();
+          const W_orig = canvas.width;
+          const H_orig = canvas.height;
+          const C_orig_x = W_orig / 2;
+          const C_orig_y = H_orig / 2;
 
           const containerWidthVal =
             ringContainerRef.current?.getBoundingClientRect().width || 400;
 
-          const boxWidthPx = 48 * ringScale;
-          const boxHeightPx = 18 * ringScale;
+          const r_orig = W_orig / H_orig;
+          let S_base = 1;
+          if (r_orig < 1) {
+            S_base = containerWidthVal / W_orig;
+          } else {
+            S_base = containerWidthVal / H_orig;
+          }
+          const S_total = S_base * imageScale;
 
-          const initialLeftPx = (fingerPosition.x / 100) * containerWidthVal;
-          const initialTopPx = (fingerPosition.y / 100) * containerWidthVal;
+          const redBoxLeft = (redBox.x / 100) * containerWidthVal;
+          const redBoxTop = (redBox.y / 100) * containerWidthVal;
+          const redBoxWidth = (redBox.w / 100) * containerWidthVal;
+          const redBoxHeight = (redBox.h / 100) * containerWidthVal;
 
-          const finalLeftPx = initialLeftPx + dragTranslate[0];
-          const finalTopPx = initialTopPx + dragTranslate[1];
+          const redBoxCenterX = redBoxLeft + redBoxWidth / 2;
+          const redBoxCenterY = redBoxTop + redBoxHeight / 2;
 
-          const centerX = finalLeftPx + boxWidthPx / 2;
-          const centerY = finalTopPx + boxHeightPx / 2;
+          const containerCenterX = containerWidthVal / 2;
+          const containerCenterY = containerWidthVal / 2;
 
-          const targetX = (centerX / containerWidthVal) * canvas.width;
-          const targetY = (centerY / containerWidthVal) * canvas.height;
+          const p_screen_x = redBoxCenterX - containerCenterX;
+          const p_screen_y = redBoxCenterY - containerCenterY;
 
-          const boxWidthCanvas =
-            (boxWidthPx / containerWidthVal) * canvas.width;
-          const boxHeightCanvas =
-            (boxHeightPx / containerWidthVal) * canvas.height;
+          const p_double_prime_x = p_screen_x - imageTranslate[0];
+          const p_double_prime_y = p_screen_y - imageTranslate[1];
 
-          ctx.translate(targetX, targetY);
-          ctx.rotate((ringRotation * Math.PI) / 180);
+          const p_prime_x = p_double_prime_x / S_total;
+          const p_prime_y = p_double_prime_y / S_total;
 
-          ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
-          ctx.fillRect(
-            -boxWidthCanvas / 2,
-            -boxHeightCanvas / 2,
-            boxWidthCanvas,
-            boxHeightCanvas,
-          );
+          const angleRad = (-imageRotation * Math.PI) / 180;
+          const cosA = Math.cos(angleRad);
+          const sinA = Math.sin(angleRad);
+          const p_orig_x = p_prime_x * cosA - p_prime_y * sinA;
+          const p_orig_y = p_prime_x * sinA + p_prime_y * cosA;
 
-          ctx.strokeStyle = "rgb(239, 68, 68)";
-          ctx.lineWidth = 2 * (canvas.width / containerWidthVal);
-          ctx.strokeRect(
-            -boxWidthCanvas / 2,
-            -boxHeightCanvas / 2,
-            boxWidthCanvas,
-            boxHeightCanvas,
-          );
+          const finalCenterX = C_orig_x + p_orig_x;
+          const finalCenterY = C_orig_y + p_orig_y;
 
-          ctx.restore();
+          const finalBoxW = redBoxWidth / S_total;
+          const finalBoxH = redBoxHeight / S_total;
+
+          // Draw red box overlay mapped to original coordinates and rotated
+          if (redBox) {
+            ctx.save();
+            ctx.translate(finalCenterX, finalCenterY);
+            ctx.rotate((-imageRotation * Math.PI) / 180);
+
+            ctx.fillStyle = "rgba(239, 68, 68, 0.5)";
+            ctx.fillRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
+
+            ctx.strokeStyle = "rgb(239, 68, 68)";
+            ctx.lineWidth = Math.max(2, 2 / S_total);
+            ctx.strokeRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
+            ctx.restore();
+          }
 
           canvas.toBlob((blob) => {
             if (blob) {
@@ -720,10 +851,14 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         step: 4,
         selectedRing,
         uploadedImage,
-        fingerPosition,
-        ringScale,
-        ringRotation,
-        dragTranslate,
+        imageScale,
+        imageTranslate,
+        imageRotation,
+        redBox,
+        fingerPosition: { x: 0, y: 0 },
+        ringScale: 1.0,
+        ringRotation: 0,
+        dragTranslate: [0, 0],
       };
       safeSessionStorageSetItem("active_tryon_session", JSON.stringify(sessionData));
 
@@ -823,8 +958,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         if (event.target?.result) {
           const compressed = await resizeAndCompressImage(event.target.result as string);
           setUploadedImage(compressed);
-          setDragTranslate([0, 0]);
-          cumulativeTranslate.current = [0, 0];
+          setImageTranslate([0, 0]);
+          setImageScale(1.0);
+          setImageRotation(0);
           const hasShownGuide =
             sessionStorage.getItem("tryon_guide_shown") === "true";
           if (!hasShownGuide) {
@@ -883,39 +1019,68 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       canvas.height = imgHand.naturalHeight || 600;
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        ctx.drawImage(imgHand, 0, 0, canvas.width, canvas.height);
+        // Draw original hand background (original size, no zoom/pan/rotate)
+        ctx.drawImage(imgHand, 0, 0);
+
+        const W_orig = canvas.width;
+        const H_orig = canvas.height;
+        const C_orig_x = W_orig / 2;
+        const C_orig_y = H_orig / 2;
+
+        const containerWidthVal =
+          ringContainerRef.current?.getBoundingClientRect().width || 400;
+
+        const r_orig = W_orig / H_orig;
+        let S_base = 1;
+        if (r_orig < 1) {
+          S_base = containerWidthVal / W_orig;
+        } else {
+          S_base = containerWidthVal / H_orig;
+        }
+        const S_total = S_base * imageScale;
+
+        const redBoxLeft = (redBox.x / 100) * containerWidthVal;
+        const redBoxTop = (redBox.y / 100) * containerWidthVal;
+        const redBoxWidth = (redBox.w / 100) * containerWidthVal;
+        const redBoxHeight = (redBox.h / 100) * containerWidthVal;
+
+        const redBoxCenterX = redBoxLeft + redBoxWidth / 2;
+        const redBoxCenterY = redBoxTop + redBoxHeight / 2;
+
+        const containerCenterX = containerWidthVal / 2;
+        const containerCenterY = containerWidthVal / 2;
+
+        const p_screen_x = redBoxCenterX - containerCenterX;
+        const p_screen_y = redBoxCenterY - containerCenterY;
+
+        const p_double_prime_x = p_screen_x - imageTranslate[0];
+        const p_double_prime_y = p_screen_y - imageTranslate[1];
+
+        const p_prime_x = p_double_prime_x / S_total;
+        const p_prime_y = p_double_prime_y / S_total;
+
+        const angleRad = (-imageRotation * Math.PI) / 180;
+        const cosA = Math.cos(angleRad);
+        const sinA = Math.sin(angleRad);
+        const p_orig_x = p_prime_x * cosA - p_prime_y * sinA;
+        const p_orig_y = p_prime_x * sinA + p_prime_y * cosA;
+
+        const finalCenterX = C_orig_x + p_orig_x;
+        const finalCenterY = C_orig_y + p_orig_y;
+
+        const finalBoxW = redBoxWidth / S_total;
+        const finalBoxH = redBoxHeight / S_total;
 
         imgRing.onload = () => {
           ctx.save();
-
-          const containerWidthVal =
-            ringContainerRef.current?.getBoundingClientRect().width || 400;
-          const ringWidthPx = containerWidthVal * 0.08 * ringScale;
-          const ringHeightPx = containerWidthVal * 0.08 * ringScale;
-
-          const initialLeftPx = (fingerPosition.x / 100) * containerWidthVal;
-          const initialTopPx = (fingerPosition.y / 100) * containerWidthVal;
-
-          const finalLeftPx = initialLeftPx + dragTranslate[0];
-          const finalTopPx = initialTopPx + dragTranslate[1];
-
-          const centerX = finalLeftPx + ringWidthPx / 2;
-          const centerY = finalTopPx + ringHeightPx / 2;
-
-          const targetX = (centerX / containerWidthVal) * canvas.width;
-          const targetY = (centerY / containerWidthVal) * canvas.height;
-
-          const ringWidth = canvas.width * 0.08 * ringScale;
-          const ringHeight = canvas.width * 0.08 * ringScale;
-
-          ctx.translate(targetX, targetY);
-          ctx.rotate((ringRotation * Math.PI) / 180);
+          ctx.translate(finalCenterX, finalCenterY);
+          ctx.rotate((-imageRotation * Math.PI) / 180);
           ctx.drawImage(
             imgRing,
-            -ringWidth / 2,
-            -ringHeight / 2,
-            ringWidth,
-            ringHeight,
+            -finalBoxW / 2,
+            -finalBoxH / 2,
+            finalBoxW,
+            finalBoxH
           );
           ctx.restore();
 
@@ -1101,22 +1266,16 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       handleContainerMouseDown={handleContainerMouseDown}
                       handleContainerMouseMove={handleContainerMouseMove}
                       handleContainerMouseUp={handleContainerMouseUp}
-                      triggerUpdateRect={triggerUpdateRect}
-                      redBoxRef={redBoxRef}
-                      fingerPosition={fingerPosition}
-                      ringScale={ringScale}
-                      dragTranslate={dragTranslate}
-                      ringRotation={ringRotation}
-                      moveableRedBoxRef={moveableRedBoxRef}
-                      cumulativeTranslate={cumulativeTranslate}
-                      latestScale={latestScale}
-                      latestRotation={latestRotation}
-                      setDragTranslate={setDragTranslate}
-                      setRingScale={setRingScale}
-                      setRingRotation={setRingRotation}
+                      imageScale={imageScale}
+                      imageTranslate={imageTranslate}
+                      imageRotation={imageRotation}
+                      setImageRotation={setImageRotation}
+                      redBox={redBox}
+                      resetZoom={resetZoom}
                       onOpenGuide={handleOpenGuide}
                       maxStep={maxStep}
                       showResumePopup={showResumePopup}
+                      onGeneratePreview={handleGenerateAlignmentPreview}
                     />
                   )}
                   {step === 3 && (
@@ -1163,59 +1322,17 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   >
                     <div className="space-y-5 flex flex-col min-h-0">
                       {/* Progress Tracker */}
-                      {!showGuide && (
-                        <div className="w-full shrink-0 mb-5">
-                          <MobileProgressBar
-                            activeCount={step}
-                            onStepClick={handleStepClick}
-                            disabled={step === 4 && isGenerating}
-                            maxStep={maxStep}
-                          />
-                        </div>
-                      )}
+                      <div className="w-full shrink-0 mb-5">
+                        <MobileProgressBar
+                          activeCount={step}
+                          onStepClick={handleStepClick}
+                          disabled={step === 4 && isGenerating}
+                          maxStep={maxStep}
+                        />
+                      </div>
 
                       {step === 1 && <DesktopStep1Left />}
-                      {step === 2 &&
-                        (showGuide ? (
-                          <div className="space-y-4 text-left animate-in fade-in duration-300">
-                            <h3 className="text-xl font-bold text-slate-900 tracking-tight leading-snug">
-                              {guideStep === 1
-                                ? "Dùng 2 ngón để phóng to/thu nhỏ"
-                                : "Dùng 1 ngón để chọn vị trí đeo nhẫn"}
-                            </h3>
-                            <ul className="text-sm text-slate-900 space-y-3 list-disc pl-4 leading-relaxed">
-                              {guideStep === 1 ? (
-                                <>
-                                  <li>
-                                    Đặt hai ngón tay lên màn hình để điều chỉnh
-                                    kích thước red mark
-                                  </li>
-                                  <li>
-                                    Kéo ra xa để phóng to, kéo lại gần để thu
-                                    nhỏ.
-                                  </li>
-                                </>
-                              ) : (
-                                <>
-                                  <li>
-                                    Kéo red mark đến vị trí ngón tay bạn muốn
-                                    thử nhẫn bằng 1 ngón tay
-                                  </li>
-                                  <li>
-                                    Bạn có thể kết hợp phóng to/thu nhỏ để đặt
-                                    khung chính xác hơn
-                                  </li>
-                                  <li>
-                                    Khi red box nằm đúng vị trí, hệ thống sẽ
-                                    hiển thị nhẫn trên ngón đó
-                                  </li>
-                                </>
-                              )}
-                            </ul>
-                          </div>
-                        ) : (
-                          <DesktopStep1Left />
-                        ))}
+                      {step === 2 && <DesktopStep2Left />}
                       {step === 3 && (
                         <DesktopStep3Left
                           searchQuery={searchQuery}
@@ -1242,41 +1359,15 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           capturePhoto={capturePhoto}
                         />
                       )}
-                      {step === 2 &&
-                        (showGuide ? (
-                          <div className="flex flex-col gap-2.5 animate-in fade-in duration-300">
-                            <Button
-                              onClick={() => {
-                                if (guideStep === 1) {
-                                  setGuideStep(2);
-                                } else {
-                                  setShowGuide(false);
-                                  sessionStorage.setItem(
-                                    "tryon_guide_shown",
-                                    "true",
-                                  );
-                                }
-                              }}
-                              className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
-                            >
-                              Tiếp tục
-                              <ArrowRight size={16} weight="bold" />
-                            </Button>
-                            <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
-                              <LockSimple size={14} weight="regular" />
-                              <span>
-                                Ảnh của bạn là riêng tư và được bảo vệ
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <DesktopStep2Bottom
-                            uploadedImage={uploadedImage}
-                            setStep={setStep}
-                            setUploadedImage={setUploadedImage}
-                            startCamera={startCamera}
-                          />
-                        ))}
+                      {step === 2 && (
+                        <DesktopStep2Bottom
+                          uploadedImage={uploadedImage}
+                          setStep={setStep}
+                          setUploadedImage={setUploadedImage}
+                          startCamera={startCamera}
+                          onGeneratePreview={handleGenerateAlignmentPreview}
+                        />
+                      )}
                       {step === 4 && (
                         <DesktopStep4Bottom
                           selectedRing={selectedRing}
@@ -1312,37 +1403,26 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                   ) : (
                     /* Desktop Step 1 & 2 Right Panel Canvas */
                     <div className="grow flex items-center justify-center bg-[#F8FAFC] p-6 relative overflow-hidden min-w-0">
-                      {step === 2 && showGuide ? (
-                        <div className="h-auto max-w-160 xl:max-w-210 w-full rounded-lg overflow-hidden bg-white animate-in fade-in zoom-in duration-300">
-                          <img
-                            src={
-                              guideStep === 1
-                                ? "https://cdn.hstatic.net/files/200000355853/file/dropzone.png"
-                                : "https://cdn.hstatic.net/files/200000355853/file/dropzone__1_.png"
-                            }
-                            className="w-full h-full object-cover select-none"
-                            alt="Guide illustration"
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          ref={ringContainerRef}
-                          className={`w-full max-w-160 xl:max-w-210 h-auto aspect-square relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
-                            step === 1
-                              ? "bg-transparent border-none"
-                              : "bg-white border border-primary-200 shadow-lg"
-                          }`}
-                          style={{ cursor: "default" }}
-                          onTouchStart={handleContainerTouchStart}
-                          onTouchMove={handleContainerTouchMove}
-                          onTouchEnd={handleContainerTouchEnd}
-                          onTouchCancel={handleContainerTouchEnd}
-                          onMouseDown={handleContainerMouseDown}
-                          onMouseMove={handleContainerMouseMove}
-                          onMouseUp={handleContainerMouseUp}
-                          onMouseLeave={handleContainerMouseUp}
-                          onClick={handleImageClick}
-                        >
+                      <div
+                        ref={ringContainerRef}
+                        className={`w-full max-w-160 2xl:max-w-210 rounded-lg h-auto aspect-square relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
+                          step === 1
+                            ? "bg-transparent border-none"
+                            : "bg-black border border-primary-200 shadow-lg"
+                        }`}
+                        style={{
+                        cursor: step === 2 ? "grab" : "default",
+                          touchAction: "none"
+                        }}
+                        onTouchStart={handleContainerTouchStart}
+                        onTouchMove={handleContainerTouchMove}
+                        onTouchEnd={handleContainerTouchEnd}
+                        onTouchCancel={handleContainerTouchEnd}
+                        onMouseDown={handleContainerMouseDown}
+                        onMouseMove={handleContainerMouseMove}
+                        onMouseUp={handleContainerMouseUp}
+                        onMouseLeave={handleContainerMouseUp}
+                      >
                           {step === 1 && (
                             <DesktopStep1Right
                               isCameraActive={isCameraActive}
@@ -1352,32 +1432,119 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           )}
 
                           {uploadedImage && step !== 1 && (
-                            <img
-                              src={uploadedImage}
-                              className="w-full h-full object-cover"
-                              alt="Hand Preview"
-                              draggable={false}
-                              onLoad={triggerUpdateRect}
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                transform: `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`,
+                                transformOrigin: "center center",
+                              }}
+                              className="flex items-center justify-center pointer-events-none select-none"
+                            >
+                              <img
+                                src={uploadedImage}
+                                className="w-full h-full object-cover"
+                                alt="Hand Preview"
+                                draggable={false}
+                              />
+                            </div>
+                          )}
+
+                          {/* Fixed, Non-editable Centered Red Box on Desktop */}
+                          {step === 2 && !showResumePopup && redBox && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                left: `${redBox.x}%`,
+                                top: `${redBox.y}%`,
+                                width: `${redBox.w}%`,
+                                height: `${redBox.h}%`,
+                                border: "2px solid rgb(239, 68, 68)",
+                                backgroundColor: "rgba(239, 68, 68, 0.5)",
+                                boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.5)",
+                                pointerEvents: "none",
+                                zIndex: 40,
+                              }}
                             />
                           )}
 
-                          {!showResumePopup && (
-                            <MoveableRedBox
-                              step={step}
-                              uploadedImage={uploadedImage}
-                              redBoxRef={redBoxRef}
-                              fingerPosition={fingerPosition}
-                              ringScale={ringScale}
-                              dragTranslate={dragTranslate}
-                              ringRotation={ringRotation}
-                              moveableRedBoxRef={moveableRedBoxRef}
-                              cumulativeTranslate={cumulativeTranslate}
-                              latestScale={latestScale}
-                              latestRotation={latestRotation}
-                              setDragTranslate={setDragTranslate}
-                              setRingScale={setRingScale}
-                              setRingRotation={setRingRotation}
-                            />
+                          {/* Vertical Zoom Slider on Desktop */}
+                          {step === 2 && !showResumePopup && (
+                            <div
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onMouseMove={(e) => e.stopPropagation()}
+                              onMouseUp={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchMove={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-4 top-4 bottom-20 z-[100] py-4 rounded-full bg-black/60 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-right-4 duration-300 w-10"
+                            >
+                              <button
+                                type="button"
+                                onClick={handleZoomIn}
+                                className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                                title="Phóng to"
+                              >
+                                <MagnifyingGlassPlus size={16} weight="bold" className="text-white" />
+                              </button>
+
+                              <div className="flex-1 w-full flex items-center justify-center relative">
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="2"
+                                  step="0.01"
+                                  value={getSliderFromScale(imageScale)}
+                                  onChange={(e) => setImageScale(getScaleFromSlider(Number(e.target.value)))}
+                                  style={{
+                                    width: `${Math.max(100, containerWidth - 210)}px`,
+                                    background: `linear-gradient(to right, #ffffff 0%, #ffffff ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 100%)`,
+                                  }}
+                                  className="custom-slider-vertical-rotated"
+                                />
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={handleZoomOut}
+                                className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
+                                title="Thu nhỏ"
+                              >
+                                <MagnifyingGlassMinus size={16} weight="bold" className="text-white"/>
+                              </button>
+
+                              <span className="font-mono text-[10px] text-white font-bold w-10 shrink-0 text-center select-none">{Math.round(imageScale * 100)}%</span>
+                            </div>
+                          )}
+
+                          {/* Floating Rotation Slider on Desktop */}
+                          <div className="absolute bottom-4 w-full flex px-4 gap-4 z-[100]">
+                          {step === 2 && !showResumePopup && (
+                            <div
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onMouseMove={(e) => e.stopPropagation()}
+                              onMouseUp={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchMove={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                              className="px-4 flex-1 select-none flex items-center gap-3 bg-black/60 rounded-full animate-in fade-in slide-in-from-bottom-4 duration-300"
+                            >
+                              <span className="text-[10px] text-white font-bold whitespace-nowrap">Xoay:</span>
+                               <input
+                                type="range"
+                                min="-180"
+                                max="180"
+                                value={imageRotation}
+                                onChange={(e) => setImageRotation(Number(e.target.value))}
+                                style={{
+                                  background: `linear-gradient(to right, #ffffff 0%, #ffffff ${((imageRotation + 180) / 360) * 100}%, #94a3b8 ${((imageRotation + 180) / 360) * 100}%, #94a3b8 100%)`,
+                                }}
+                                className="grow custom-slider"
+                              />
+                              <span className="font-mono text-[10px] text-white font-bold text-right">{imageRotation}°</span>
+                            </div>
                           )}
 
                           {step === 2 && (
@@ -1386,14 +1553,14 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                                 e.stopPropagation();
                                 handleOpenGuide();
                               }}
-                              className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
+                              className="w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
                               title="Hướng dẫn cử chỉ"
                             >
                               <Question size={20} />
                             </button>
                           )}
+                          </div>
                         </div>
-                      )}
                     </div>
                   )}
                 </>
@@ -1408,18 +1575,37 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
             handleCloseFullscreen={handleCloseFullscreen}
           />
 
-          {/* Guide Modal Overlay (Mobile only) */}
-          {showGuide && isMobile && (
+          {/* Alignment Preview Modal */}
+          {alignmentPreviewUrl && (
+            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white p-5 max-w-sm lg:max-w-md w-full border border-slate-100 flex flex-col items-center select-none text-center animate-in fade-in zoom-in duration-200"
+              >
+                <h3 className="text-slate-900 font-bold text-lg leading-snug mb-1">Ảnh gửi đi căn chỉnh</h3>
+                <p className="text-slate-500 text-xs leading-normal mb-5 px-3">
+                  Đây là kết quả hình ảnh thực tế sau khi bạn đã di chuyển, phóng to và xoay để khớp ngón tay với khung màu đỏ.
+                </p>
+
+                <div className="w-full aspect-square border border-slate-200 bg-slate-50 flex items-center justify-center relative mb-6">
+                  <img src={alignmentPreviewUrl} className="w-full h-full object-contain" alt="Alignment Preview" />
+                </div>
+
+                <Button
+                  onClick={() => setAlignmentPreviewUrl(null)}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 rounded-none flex items-center justify-center cursor-pointer border-none"
+                >
+                  Đóng xem trước
+                </Button>
+              </motion.div>
+            </div>
+          )}
+
+          {/* Guide Modal Overlay */}
+          {showGuide && (
             <TryOnGuide
-              guideStep={guideStep}
-              onNext={() => {
-                if (guideStep === 1) {
-                  setGuideStep(2);
-                } else {
-                  setShowGuide(false);
-                  sessionStorage.setItem("tryon_guide_shown", "true");
-                }
-              }}
               onClose={() => {
                 setShowGuide(false);
                 sessionStorage.setItem("tryon_guide_shown", "true");

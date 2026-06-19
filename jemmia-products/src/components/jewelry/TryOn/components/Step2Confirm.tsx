@@ -5,39 +5,35 @@ import {
   ArrowCounterClockwise,
   LockSimple,
   Question,
+  ArrowsOutCardinal,
+  ArrowsOutSimple,
+  CornersOutIcon,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
-import { MoveableRedBox } from "./MoveableRedBox";
 
 interface Step2ConfirmProps {
   uploadedImage: string | null;
   setStep: (s: number) => void;
   setUploadedImage: (img: string | null) => void;
   startCamera: () => void;
+  onGeneratePreview: () => void;
 }
 
 interface MobileStep2Props extends Step2ConfirmProps {
   onOpenGuide: () => void;
-  ringContainerRef: React.RefObject<HTMLDivElement>;
+  ringContainerRef: React.RefObject<HTMLDivElement | null>;
   handleContainerTouchStart: (e: React.TouchEvent) => void;
   handleContainerTouchMove: (e: React.TouchEvent) => void;
   handleContainerTouchEnd: () => void;
   handleContainerMouseDown: (e: React.MouseEvent) => void;
   handleContainerMouseMove: (e: React.MouseEvent) => void;
   handleContainerMouseUp: () => void;
-  triggerUpdateRect: () => void;
-  redBoxRef: React.RefObject<HTMLDivElement>;
-  fingerPosition: { x: number; y: number };
-  ringScale: number;
-  dragTranslate: number[];
-  ringRotation: number;
-  moveableRedBoxRef: React.RefObject<any>;
-  cumulativeTranslate: React.MutableRefObject<number[]>;
-  latestScale: React.MutableRefObject<number>;
-  latestRotation: React.MutableRefObject<number>;
-  setDragTranslate: (t: number[]) => void;
-  setRingScale: (s: number) => void;
-  setRingRotation: (r: number) => void;
+  imageScale: number;
+  imageTranslate: number[];
+  imageRotation: number;
+  setImageRotation: (r: number) => void;
+  redBox: { x: number; y: number; w: number; h: number };
+  resetZoom: () => void;
   maxStep?: number;
   showResumePopup?: boolean;
 }
@@ -55,21 +51,15 @@ export function MobileStep2({
   handleContainerMouseDown,
   handleContainerMouseMove,
   handleContainerMouseUp,
-  triggerUpdateRect,
-  redBoxRef,
-  fingerPosition,
-  ringScale,
-  dragTranslate,
-  ringRotation,
-  moveableRedBoxRef,
-  cumulativeTranslate,
-  latestScale,
-  latestRotation,
-  setDragTranslate,
-  setRingScale,
-  setRingRotation,
+  imageScale,
+  imageTranslate,
+  imageRotation,
+  setImageRotation,
+  redBox,
+  resetZoom,
   onOpenGuide,
   maxStep,
+  onGeneratePreview,
 }: MobileStep2Props) {
   return (
     <div className="grow flex flex-col justify-between gap-3 min-h-0">
@@ -87,7 +77,7 @@ export function MobileStep2({
       <div className="grow flex items-center justify-center py-1 min-h-0">
         <div
           ref={ringContainerRef}
-          className="w-auto h-full bg-white border border-primary-200 shadow-md rounded-lg relative overflow-hidden flex items-center justify-center select-none mx-auto"
+          className="h-full w-full relative flex-col rounded-lg  overflow-hidden flex items-center justify-center select-none mx-auto animate-in fade-in zoom-in-95 duration-200"
           onTouchStart={handleContainerTouchStart}
           onTouchMove={handleContainerTouchMove}
           onTouchEnd={handleContainerTouchEnd}
@@ -95,46 +85,64 @@ export function MobileStep2({
           onMouseDown={handleContainerMouseDown}
           onMouseMove={handleContainerMouseMove}
           onMouseUp={handleContainerMouseUp}
-          onMouseLeave={handleContainerMouseUp}
           onContextMenu={(e) => e.preventDefault()}
           style={{
-            cursor: "crosshair",
+            cursor: "grab",
             touchAction: "none",
           }}
         >
+          {/* Main Transformed Image */}
           {uploadedImage && (
-            <img
-              src={uploadedImage}
-              className="w-full h-full object-cover"
-              alt="Hand Preview"
-              draggable={false}
-              onLoad={triggerUpdateRect}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                transform: `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`,
+                transformOrigin: "center center",
+              }}
+              className="flex items-center justify-center pointer-events-none select-none"
+            >
+              <img
+                src={uploadedImage}
+                className="w-full h-full object-cover"
+                alt="Hand Preview"
+                draggable={false}
+              />
+            </div>
+          )}
+
+          {/* Fixed, Non-editable Centered Red Box */}
+          {!showResumePopup && redBox && (
+            <div
+              style={{
+                position: "absolute",
+                left: `${redBox.x}%`,
+                top: `${redBox.y}%`,
+                width: `${redBox.w}%`,
+                height: `${redBox.h}%`,
+                border: "2px solid rgb(239, 68, 68)",
+                backgroundColor: "rgba(239, 68, 68, 0.5)",
+                boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.5)",
+                pointerEvents: "none",
+                zIndex: 40,
+              }}
             />
           )}
+
+          {/* Helper Gesture Guidance Overlay */}
           {!showResumePopup && (
-            <MoveableRedBox
-              step={2}
-              uploadedImage={uploadedImage}
-              redBoxRef={redBoxRef}
-              fingerPosition={fingerPosition}
-              ringScale={ringScale}
-              dragTranslate={dragTranslate}
-              ringRotation={ringRotation}
-              moveableRedBoxRef={moveableRedBoxRef}
-              cumulativeTranslate={cumulativeTranslate}
-              latestScale={latestScale}
-              latestRotation={latestRotation}
-              setDragTranslate={setDragTranslate}
-              setRingScale={setRingScale}
-              setRingRotation={setRingRotation}
-            />
+            <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-[2px] text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-full select-none pointer-events-none z-40">
+              Đặt vùng đỏ tại vị trí thử nhẫn
+            </div>
           )}
+
+          {/* Guide info button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onOpenGuide();
             }}
-            className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer  border border-primary-100 shadow-md transition-all active:scale-95"
+            className="absolute bottom-3 right-3 z-[100] w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer border border-primary-100 shadow-md transition-all active:scale-95"
             title="Hướng dẫn cử chỉ"
           >
             <Question size={20} />
@@ -170,17 +178,39 @@ export function MobileStep2({
 }
 
 export function DesktopStep2Left() {
-  return null; // Desktop Step 2 uses same guidelines panel layout as Step 1
+  return (
+    <div className="space-y-2">
+      <div className="space-y-2">
+        <h4 className="text-primary-900 font-bold text-xl md:text-2xl tracking-tight leading-tight">
+          Xác nhận ảnh của bạn
+        </h4>
+      </div>
+      <div className="pt-2">
+        <ul className="space-y-5 text-sm font-medium text-primary-600">
+          <li className="flex items-start gap-3">
+            <div className="text-secondary-700 shrink-0 mt-0.5">
+              <CornersOutIcon size={20} weight="regular" />
+            </div>
+            <span className="leading-relaxed text-slate-800">
+              Đặt vùng đỏ tại vị trí thử nhẫn
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
 }
+
+interface DesktopStep2BottomProps extends Step2ConfirmProps {}
 
 export function DesktopStep2Bottom({
   uploadedImage,
   setStep,
   setUploadedImage,
   startCamera,
-}: Step2ConfirmProps) {
+}: DesktopStep2BottomProps) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3.5">
       <Button
         onClick={() => setStep(3)}
         disabled={!uploadedImage}
