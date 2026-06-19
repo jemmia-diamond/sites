@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import {
   ArrowLeft,
   X,
@@ -310,30 +310,47 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
 
     pollingIntervalRef.current = setInterval(async () => {
       try {
-        const response = await axios.get<{
+        const response = await apiClient.get<{
           status: "queued" | "processing" | "completed" | "failed";
-          result?: { base64: string; mimeType: string };
+          result?: { base64?: string; mimeType?: string; url?: string };
           error?: string;
         }>(`/image-generation/status/${taskId}`);
 
         const { status, result, error } = response.data;
 
-        if (status === "completed" && result?.base64) {
-          const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-          const compressedResult = await resizeAndCompressImage({ base64OrUrl: imageUrl });
-          setGeneratedImages([compressedResult]);
-          setGeneratedImage(compressedResult);
-          setSelectedGeneratedImage(compressedResult);
-          setIsGenerating(false);
-          setisTryingOn(false);
+        if (status === "completed") {
+          const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64;
+          let finalImage = "";
 
-          // Save cache
-          const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
-          safeSessionStorageSetItem(cacheKey, JSON.stringify([compressedResult]));
+          if (useBase64Env) {
+            if (result?.base64) {
+              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
+              finalImage = await resizeAndCompressImage({ base64OrUrl: imageUrl });
+            }
+          } else {
+            if (result?.url) {
+              finalImage = result.url;
+            } else if (result?.base64) {
+              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
+              finalImage = await resizeAndCompressImage({ base64OrUrl: imageUrl });
+            }
+          }
 
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
+          if (finalImage) {
+            setGeneratedImages([finalImage]);
+            setGeneratedImage(finalImage);
+            setSelectedGeneratedImage(finalImage);
+            setIsGenerating(false);
+            setisTryingOn(false);
+
+            // Save cache
+            const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
+            safeSessionStorageSetItem(cacheKey, JSON.stringify([finalImage]));
+
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
           }
         } else if (status === "failed") {
           setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến.");
@@ -652,7 +669,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     setGenerationError(null);
   };
 
-  const handleTryOn = async () => {
+  const handleTryOn = async (options?: { force?: boolean }) => {
+    const force = options?.force ?? false;
     setisTryingOn(true);
 
     if (!selectedRing || !uploadedImage) {
@@ -661,7 +679,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
     }
 
     const cacheKey = `${TRYON_CACHE_PREFIX}${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
-    const cachedData = sessionStorage.getItem(cacheKey);
+    const cachedData = force ? null : sessionStorage.getItem(cacheKey);
 
     if (cachedData) {
       try {
@@ -803,9 +821,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
         }
       });
       formData.append("handImage", file);
-      formData.append("designCode", selectedRing.attributes?.designCode || "");
 
-      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
+      const response = await apiClient.post<{ taskId: string }>("/image-generation/generate", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -841,6 +858,24 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
       setIsGenerating(false);
       setisTryingOn(false);
       sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+    }
+  };
+
+  const handleComplete = async () => {
+    try {
+      if (generatedImage && !generatedImage.startsWith("data:")) {
+        const designCode = selectedRing?.attributes?.designCode || "";
+        await apiClient.post("/image-generation/save", {
+          designCode,
+          imageUrl: generatedImage,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to save image-generation result:", err);
+    } finally {
+      handleResetAll();
+      stopCamera();
+      onClose();
     }
   };
 
@@ -1352,6 +1387,8 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                       selectedRing={selectedRing}
                       setStep={handleStepClick}
                       maxStep={maxStep}
+                      onTryOn={() => handleTryOn({ force: true })}
+                      onClose={handleComplete}
                     />
                   )}
                 </div>
@@ -1417,6 +1454,9 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
                           selectedRing={selectedRing}
                           isGenerating={isGenerating}
                           selectedGeneratedImage={selectedGeneratedImage}
+                          onTryOn={() => handleTryOn({ force: true })}
+                          onClose={handleComplete}
+                          generationError={generationError}
                         />
                       )}
                     </div>
