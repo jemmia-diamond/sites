@@ -42,9 +42,7 @@ export function DiamondTableRow({
 
   const [showBarcode, setShowBarcode] = useState(false);
 
-  const realWarehouses = diamond.warehouses.filter(wh =>
-    !wh.name.toLowerCase().includes("trung gian")
-  );
+  const realWarehouses = diamond.warehouses;
 
   const isIncoming =  diamond.quantity === 0 && realWarehouses.length === 0;
   const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
