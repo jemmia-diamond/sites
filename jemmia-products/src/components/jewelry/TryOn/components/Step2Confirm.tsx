@@ -1,66 +1,43 @@
-import React from "react";
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Check,
   ArrowCounterClockwise,
   LockSimple,
   Question,
-  ArrowsOutCardinal,
-  ArrowsOutSimple,
   CornersOutIcon,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
+import { TryOnContext } from "../context/TryOnContext";
 
-interface Step2ConfirmProps {
-  uploadedImage: string | null;
-  setStep: (s: number) => void;
-  setUploadedImage: (img: string | null) => void;
-  startCamera: () => void;
-  onGeneratePreview: () => void;
-}
+export function MobileStep2() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: {
+      uploadedImage,
+      showResumePopup,
+      imageScale,
+      imageTranslate,
+      imageRotation,
+      redBox,
+      maxStep,
+    },
+    actions: {
+      setStep,
+      setUploadedImage,
+      startCamera,
+      handleContainerTouchStart,
+      handleContainerTouchMove,
+      handleContainerTouchEnd,
+      handleContainerMouseDown,
+      handleContainerMouseMove,
+      handleContainerMouseUp,
+      handleOpenGuide: onOpenGuide,
+    },
+    meta: { ringContainerRef },
+  } = context;
 
-interface MobileStep2Props extends Step2ConfirmProps {
-  onOpenGuide: () => void;
-  ringContainerRef: React.RefObject<HTMLDivElement | null>;
-  handleContainerTouchStart: (e: React.TouchEvent) => void;
-  handleContainerTouchMove: (e: React.TouchEvent) => void;
-  handleContainerTouchEnd: () => void;
-  handleContainerMouseDown: (e: React.MouseEvent) => void;
-  handleContainerMouseMove: (e: React.MouseEvent) => void;
-  handleContainerMouseUp: () => void;
-  imageScale: number;
-  imageTranslate: number[];
-  imageRotation: number;
-  setImageRotation: (r: number) => void;
-  redBox: { x: number; y: number; w: number; h: number };
-  resetZoom: () => void;
-  maxStep?: number;
-  showResumePopup?: boolean;
-}
-
-export function MobileStep2({
-  uploadedImage,
-  showResumePopup,
-  setStep,
-  setUploadedImage,
-  startCamera,
-  ringContainerRef,
-  handleContainerTouchStart,
-  handleContainerTouchMove,
-  handleContainerTouchEnd,
-  handleContainerMouseDown,
-  handleContainerMouseMove,
-  handleContainerMouseUp,
-  imageScale,
-  imageTranslate,
-  imageRotation,
-  setImageRotation,
-  redBox,
-  resetZoom,
-  onOpenGuide,
-  maxStep,
-  onGeneratePreview,
-}: MobileStep2Props) {
   return (
     <div className="grow flex flex-col justify-between gap-3 min-h-0">
       {/* Progress Bar & Info */}
@@ -77,7 +54,7 @@ export function MobileStep2({
       <div className="grow flex items-center justify-center py-1 min-h-0">
         <div
           ref={ringContainerRef}
-          className="h-full w-full relative flex-col rounded-lg  overflow-hidden flex items-center justify-center select-none mx-auto animate-in fade-in zoom-in-95 duration-200"
+          className="h-full w-full relative flex-col rounded-lg overflow-hidden flex items-center justify-center select-none mx-auto animate-in fade-in zoom-in-95 duration-200"
           onTouchStart={handleContainerTouchStart}
           onTouchMove={handleContainerTouchMove}
           onTouchEnd={handleContainerTouchEnd}
@@ -153,13 +130,13 @@ export function MobileStep2({
       {/* Bottom Buttons */}
       <div className="flex gap-2">
         <Button
-          variant="outline"
           onClick={() => {
             setStep(1);
             setUploadedImage(null);
             startCamera();
           }}
-          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+          variant="outline-light"
+          className="w-full h-11 tracking-wider"
         >
           Chụp lại
           <ArrowCounterClockwise size={18} />
@@ -167,7 +144,8 @@ export function MobileStep2({
         <Button
           onClick={() => setStep(3)}
           disabled={!uploadedImage}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+          variant="secondary"
+          className="w-full h-11 tracking-wider gap-2 font-normal"
         >
           Xác nhận
           <Check size={18} weight="bold" />
@@ -201,32 +179,33 @@ export function DesktopStep2Left() {
   );
 }
 
-interface DesktopStep2BottomProps extends Step2ConfirmProps {}
+export function DesktopStep2Bottom() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: { uploadedImage },
+    actions: { setStep, setUploadedImage, startCamera },
+  } = context;
 
-export function DesktopStep2Bottom({
-  uploadedImage,
-  setStep,
-  setUploadedImage,
-  startCamera,
-}: DesktopStep2BottomProps) {
   return (
     <div className="flex flex-col gap-3.5">
       <Button
         onClick={() => setStep(3)}
         disabled={!uploadedImage}
-        className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+        variant="secondary"
+        className="w-full h-12 gap-2 font-semibold"
       >
         Dùng hình ảnh này
         <Check size={16} weight="bold" />
       </Button>
       <Button
-        variant="outline"
         onClick={() => {
           setStep(1);
           setUploadedImage(null);
           startCamera();
         }}
-        className="w-full h-12 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider hover:text-primary-500"
+        variant="outline-light"
+        className="w-full h-12 tracking-wider"
       >
         Chụp lại
         <ArrowCounterClockwise size={18} />

@@ -91,7 +91,7 @@ export default function DiamondPage() {
   };
 
   const handleRemoveChip = (key: string) => {
-    let nextFilters = { ...filters };
+    const nextFilters = { ...filters };
     if (key === "salePrice") {
       nextFilters.salePriceFrom = undefined;
       nextFilters.salePriceTo = undefined;

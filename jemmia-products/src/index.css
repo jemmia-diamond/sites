@@ -225,41 +225,6 @@ html {
   }
 }
 
-/* Custom styling for react-moveable controls globally (consistent on desktop and mobile) */
-.moveable-line {
-  background: #EF4444 !important;
-}
-
-/* Make corner controls circular and small (8px) instead of square */
-.moveable-control:not(.moveable-rotation .moveable-control) {
-  border: 2px solid #EF4444 !important;
-  background: #FFFFFF !important;
-  border-radius: 50% !important; /* Circular controls */
-  width: 8px !important;
-  height: 8px !important;
-  margin-top: -4px !important;
-  margin-left: -4px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Maintain rotate button default icon and styles */
-.moveable-rotation {
-  background: #EF4444 !important;
-}
-.moveable-rotation .moveable-control {
-  border: 2px solid #EF4444 !important;
-  background-color: #EF4444 !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67'/%3E%3C/svg%3E") !important;
-  background-size: 65% 65% !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  border-radius: 50% !important;
-  width: 20px !important;
-  height: 20px !important;
-  margin-left: -10px !important;
-  cursor: grab !important;
-}
-
 /* Disable context menu, long-press popups, and dragging on images */
 img, .select-none img {
   -webkit-touch-callout: none !important; /* iOS Safari */

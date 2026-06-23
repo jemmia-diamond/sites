@@ -8,6 +8,7 @@ import DiamondPage from "./pages/DiamondPage";
 import ComboPage from "./pages/ComboPage";
 import { PasswordGate } from "./components/auth/PasswordGate";
 import { Toaster } from "sonner";
+import { TryOnGlobalProvider } from "./components/jewelry/TryOn/context/TryOnGlobalContext";
 
 import { API_BASE_URL } from "./config";
 
@@ -91,15 +92,17 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/jewelry" element={<JewelryPage />} />
-          <Route path="/diamonds" element={<DiamondPage />} />
-          <Route path="/combos" element={<ComboPage />} />
-          <Route path="/" element={<Navigate to="/jewelry" replace />} />
-          <Route path="*" element={<Navigate to="/jewelry" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <TryOnGlobalProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/jewelry" element={<JewelryPage />} />
+            <Route path="/diamonds" element={<DiamondPage />} />
+            <Route path="/combos" element={<ComboPage />} />
+            <Route path="/" element={<Navigate to="/jewelry" replace />} />
+            <Route path="*" element={<Navigate to="/jewelry" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </TryOnGlobalProvider>
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );

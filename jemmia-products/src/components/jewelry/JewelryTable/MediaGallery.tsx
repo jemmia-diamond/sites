@@ -18,10 +18,8 @@ import {
   Copy,
 } from "@phosphor-icons/react";
 import axios from "axios";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
-import { API_BASE_URL } from "../../../config";
 import { cn } from "@/lib/utils";
+import { isHeic, getDisplayUrl } from "@/lib/media";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface MediaGalleryProps {
@@ -30,7 +28,7 @@ export interface MediaGalleryProps {
   uploadConfig?: { showUpload?: boolean; designCode?: string; uploadEndpoint?: string; uploadOptions?: { label: string; designCode: string }[]; } | null;
   onClose: () => void;
   onSelectMedia: (url: string) => void;
-  onDownloadAll: (images: string[]) => void;
+  onDownloadFiles: (images: string[]) => void;
   onImageError: (url: string) => void;
   onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
@@ -48,7 +46,7 @@ export function MediaGallery({
   uploadConfig,
   onClose,
   onSelectMedia,
-  onDownloadAll,
+  onDownloadFiles,
   onImageError,
   onUploadSuccess,
   isVideo,
@@ -153,71 +151,7 @@ export function MediaGallery({
 
     setIsDownloading(true);
     try {
-      if (selectedMediaUrls.length === 1) {
-        // Tải 1 file trực tiếp
-        const url = selectedMediaUrls[0];
-        const urlParts = url.split('/');
-        let fileName = urlParts[urlParts.length - 1];
-        if (fileName.includes('?')) {
-          fileName = fileName.split('?')[0];
-        }
-
-        if (!fileName.includes('.')) {
-          const ext = isVideo(url) ? 'mp4' : 'jpg';
-          fileName = `media_${Date.now()}.${ext}`;
-        }
-
-        const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-
-        try {
-          const response = await fetch(cacheBusterUrl, {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-store'
-          });
-
-          if (!response.ok) throw new Error('Network response was not ok');
-
-          const blob = await response.blob();
-          saveAs(blob, fileName);
-        } catch (fetchError) {
-          console.warn("Fetch failed, falling back to window.open", fetchError);
-          window.open(url, '_blank');
-        }
-      } else {
-        // Tải nhiều file -> Nén thành file ZIP
-        const zip = new JSZip();
-
-        const fetchPromises = selectedMediaUrls.map(async (url, index) => {
-          let fileName = url.split('/').pop() || `media_${index}`;
-          if (fileName.includes('?')) {
-            fileName = fileName.split('?')[0];
-          }
-          if (!fileName.includes('.')) {
-            const ext = isVideo(url) ? 'mp4' : 'jpg';
-            fileName = `media_${index}.${ext}`;
-          }
-
-          const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-          try {
-            const response = await fetch(cacheBusterUrl, {
-              method: 'GET',
-              mode: 'cors',
-              cache: 'no-store'
-            });
-            if (!response.ok) throw new Error('Fetch failed');
-            const blob = await response.blob();
-            zip.file(`${index + 1}_${fileName}`, blob);
-          } catch (err) {
-            console.error("Lỗi khi tải file vào zip:", url, err);
-          }
-        });
-
-        await Promise.all(fetchPromises);
-
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        saveAs(zipBlob, `Jemmia_Media_${Date.now()}.zip`);
-      }
+      await onDownloadFiles(selectedMediaUrls);
     } catch (error) {
       console.error("Lỗi khi xử lý tải file:", error);
     } finally {
@@ -273,7 +207,7 @@ export function MediaGallery({
 
     try {
       setUploading(true);
-      const endpoint = uploadConfig.uploadEndpoint || `/site/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
+      const endpoint = uploadConfig?.uploadEndpoint || `/site/files/upload-design-images-multiple?designCode=${targetDesignCode}`;
       await axios.post(endpoint, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -485,7 +419,7 @@ export function MediaGallery({
       <div className="flex-1 overflow-y-auto p-4 xl:p-8 pt-2 xl:pt-4">
         {validPreviewList.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">
-            <UploadSimple size={40} xl:size={48} weight="thin" />
+            <UploadSimple size={40} weight="thin" />
             <p className="text-sm font-bold">Chưa có tệp tin nào</p>
             {uploadConfig?.showUpload && (
               <p className="text-xs">Nhấn "Tải lên" để thêm tệp tin mới</p>
@@ -495,7 +429,6 @@ export function MediaGallery({
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 xl:gap-4">
             {validPreviewList.map((url, i) => {
               const isVid = isVideo(url);
-              const isHeicImg = !!url.match(/\.(heic|heif)(?:\?|$)/i);
               const isSelected = selectedMediaUrls.includes(url);
               return (
                 <div
@@ -513,7 +446,7 @@ export function MediaGallery({
                       ? 'bg-secondary-700 border-secondary-700 text-white'
                       : 'bg-white border-primary-200 text-transparent'
                       }`}>
-                      {isSelected && <Checks size={12} xl:size={14} weight="bold" />}
+                      {isSelected && <Checks size={12} weight="bold" />}
                     </div>
                   </div>
 
@@ -523,7 +456,7 @@ export function MediaGallery({
                       onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                     />
                   ) : (
-                    <img src={isHeicImg ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
+                    <img src={getDisplayUrl(url)} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                   )}
                   {isVid && (
                     <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">
@@ -536,7 +469,7 @@ export function MediaGallery({
                       {isVid ? (
                         <div className="w-0 h-0 border-t-[6px] xl:border-t-[8px] border-t-transparent border-l-[10px] xl:border-l-[12px] border-l-white border-b-[6px] xl:border-b-[8px] border-b-transparent ml-0.5" />
                       ) : (
-                        <Eye size={20} xl:size={24} className="text-white" />
+                        <Eye size={20} className="text-white" />
                       )}
                     </div>
                   </div>
@@ -548,11 +481,11 @@ export function MediaGallery({
                       title="Copy image"
                     >
                       {copyingUrl === url ? (
-                        <CircleNotch size={16} xl:size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
+                        <CircleNotch size={16} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
                       ) : copiedUrl === url ? (
-                        <Checks size={16} xl:size={18} className="text-green-600" />
+                        <Checks size={16} className="text-green-600" />
                       ) : (
-                        <Copy size={16} xl:size={18} className="text-secondary-900 group-hover/copy:text-white" />
+                        <Copy size={16} className="text-secondary-900 group-hover/copy:text-white" />
                       )}
                     </button>
                   )}
@@ -581,14 +514,14 @@ export function MediaGallery({
               {previewUrls.map((url, idx) => {
                 const fileName = selectedFiles[idx].name;
                 const isVid = isVideo(fileName);
-                const isHeicFile = !!fileName.match(/\.(heic|heif)(?:\?|$)/i);
+                const isHeicFile = isHeic(fileName);
                 return (
                   <div key={idx} className="relative aspect-square overflow-hidden border border-primary-100 shadow-sm rounded-none bg-primary-50">
                     {isVid ? (
                       <div className="h-full w-full bg-secondary-900 flex items-center justify-center relative group">
                         <video src={url} className="h-full w-full object-cover opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <PlayCircle size={20} md:size={24} weight="fill" className="text-white/80" />
+                          <PlayCircle size={20} weight="fill" className="text-white/80" />
                         </div>
                       </div>
                     ) : isHeicFile ? (
@@ -620,7 +553,7 @@ export function MediaGallery({
               >
                 {uploading ? (
                   <>
-                    <CircleNotch size={12} md:size={14} className="animate-spin mr-1 md:mr-2" weight="bold" />
+                    <CircleNotch size={12} className="animate-spin mr-1 md:mr-2" weight="bold" />
                     Đang tải...
                   </>
                 ) : (

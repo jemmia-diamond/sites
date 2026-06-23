@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import { DiamondTableRow } from "./DiamondTableRow";
 import { GiaCertificateDialog } from "./GiaCertificateDialog";
 import { MediaPreviewDialog } from "../../jewelry/JewelryTable/JewelryTable";
+import { Spinner } from "@/components/ui/spinner";
+import { downloadFile, downloadFiles } from "@/lib/download";
+import { isVideo } from "@/lib/media";
 
 interface DiamondTableProps {
   diamonds: DiamondModel[];
@@ -68,64 +71,7 @@ export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, exp
     setTimeout(() => setUploadConfig(null), 200);
   };
 
-  const handleDownloadSingle = async (url: string) => {
-    try {
-      const urlParts = url.split('/');
-      let fileName = urlParts[urlParts.length - 1];
-      if (fileName.includes('?')) {
-        fileName = fileName.split('?')[0];
-      }
 
-      if (!fileName.includes('.')) {
-         const ext = (url.includes('.mp4') || url.includes('.mov')) ? 'mp4' : 'jpg'; // Basic check since isVideo is not imported here, though it might be in JewelryTable
-         fileName = `media_${Date.now()}.${ext}`;
-      }
-
-      const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-
-      try {
-        const response = await fetch(cacheBusterUrl, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-store'
-        });
-
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-
-        setTimeout(() => {
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(blobUrl);
-        }, 100);
-      } catch (fetchError) {
-        console.warn("Fetch failed, falling back to window.open", fetchError);
-        window.open(url, '_blank');
-      }
-    } catch (error) {
-      console.error("Lỗi khi tải file:", url, error);
-    }
-  };
-
-  const handleDownloadAll = (images: string[]) => {
-    images.forEach((imageUrl) => {
-      const link = document.createElement("a");
-      link.href = imageUrl;
-      link.download = imageUrl.split("/").pop() || "image.jpg";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  };
-
-  const isVideo = (url: string) =>
-    !!url.match(/\.(mp4|webm|ogg|mov)$|^blob:|^data:video/i);
 
   const handleUploadSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["diamonds"] });
@@ -165,10 +111,7 @@ return (
         <div ref={lastElementRef} className="h-4 w-full" />
         {isFetchingNextPage && (
           <div className="py-6 flex justify-center items-center w-full">
-            <div className="h-6 w-6 relative">
-              <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
-              <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
-            </div>
+            <Spinner className="size-6 text-secondary-900" />
           </div>
         )}
       </div>
@@ -186,14 +129,10 @@ return (
         onClose={closeMediaDialog}
         onPreview={handlePreview}
         onSelectMedia={setSelectedMedia}
-        onDownloadSingle={handleDownloadSingle}
-        onDownloadAll={handleDownloadAll}
+        onDownloadFile={downloadFile}
+        onDownloadFiles={downloadFiles}
         onUploadSuccess={handleUploadSuccess}
         isVideo={isVideo}
-        webImages={[]}
-        actualImages={[]}
-        activeTab="actual"
-        onTabChange={() => {}}
       />
     </div>
   </>

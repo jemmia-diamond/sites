@@ -7,14 +7,14 @@ interface UseTryOnGesturesProps {
 
 export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps) {
   const [imageScale, setImageScale] = useState<number>(1.0);
-  const [imageTranslate, setImageTranslate] = useState<number[]>([0, 0]);
+  const [imageTranslate, setImageTranslate] = useState<[number, number]>([0, 0]);
   const [imageRotation, setImageRotation] = useState<number>(0);
   const [containerWidth, setContainerWidth] = useState(400);
   const isMobile = window.innerWidth < 768;
   const redBox = {
     x: 38,
     y: 46,
-    w: isMobile ? 30 : 25,
+    w: isMobile ? 36 : 28,
     h: 10,
   };
 
@@ -25,7 +25,7 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
   const touchStartAngle = useRef<number | null>(null);
   const touchStartRotation = useRef<number>(0);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
-  const touchStartTranslate = useRef<number[]>([0, 0]);
+  const touchStartTranslate = useRef<[number, number]>([0, 0]);
 
   const getTouchDistance = (t1: React.Touch, t2: React.Touch) => {
     const dx = t1.clientX - t2.clientX;
@@ -56,7 +56,7 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
       };
-      touchStartTranslate.current = [...imageTranslate];
+      touchStartTranslate.current = [imageTranslate[0], imageTranslate[1]];
     }
   };
 
@@ -65,7 +65,7 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
       if (e.cancelable) e.preventDefault();
       const currentDist = getTouchDistance(e.touches[0], e.touches[1]);
       const factor = currentDist / touchStartDist.current;
-      const newScale = Math.min(Math.max(touchStartScale.current * factor, 0.5), 4.0);
+      const newScale = Math.min(Math.max(touchStartScale.current * factor, 0.5), 6.0);
       setImageScale(newScale);
 
       if (touchStartAngle.current !== null) {
@@ -77,7 +77,7 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
       if (e.cancelable) e.preventDefault();
       const dx = e.touches[0].clientX - touchStartPos.current.x;
       const dy = e.touches[0].clientY - touchStartPos.current.y;
-      const newTranslate = [
+      const newTranslate: [number, number] = [
         touchStartTranslate.current[0] + dx,
         touchStartTranslate.current[1] + dy,
       ];
@@ -92,12 +92,12 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
   };
 
   const mouseStartPos = useRef<{ x: number; y: number } | null>(null);
-  const mouseStartTranslate = useRef<number[]>([0, 0]);
+  const mouseStartTranslate = useRef<[number, number]>([0, 0]);
 
   const handleContainerMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     mouseStartPos.current = { x: e.clientX, y: e.clientY };
-    mouseStartTranslate.current = [...imageTranslate];
+    mouseStartTranslate.current = [imageTranslate[0], imageTranslate[1]];
   };
 
   const handleContainerMouseMove = (e: React.MouseEvent) => {
@@ -105,7 +105,7 @@ export function useTryOnGestures({ step, uploadedImage }: UseTryOnGesturesProps)
       e.preventDefault();
       const dx = e.clientX - mouseStartPos.current.x;
       const dy = e.clientY - mouseStartPos.current.y;
-      const newTranslate = [
+      const newTranslate: [number, number] = [
         mouseStartTranslate.current[0] + dx,
         mouseStartTranslate.current[1] + dy,
       ];

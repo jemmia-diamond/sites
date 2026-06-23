@@ -97,7 +97,7 @@ export default function JewelryPage() {
   };
 
   const handleRemoveChip = (key: string) => {
-    let nextFilters = { ...filters };
+    const nextFilters = { ...filters };
     if (key === "salePrice") {
       nextFilters.salePriceFrom = undefined;
       nextFilters.salePriceTo = undefined;
@@ -141,7 +141,7 @@ export default function JewelryPage() {
   };
 
   const toggleSort = () => {
-    const newSort = filters.sortBySalePrice === "DESC" ? "ASC" : "DESC";
+    const newSort: "ASC" | "DESC" = filters.sortBySalePrice === "DESC" ? "ASC" : "DESC";
     const updated = { ...filters, sortBySalePrice: newSort };
     setFilters(updated);
     setDebouncedFilters(updated);

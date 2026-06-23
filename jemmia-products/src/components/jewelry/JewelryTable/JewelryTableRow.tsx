@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductModel } from "../../../types";
 import { cn } from "@/lib/utils";
+import { useJewelryTable } from "./context/JewelryTableContext";
 import { ProductCodes } from "./ProductCodes";
 import { SideStoneTooltip } from "./SideStoneTooltip";
 import { CompactGallery } from "./CompactGallery";
@@ -94,21 +95,6 @@ function ReferencePriceTooltip({ isExpanded, size = 12 }: ReferencePriceTooltipP
 
 interface JewelryTableRowProps {
   product: ProductModel;
-  warehouseIds?: string[];
-  stockStatus?: string;
-  isExpanded: boolean;
-  expandedId: string | null;
-  brokenImages: Set<string>;
-  onImageError: (url: string) => void;
-  onPreview: (images: string[], index: number, config?: any) => void;
-  onToggleExpand: (id: string) => void;
-  onOpenSerialModal: (
-    variants: any[],
-    sku: string,
-    totalQuantity?: number,
-    totalHaravanQuantity?: number,
-  ) => void;
-  onUploadSuccess?: () => void;
   key?: string | number;
 }
 
@@ -122,16 +108,20 @@ const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
 
 export function JewelryTableRow({
   product,
-  warehouseIds,
-  stockStatus,
-  isExpanded,
-  brokenImages,
-  onImageError,
-  onPreview,
-  onToggleExpand,
-  onOpenSerialModal,
-  onUploadSuccess,
 }: JewelryTableRowProps) {
+  const {
+    warehouseIds,
+    stockStatus,
+    expandedId,
+    brokenImages,
+    onImageError,
+    onPreview,
+    onToggleExpand,
+    onOpenSerialModal,
+    onUploadSuccess,
+  } = useJewelryTable();
+
+  const isExpanded = expandedId === product.id;
   const isBundle = product.products && product.products.length > 0;
   const isEarring =
     product.type?.toLowerCase().includes("bông tai") ||
@@ -595,18 +585,12 @@ export function JewelryTableRow({
                               .includes("bông tai") || false
                           }
                           product={subProduct}
-                          stockStatus={stockStatus}
-                          onOpenSerialModal={onOpenSerialModal}
                           webImages={subWebImages}
                           actualImages={subActualImages}
                           fourView={subFourView}
                           hasSideStones={subHasSideStones}
                           isBundle={isBundle}
-                          brokenImages={brokenImages}
-                          onImageError={onImageError}
-                          onPreview={onPreview}
                           designCode={subProduct.attributes?.designCode}
-                          onUploadSuccess={onUploadSuccess}
                         />
                       </div>
                     );
@@ -617,8 +601,6 @@ export function JewelryTableRow({
                   stockBySKU={stockBySKU}
                   isEarring={isEarring}
                   product={product}
-                  stockStatus={stockStatus}
-                  onOpenSerialModal={onOpenSerialModal}
                   webImages={webImages}
                   actualImages={actualImages}
                   fourView={fourView}
@@ -628,12 +610,8 @@ export function JewelryTableRow({
                   fourViewNu={fourViewNu}
                   hasSideStonesNam={hasSideStonesNam}
                   hasSideStonesNu={hasSideStonesNu}
-                  brokenImages={brokenImages}
-                  onImageError={onImageError}
-                  onPreview={onPreview}
                   designCode={designCode}
                   uploadOptions={uploadOptions}
-                  onUploadSuccess={onUploadSuccess}
                 />
               )}
             </div>
@@ -755,13 +733,6 @@ interface ExpandedPanelProps {
   >;
   isEarring: boolean;
   product: ProductModel;
-  stockStatus?: string;
-  onOpenSerialModal: (
-    variants: any[],
-    sku: string,
-    totalQuantity?: number,
-    totalHaravanQuantity?: number,
-  ) => void;
   webImages?: string[];
   actualImages?: string[];
   fourView?: any;
@@ -771,20 +742,14 @@ interface ExpandedPanelProps {
   fourViewNu?: any;
   hasSideStonesNam?: boolean;
   hasSideStonesNu?: boolean;
-  brokenImages?: Set<string>;
-  onImageError?: (url: string) => void;
-  onPreview?: (images: string[], index: number, config?: any) => void;
   designCode?: string | undefined;
   uploadOptions?: any;
-  onUploadSuccess?: () => void;
 }
 
 function ExpandedPanel({
   stockBySKU,
   isEarring,
   product,
-  stockStatus,
-  onOpenSerialModal,
   webImages = [],
   actualImages = [],
   fourView,
@@ -794,13 +759,17 @@ function ExpandedPanel({
   fourViewNu,
   hasSideStonesNam,
   hasSideStonesNu,
-  brokenImages,
-  onImageError,
-  onPreview,
   designCode,
   uploadOptions,
-  onUploadSuccess,
 }: ExpandedPanelProps) {
+  const {
+    stockStatus,
+    brokenImages,
+    onImageError,
+    onPreview,
+    onOpenSerialModal,
+    onUploadSuccess,
+  } = useJewelryTable();
   const formatPrice = (price: number | null) => {
     if (!price) return "N/A";
     return new Intl.NumberFormat("vi-VN", {

@@ -7,6 +7,7 @@ import { SearchDropdown } from "./SearchDropdown";
 import { Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { TryOnDrawer } from "../../jewelry/TryOnDrawer";
+import { useTryOnGlobal } from "../../jewelry/TryOn/context/TryOnGlobalContext";
 
 interface HeaderProps {
   searchPlaceholder: string;
@@ -23,17 +24,12 @@ const NAV_ITEMS = [
   { name: "Nguyên chiếc", path: "/combos" },
 ];
 
-
-
 export function Header({ searchPlaceholder }: HeaderProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isTryOnOpen, setIsTryOnOpen] = useState(false);
-  const [hasUnreadResult, setHasUnreadResult] = useState(() => {
-    return sessionStorage.getItem("tryon_unread_result") === "true";
-  });
+  const { isTryOnOpen, openTryOn, closeTryOn, hasUnreadResult } = useTryOnGlobal();
 
   useEffect(() => {
     const handleClearSearch = () => {
@@ -42,22 +38,9 @@ export function Header({ searchPlaceholder }: HeaderProps) {
       setIsOpen(false);
     };
 
-    const handleOpenTryOn = () => {
-      setIsTryOnOpen(true);
-    };
-
-    const handleUnreadChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ hasUnread: boolean }>;
-      setHasUnreadResult(customEvent.detail.hasUnread);
-    };
-
     window.addEventListener("search:clear", handleClearSearch);
-    window.addEventListener("tryon:open", handleOpenTryOn);
-    window.addEventListener("tryon:unread-change", handleUnreadChange);
     return () => {
       window.removeEventListener("search:clear", handleClearSearch);
-      window.removeEventListener("tryon:open", handleOpenTryOn);
-      window.removeEventListener("tryon:unread-change", handleUnreadChange);
     };
   }, []);
 
@@ -110,7 +93,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
           searchPlaceholder={searchPlaceholder}
         />
         <Button
-          onClick={() => setIsTryOnOpen(true)}
+          onClick={openTryOn}
           className="relative bg-secondary-800 hidden md:flex text-white hover:bg-secondary-700 font-normal text-sm px-3 h-8 items-center gap-2 shrink-0 cursor-pointer"
         >
           <Sparkle size={18} className="text-white" />
@@ -122,7 +105,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
             </span>
           )}
         </Button>
-        <TryOnDrawer isOpen={isTryOnOpen} onClose={() => setIsTryOnOpen(false)} />
+        <TryOnDrawer isOpen={isTryOnOpen} onClose={closeTryOn} />
       </div>
     </header>
   );

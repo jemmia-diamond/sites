@@ -1,32 +1,32 @@
-import React from "react";
+import React, { use } from "react";
 import { DownloadSimple, WarningCircle } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TryOnContext } from "../context/TryOnContext";
 
 interface ResultCanvasProps {
-  isMobile: boolean;
-  isGenerating: boolean;
-  uploadedImage: string | null;
-  selectedGeneratedImage: string | null;
-  generatedImages: string[];
-  handleSelectGeneratedImage: (img: string | null) => void;
-  handleDownload: () => void;
-  setIsFullscreen: (f: boolean) => void;
-  generationError?: string | null;
   onViewProduct?: () => void;
 }
 
-export function ResultCanvas({
-  isMobile,
-  isGenerating,
-  uploadedImage,
-  selectedGeneratedImage,
-  generatedImages,
-  handleSelectGeneratedImage,
-  handleDownload,
-  setIsFullscreen,
-  generationError,
-  onViewProduct,
-}: ResultCanvasProps) {
+export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
+  const context = use(TryOnContext);
+  if (!context) return null;
+
+  const { state, actions } = context;
+  const {
+    isMobile,
+    isGenerating,
+    uploadedImage,
+    selectedGeneratedImage,
+    generatedImages,
+    generationError,
+  } = state;
+
+  const {
+    handleSelectGeneratedImage,
+    handleDownload,
+    setIsFullscreen,
+  } = actions;
+
   if (generationError) {
     return (
       <div className="w-full h-full bg-white border border-slate-200 shadow-md rounded-lg relative overflow-hidden flex flex-col items-center justify-center p-6 text-center select-none mx-auto min-h-[300px]">
@@ -130,9 +130,9 @@ export function ResultCanvas({
               onClick={onViewProduct}
               className={`${
                 isMobile ? "w-11 h-11" : "w-12 h-12"
-            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+              } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
             >
-                <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg"/>
+              <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg" alt="ring-icon"/>
             </button>
           )}
         </div>
@@ -140,3 +140,5 @@ export function ResultCanvas({
     </div>
   );
 }
+
+

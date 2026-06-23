@@ -1,10 +1,11 @@
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { useTryOnGlobal } from "../jewelry/TryOn/context/TryOnGlobalContext";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -15,26 +16,11 @@ export function LayoutShell({ children, searchPlaceholder }: LayoutShellProps) {
   const [searchParams] = useSearchParams();
   const isSearchActive = !!searchParams.get("searchQuery");
   const { pathname } = useLocation();
-
-  const [isTryOnGenerating, setIsTryOnGenerating] = useState(() => {
-    return !!(window as any).__tryon_is_generating;
-  });
+  const { isTryOnGenerating } = useTryOnGlobal();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
-
-  useEffect(() => {
-    const handleGeneratingChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ isGenerating: boolean }>;
-      setIsTryOnGenerating(customEvent.detail.isGenerating);
-    };
-
-    window.addEventListener("tryon:generating-change", handleGeneratingChange);
-    return () => {
-      window.removeEventListener("tryon:generating-change", handleGeneratingChange);
-    };
-  }, []);
 
   return (
     <div className="relative min-h-screen xl:h-screen w-full font-sans antialiased bg-white text-primary-900 selection:bg-secondary-200 selection:text-secondary-900 flex flex-col xl:overflow-hidden">
