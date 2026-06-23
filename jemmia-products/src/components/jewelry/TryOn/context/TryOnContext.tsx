@@ -95,6 +95,7 @@ export interface TryOnActions {
   handleCloseFullscreen: () => void;
   handleDownload: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  processFile: (file: File) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
 }

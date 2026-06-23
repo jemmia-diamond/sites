@@ -1,4 +1,5 @@
-import React, { use } from "react";
+import React, { use, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Camera,
@@ -322,25 +323,89 @@ export function DesktopStep1Right() {
   if (!context) return null;
   const {
     state: { isCameraActive, useMirror },
-    meta: { videoRef },
+    actions: { processFile },
+    meta: { videoRef, fileInputRef },
   } = context;
 
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith("image/")) {
+        processFile(file);
+      } else {
+        toast.error("Vui lòng chỉ kéo thả hình ảnh (PNG, JPG, WEBP, v.v.)");
+      }
+    }
+  };
+
+  useEffect(() => {
+    const preventDefault = (e: DragEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("dragover", preventDefault);
+    window.addEventListener("drop", preventDefault);
+    return () => {
+      window.removeEventListener("dragover", preventDefault);
+      window.removeEventListener("drop", preventDefault);
+    };
+  }, []);
+
   return (
-    <>
+    <div
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={() => {
+        if (!isCameraActive) {
+          fileInputRef.current?.click();
+        }
+      }}
+      className={`absolute inset-0 w-full h-full border-2 rounded-lg border-dashed border-slate-300 hover:border-slate-400 transition-all duration-300 flex flex-col items-center justify-center overflow-hidden bg-slate-100 ${
+        isCameraActive ? "" : "cursor-pointer"
+      }`}
+    >
       {isCameraActive ? (
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className={`w-full h-full object-cover pointer-events-auto rounded-lg ${
+          className={`w-full h-full object-cover pointer-events-none rounded-lg ${
             useMirror ? "transform scale-x-[-1]" : ""
           }`}
         />
       ) : (
         <img
           src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
-          className="w-full h-full object-contain bg-slate-100 border-dashed border-2 rounded-lg border-slate-300"
+          className="w-full h-full object-contain pointer-events-none select-none opacity-40"
           alt="Hand Silhouette"
           draggable={false}
         />
@@ -355,6 +420,20 @@ export function DesktopStep1Right() {
           />
         </div>
       )}
-    </>
+      {/* Drag & Drop Visual Overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 w-full h-full rounded-lg transition-all duration-300 flex flex-col items-center justify-center overflow-hidden bg-slate-100 cursor-pointer pointer-events-none">
+          <div className="w-12 h-12 rounded-full bg-primary-50 text-secondary-800 flex items-center justify-center mb-3 animate-bounce">
+            <UploadSimple size={24} weight="bold" />
+          </div>
+          <h5 className="text-primary-900 font-bold text-sm leading-tight mb-1">
+            Kéo thả ảnh vào đây
+          </h5>
+          <p className="text-primary-600/70 text-[10px] max-w-[200px] leading-relaxed">
+            Hỗ trợ định dạng PNG, JPG hoặc WEBP
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
