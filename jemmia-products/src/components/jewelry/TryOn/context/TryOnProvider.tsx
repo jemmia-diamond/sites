@@ -1115,29 +1115,33 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     };
   }, [isOpen]);
 
+  const processFile = (file: File) => {
+    stopCamera();
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      if (event.target?.result) {
+        const compressed = await resizeAndCompressImage({ base64OrUrl: event.target.result as string });
+        setUploadedImage(compressed);
+        setImageTranslate([0, 0]);
+        setImageScale(1.0);
+        setImageRotation(0);
+        const hasShownGuide =
+          sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
+        if (!hasShownGuide) {
+          setShowGuide(true);
+          setGuideStep(1);
+        }
+        setStep(2);
+        setMaxStep(2);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      stopCamera();
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        if (event.target?.result) {
-          const compressed = await resizeAndCompressImage({ base64OrUrl: event.target.result as string });
-          setUploadedImage(compressed);
-          setImageTranslate([0, 0]);
-          setImageScale(1.0);
-          setImageRotation(0);
-          const hasShownGuide =
-            sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
-          if (!hasShownGuide) {
-            setShowGuide(true);
-            setGuideStep(1);
-          }
-          setStep(2);
-          setMaxStep(2);
-        }
-      };
-      reader.readAsDataURL(file);
+      processFile(file);
     }
   };
 
@@ -1229,6 +1233,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       handleCloseFullscreen,
       handleDownload,
       handleFileUpload,
+      processFile,
       handleZoomIn,
       handleZoomOut,
     },
