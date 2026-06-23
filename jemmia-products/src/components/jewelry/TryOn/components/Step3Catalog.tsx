@@ -7,6 +7,7 @@ import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 import { TryOnContext } from "../context/TryOnContext";
+import { isVideo } from "@/lib/media";
 
 const extractUrls = (arr: any): string[] => {
   if (!Array.isArray(arr)) return [];
@@ -65,10 +66,7 @@ export function MobileStep3() {
     meta: { mobileSentinelRef },
   } = context;
 
-  // Helper to detect video URLs
-  const isVideoUrl = (url: string) => {
-    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
-  };
+
 
   // Extract all media categories
   const tryOnUrls = selectedRing
@@ -209,7 +207,7 @@ export function MobileStep3() {
                 className="w-full flex justify-center items-center py-2 bg-white select-none shrink-0 cursor-pointer"
               >
                 {previewImage ? (
-                  isVideoUrl(previewImage) ? (
+                  isVideo(previewImage) ? (
                     <div className="relative h-36 aspect-square w-auto">
                       <video src={previewImage} className="h-full w-full object-cover" />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -264,7 +262,7 @@ export function MobileStep3() {
               {/* Horizontal Scroll Gallery */}
               <div className="flex gap-1.5 overflow-x-auto py-2.5 no-scrollbar scroll-smooth shrink-0">
                 {activeImages.map((url, idx) => {
-                  const isVideo = isVideoUrl(url);
+                  const isVid = isVideo(url);
                   return (
                     <div
                       key={idx}
@@ -276,7 +274,7 @@ export function MobileStep3() {
                         className="w-full h-full object-cover"
                         alt={`Thumbnail ${idx}`}
                       />
-                      {isVideo && (
+                      {isVid && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                           <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center">
                             <div className="w-0 h-0 border-t-[3px] border-t-transparent border-l-[6px] border-l-secondary-900 border-b-[3px] border-b-transparent ml-0.5" />
@@ -328,7 +326,7 @@ export function MobileStep3() {
 
           {/* Media Content */}
           <div className="max-w-[95%] max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {isVideoUrl(fullscreenImage) ? (
+            {isVideo(fullscreenImage) ? (
               <video
                 src={fullscreenImage}
                 controls
@@ -490,11 +488,6 @@ export function DesktopStep3Right() {
 
   if (!context || !handleTryOn) return null;
 
-  // Helper to detect video URLs
-  const isVideoUrl = (url: string) => {
-    return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
-  };
-
   // Extract all media categories
   const tryOnUrls = selectedRing
     ? [
@@ -539,7 +532,7 @@ export function DesktopStep3Right() {
                 className="w-full flex justify-center items-center py-4 bg-white select-none cursor-pointer border border-primary-50 hover:opacity-95"
               >
                 {previewImage ? (
-                  isVideoUrl(previewImage) ? (
+                  isVideo(previewImage) ? (
                     <div className="relative h-64 aspect-square w-auto">
                       <video src={previewImage} className="h-full w-full object-cover" />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -594,7 +587,7 @@ export function DesktopStep3Right() {
               {/* Horizontal Scroll Gallery */}
               <div className="flex gap-2 overflow-x-auto pt-3 no-scrollbar scroll-smooth">
                 {activeImages.map((url, idx) => {
-                  const isVideo = isVideoUrl(url);
+                  const isVid = isVideo(url);
                   return (
                     <div
                       key={idx}
@@ -606,7 +599,7 @@ export function DesktopStep3Right() {
                         className="w-full h-full object-cover"
                         alt={`Thumbnail ${idx}`}
                       />
-                      {isVideo && (
+                      {isVid && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                           <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
                             <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-secondary-900 border-b-[4px] border-b-transparent ml-0.5" />
@@ -663,7 +656,7 @@ export function DesktopStep3Right() {
 
           {/* Media Content */}
           <div className="max-w-[95%] max-h-[90vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {isVideoUrl(fullscreenImage) ? (
+            {isVideo(fullscreenImage) ? (
               <video
                 src={fullscreenImage}
                 controls

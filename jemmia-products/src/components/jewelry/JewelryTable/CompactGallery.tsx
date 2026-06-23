@@ -1,5 +1,5 @@
 import React from "react";
-import { Camera, Plus, CircleNotch, PlayCircle, GenderMale, GenderFemale } from "@phosphor-icons/react";
+import { Camera, Plus, CircleNotch, PlayCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,9 +9,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { cn } from "@/lib/utils";
-import { API_BASE_URL } from "../../../config";
 import { JewelryTableContext } from "./context/JewelryTableContext";
+import { isVideo, isHeic, getDisplayUrl } from "@/lib/media";
 
 interface CompactGalleryProps {
   images: string[];
@@ -61,12 +60,6 @@ export function CompactGallery({
 
   const items = validImages.slice(0, displayCount);
   const totalCount = validImages.length;
-
-  const isVideo = (url: string) =>
-    !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
-
-  const isHeic = (url: string) =>
-    !!url.match(/\.(heic|heif)(?:\?|$)/i);
 
   const handleSelectOption = (option: { label: string; designCode: string }) => {
     setActiveDesignCode(option.designCode);
@@ -188,7 +181,7 @@ export function CompactGallery({
                       </div>
                     ) : (
                       <img
-                        src={isHeicImg ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+                        src={getDisplayUrl(url)}
                         className="h-full w-full object-cover"
                         alt=""
                         onError={() => resolvedOnImageError(url)}

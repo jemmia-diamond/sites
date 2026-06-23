@@ -1,4 +1,4 @@
-import React, { useState, use } from "react";
+import { useState, use } from "react";
 import { ArrowCounterClockwise, ImageSquare } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { ResultCanvas } from "./ResultCanvas";
@@ -15,18 +15,12 @@ export function MobileStep4() {
   const { state, actions } = context;
   const {
     isGenerating,
-    uploadedImage,
-    selectedGeneratedImage,
-    generatedImages,
     generationError,
     selectedRing,
     maxStep,
   } = state;
 
   const {
-    handleSelectGeneratedImage,
-    handleDownload,
-    setIsFullscreen,
     handleStepClick,
     handleTryOn,
     handleComplete,

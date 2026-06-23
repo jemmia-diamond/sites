@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   CaretLeft,
@@ -23,9 +21,10 @@ import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
 import { JewelryTableContext } from "./context/JewelryTableContext";
 import { MediaGallery } from "./MediaGallery";
-import { API_BASE_URL } from "../../../config";
-import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { downloadFile, downloadFiles } from "@/lib/download";
+import { isVideo, getDisplayUrl } from "@/lib/media";
 
 const extractUrls = (arr: any): string[] => {
   if (!Array.isArray(arr)) return [];
@@ -46,55 +45,7 @@ interface JewelryTableProps {
   onToggleExpand: (id: string | null) => void;
 }
 
-const isVideo = (url: string) =>
-  !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
 
-const handleDownloadSingle = async (url: string) => {
-  try {
-    const urlParts = url.split('/');
-    let fileName = urlParts[urlParts.length - 1];
-    if (fileName.includes('?')) {
-      fileName = fileName.split('?')[0];
-    }
-
-    if (!fileName.includes('.')) {
-      const ext = isVideo(url) ? 'mp4' : 'jpg';
-      fileName = `media_${Date.now()}.${ext}`;
-    }
-
-    const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-
-    try {
-      const response = await fetch(cacheBusterUrl, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-store'
-      });
-
-      if (!response.ok) throw new Error('Network response was not ok');
-
-      const blob = await response.blob();
-      const { saveAs } = await import("file-saver");
-      saveAs(blob, fileName);
-    } catch (fetchError) {
-      console.warn("Fetch failed, falling back to window.open", fetchError);
-      window.open(url, '_blank');
-    }
-  } catch (error) {
-    console.error("Lỗi khi tải file:", url, error);
-  }
-};
-
-const handleDownloadAll = (images: string[]) => {
-  images.forEach((imageUrl) => {
-    const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = imageUrl.split("/").pop() || "image.jpg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
-};
 
 export function JewelryTable({
   jewelries,
@@ -219,7 +170,7 @@ export function JewelryTable({
           <div ref={lastElementRef} className="h-4 w-full" />
           {isFetchingNextPage && (
             <div className="py-6 flex justify-center items-center w-full">
-              <LoadingSpinner size="md" />
+              <Spinner className="size-6 text-secondary-900" />
             </div>
           )}
         </div>
@@ -246,8 +197,8 @@ export function JewelryTable({
         onClose={closeMediaDialog}
         onPreview={handlePreview}
         onSelectMedia={setSelectedMedia}
-        onDownloadSingle={handleDownloadSingle}
-        onDownloadAll={handleDownloadAll}
+        onDownloadFile={downloadFile}
+        onDownloadFiles={downloadFiles}
         onUploadSuccess={() => handleUploadSuccess(true)}
         isVideo={isVideo}
         webImages={allWebImages}
@@ -271,15 +222,15 @@ interface MediaPreviewDialogProps {
   onClose: () => void;
   onPreview: (images: string[], index: number, config?: any) => void;
   onSelectMedia: (url: string | null) => void;
-  onDownloadSingle: (url: string) => void;
-  onDownloadAll: (images: string[]) => void;
+  onDownloadFile: (url: string) => void;
+  onDownloadFiles: (images: string[]) => void;
   onUploadSuccess?: (fromGallery?: boolean) => void | Promise<void>;
   isVideo: (url: string) => boolean;
-  webImages: string[];
-  actualImages: string[];
-  tryOnImages: string[];
-  activeTab: 'web' | 'actual' | 'try_on';
-  onTabChange: (tab: 'web' | 'actual' | 'try_on') => void;
+  webImages?: string[];
+  actualImages?: string[];
+  tryOnImages?: string[];
+  activeTab?: 'web' | 'actual' | 'try_on';
+  onTabChange?: (tab: 'web' | 'actual' | 'try_on') => void;
 }
 
 export function MediaPreviewDialog({
@@ -292,15 +243,15 @@ export function MediaPreviewDialog({
   onImageError,
   onClose,
   onSelectMedia,
-  onDownloadSingle,
-  onDownloadAll,
+  onDownloadFile,
+  onDownloadFiles,
   onUploadSuccess,
   isVideo,
-  webImages,
-  actualImages,
-  tryOnImages,
-  activeTab,
-  onTabChange,
+  webImages = [],
+  actualImages = [],
+  tryOnImages = [],
+  activeTab = 'actual',
+  onTabChange = () => {},
 }: MediaPreviewDialogProps) {
   const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
 
@@ -314,7 +265,7 @@ export function MediaPreviewDialog({
               validPreviewList={validPreviewList}
               onClose={onClose}
               onSelectMedia={onSelectMedia}
-              onDownloadSingle={onDownloadSingle}
+              onDownloadFile={onDownloadFile}
               isVideo={isVideo}
             />
           </div>
@@ -326,7 +277,7 @@ export function MediaPreviewDialog({
             onClose={onClose}
             uploadConfig={uploadConfig}
             onSelectMedia={onSelectMedia}
-            onDownloadAll={onDownloadAll}
+            onDownloadFiles={onDownloadFiles}
             onImageError={onImageError}
             onUploadSuccess={onUploadSuccess}
             isVideo={isVideo}
@@ -379,7 +330,7 @@ function SlideItem({
           style={{ aspectRatio: aspectRatio ? `${aspectRatio}` : undefined }}
         >
           <img
-            src={url.match(/\.(heic|heif)(?:\?|$)/i) ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
+            src={getDisplayUrl(url)}
             className="max-w-full max-h-full object-contain"
             alt=""
             draggable={false}
@@ -417,7 +368,7 @@ interface MediaViewerProps {
   validPreviewList: string[];
   onClose: () => void;
   onSelectMedia: (url: string | null) => void;
-  onDownloadSingle: (url: string) => void;
+  onDownloadFile: (url: string) => void;
   isVideo: (url: string) => boolean;
 }
 
@@ -426,7 +377,7 @@ function MediaViewer({
   validPreviewList,
   onClose,
   onSelectMedia,
-  onDownloadSingle,
+  onDownloadFile,
   isVideo,
 }: MediaViewerProps) {
   const currentIndex = validPreviewList.indexOf(selectedMedia);
@@ -594,7 +545,7 @@ function MediaViewer({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onDownloadSingle(selectedMedia!)}
+            onClick={() => onDownloadFile(selectedMedia!)}
             disabled={!selectedMedia}
             className="h-8 md:h-10 px-3 md:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
           >
