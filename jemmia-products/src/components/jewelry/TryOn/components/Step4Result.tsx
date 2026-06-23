@@ -1,48 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import { ArrowCounterClockwise, ImageSquare } from "@phosphor-icons/react";
-import { ProductModel } from "../../../../types";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { ResultCanvas } from "./ResultCanvas";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { TryOnContext } from "../context/TryOnContext";
 
-interface MobileStep4Props {
-  isGenerating: boolean;
-  uploadedImage: string | null;
-  selectedGeneratedImage: string | null;
-  generatedImages: string[];
-  handleSelectGeneratedImage: (img: string | null) => void;
-  handleDownload: () => void;
-  setIsFullscreen: (f: boolean) => void;
-  generationError?: string | null;
-  selectedRing: ProductModel | null;
-  setStep?: (s: number) => void;
-  maxStep?: number;
-  onTryOn?: () => void;
-  onClose?: () => void;
-}
-
-export function MobileStep4({
-  isGenerating,
-  uploadedImage,
-  selectedGeneratedImage,
-  generatedImages,
-  handleSelectGeneratedImage,
-  handleDownload,
-  setIsFullscreen,
-  generationError,
-  selectedRing,
-  setStep,
-  maxStep,
-  onTryOn,
-  onClose,
-}: MobileStep4Props) {
+export function MobileStep4() {
+  const context = use(TryOnContext);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+
+  if (!context) return null;
+
+  const { state, actions } = context;
+  const {
+    isGenerating,
+    uploadedImage,
+    selectedGeneratedImage,
+    generatedImages,
+    generationError,
+    selectedRing,
+    maxStep,
+  } = state;
+
+  const {
+    handleSelectGeneratedImage,
+    handleDownload,
+    setIsFullscreen,
+    handleStepClick,
+    handleTryOn,
+    handleComplete,
+  } = actions;
+
   return (
     <div className="grow flex flex-col justify-between min-h-0 overflow-hidden">
       {/* Progress Bar & Info */}
       <div className="space-y-3 mb-4">
-        <MobileProgressBar activeCount={4} onStepClick={setStep} disabled={isGenerating} maxStep={maxStep} />
+        <MobileProgressBar activeCount={4} onStepClick={handleStepClick} disabled={isGenerating} maxStep={maxStep} />
         <div className="text-start">
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Hoàn tất tạo ảnh
@@ -53,33 +47,26 @@ export function MobileStep4({
       {/* Middle Interactive Canvas */}
       <div className="flex-1 min-h-0 w-full relative">
         <ResultCanvas
-          isMobile={true}
-          isGenerating={isGenerating}
-          uploadedImage={uploadedImage}
-          selectedGeneratedImage={selectedGeneratedImage}
-          generatedImages={generatedImages}
-          handleSelectGeneratedImage={handleSelectGeneratedImage}
-          handleDownload={handleDownload}
-          setIsFullscreen={setIsFullscreen}
-          generationError={generationError}
           onViewProduct={selectedRing ? () => setIsBottomSheetOpen(true) : undefined}
         />
       </div>
+
 
       {/* Bottom Actions for Step 4 */}
       {!isGenerating && !generationError && (
         <div className="flex gap-3 pt-4 shrink-0">
           <Button
-            onClick={onTryOn}
-            variant="outline"
-            className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+            onClick={() => handleTryOn({ force: true })}
+            variant="outline-light"
+            className="w-full h-11 tracking-wider"
           >
             <span>Thử lại</span>
             <ArrowCounterClockwise size={18} />
           </Button>
           <Button
-            onClick={onClose}
-            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+            onClick={handleComplete}
+            variant="secondary"
+            className="w-full h-11 tracking-wider font-normal"
           >
             Hoàn tất
           </Button>
@@ -141,23 +128,23 @@ export function DesktopStep4Left() {
   );
 }
 
-interface DesktopStep4BottomProps {
-  selectedRing: ProductModel | null;
-  isGenerating: boolean;
-  selectedGeneratedImage: string | null;
-  onTryOn?: () => void;
-  onClose?: () => void;
-  generationError?: string | null;
-}
+export function DesktopStep4Bottom() {
+  const context = use(TryOnContext);
+  if (!context) return null;
 
-export function DesktopStep4Bottom({
-  selectedRing,
-  isGenerating,
-  selectedGeneratedImage,
-  onTryOn,
-  onClose,
-  generationError,
-}: DesktopStep4BottomProps) {
+  const { state, actions } = context;
+  const {
+    selectedRing,
+    isGenerating,
+    selectedGeneratedImage,
+    generationError,
+  } = state;
+
+  const {
+    handleTryOn,
+    handleComplete,
+  } = actions;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Selected Ring Card */}
@@ -193,16 +180,17 @@ export function DesktopStep4Bottom({
       {!isGenerating && !generationError && (
         <div className="flex gap-3 mt-2">
           <Button
-            onClick={onTryOn}
-            variant="outline"
-            className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 tracking-wider"
+            onClick={() => handleTryOn({ force: true })}
+            variant="outline-light"
+            className="w-full h-11 tracking-wider"
           >
             <span>Thử lại</span>
             <ArrowCounterClockwise size={18} />
           </Button>
           <Button
-            onClick={onClose}
-            className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+            onClick={handleComplete}
+            variant="secondary"
+            className="w-full h-11 tracking-wider font-normal"
           >
             Hoàn tất
           </Button>

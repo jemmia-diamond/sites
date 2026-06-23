@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { ProductModel, PaginateResponse } from "../../../types";
 import { getDiamondShapeImage } from "@/lib/utils";
+import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
 
 interface SearchDropdownProps {
   query: string;
@@ -100,10 +101,7 @@ export function SearchDropdown({
 function LoadingState() {
   return (
     <div className="p-20 text-center flex flex-col items-center justify-center">
-      <div className="h-8 w-8 relative mb-4">
-        <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
-        <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
-      </div>
+      <LoadingSpinner size="lg" className="mb-4" />
       <p className="text-[10px] font-black text-primary-300 uppercase tracking-[0.4em]">Đang tìm kiếm...</p>
     </div>
   );

@@ -408,7 +408,7 @@ export function ComboFilterSidebar({
               const chips = buildChips(filters);
               setAppliedChips(chips);
               onChipsChange?.(chips);
-              onClose();
+              onClose?.();
             }}
             className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
           >

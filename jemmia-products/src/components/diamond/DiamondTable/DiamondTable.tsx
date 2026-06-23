@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { DiamondTableRow } from "./DiamondTableRow";
 import { GiaCertificateDialog } from "./GiaCertificateDialog";
 import { MediaPreviewDialog } from "../../jewelry/JewelryTable/JewelryTable";
+import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
 
 interface DiamondTableProps {
   diamonds: DiamondModel[];
@@ -165,10 +166,7 @@ return (
         <div ref={lastElementRef} className="h-4 w-full" />
         {isFetchingNextPage && (
           <div className="py-6 flex justify-center items-center w-full">
-            <div className="h-6 w-6 relative">
-              <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
-              <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
-            </div>
+            <LoadingSpinner size="md" />
           </div>
         )}
       </div>
@@ -192,6 +190,7 @@ return (
         isVideo={isVideo}
         webImages={[]}
         actualImages={[]}
+        tryOnImages={[]}
         activeTab="actual"
         onTabChange={() => {}}
       />

@@ -11,13 +11,14 @@ import {
 import axios from "axios";
 import { cn } from "@/lib/utils";
 import { API_BASE_URL } from "../../../config";
+import { JewelryTableContext } from "./context/JewelryTableContext";
 
 interface CompactGalleryProps {
   images: string[];
   showUpload?: boolean;
-  brokenImages: Set<string>;
-  onImageError: (url: string) => void;
-  onPreview: (images: string[], index: number, config?: any) => void;
+  brokenImages?: Set<string>;
+  onImageError?: (url: string) => void;
+  onPreview?: (images: string[], index: number, config?: any) => void;
   designCode?: string;
   onUploadSuccess?: () => void | Promise<void>;
   uploadEndpoint?: string;
@@ -41,6 +42,12 @@ export function CompactGallery({
   fixedWidth = true,
   showCountBadge = true,
 }: CompactGalleryProps) {
+  const context = React.useContext(JewelryTableContext);
+  const resolvedBrokenImages = brokenImages ?? context?.brokenImages ?? new Set<string>();
+  const resolvedOnImageError = onImageError ?? context?.onImageError ?? (() => {});
+  const resolvedOnPreview = onPreview ?? context?.onPreview ?? (() => {});
+  const resolvedOnUploadSuccess = onUploadSuccess ?? context?.onUploadSuccess;
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
@@ -50,7 +57,7 @@ export function CompactGallery({
   const [activeDesignCode, setActiveDesignCode] = React.useState<string | null>(null);
   const [activeLabel, setActiveLabel] = React.useState<string | null>(null);
   const isMobile = window.innerWidth <= 768;
-  const validImages = images.filter((url) => !brokenImages.has(url));
+  const validImages = images.filter((url) => !resolvedBrokenImages.has(url));
 
   const items = validImages.slice(0, displayCount);
   const totalCount = validImages.length;
@@ -116,7 +123,7 @@ export function CompactGallery({
           "Content-Type": "multipart/form-data",
         },
       });
-      await onUploadSuccess?.();
+      await resolvedOnUploadSuccess?.();
       handleCancelUpload(); // Close dialog and clean up on success
     } catch (error) {
       console.error("Upload failed", error);
@@ -141,7 +148,7 @@ export function CompactGallery({
               onClick={(e) => {
                 e.stopPropagation();
                 if (showUpload) {
-                  onPreview([], 0, { showUpload, designCode, uploadEndpoint, uploadOptions });
+                  resolvedOnPreview([], 0, { showUpload, designCode, uploadEndpoint, uploadOptions });
                 }
               }}
             >
@@ -163,7 +170,7 @@ export function CompactGallery({
                     className="relative h-10 w-10 overflow-hidden cursor-pointer bg-white border border-primary-50 shadow-sm hover:z-10 transition-all hover:scale-110 shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
+                      resolvedOnPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
                     }}
                   >
                     {isVid ? (
@@ -184,7 +191,7 @@ export function CompactGallery({
                         src={isHeicImg ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url}
                         className="h-full w-full object-cover"
                         alt=""
-                        onError={() => onImageError(url)}
+                        onError={() => resolvedOnImageError(url)}
                       />
                     )}
 
@@ -195,7 +202,7 @@ export function CompactGallery({
                           className="absolute inset-0 bg-secondary-900/70 flex items-center justify-center z-10"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
+                            resolvedOnPreview(validImages, idx, { showUpload, designCode, uploadEndpoint, uploadOptions });
                           }}
                         >
                           <span className="text-[9px] text-white font-bold">

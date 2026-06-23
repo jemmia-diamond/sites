@@ -485,7 +485,7 @@ export function MediaGallery({
       <div className="flex-1 overflow-y-auto p-4 xl:p-8 pt-2 xl:pt-4">
         {validPreviewList.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-primary-300 gap-2">
-            <UploadSimple size={40} xl:size={48} weight="thin" />
+            <UploadSimple size={40} weight="thin" />
             <p className="text-sm font-bold">Chưa có tệp tin nào</p>
             {uploadConfig?.showUpload && (
               <p className="text-xs">Nhấn "Tải lên" để thêm tệp tin mới</p>
@@ -513,7 +513,7 @@ export function MediaGallery({
                       ? 'bg-secondary-700 border-secondary-700 text-white'
                       : 'bg-white border-primary-200 text-transparent'
                       }`}>
-                      {isSelected && <Checks size={12} xl:size={14} weight="bold" />}
+                      {isSelected && <Checks size={12} weight="bold" />}
                     </div>
                   </div>
 
@@ -536,7 +536,7 @@ export function MediaGallery({
                       {isVid ? (
                         <div className="w-0 h-0 border-t-[6px] xl:border-t-[8px] border-t-transparent border-l-[10px] xl:border-l-[12px] border-l-white border-b-[6px] xl:border-b-[8px] border-b-transparent ml-0.5" />
                       ) : (
-                        <Eye size={20} xl:size={24} className="text-white" />
+                        <Eye size={20} className="text-white" />
                       )}
                     </div>
                   </div>
@@ -548,11 +548,11 @@ export function MediaGallery({
                       title="Copy image"
                     >
                       {copyingUrl === url ? (
-                        <CircleNotch size={16} xl:size={18} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
+                        <CircleNotch size={16} className="text-secondary-900 animate-spin group-hover/copy:text-white" />
                       ) : copiedUrl === url ? (
-                        <Checks size={16} xl:size={18} className="text-green-600" />
+                        <Checks size={16} className="text-green-600" />
                       ) : (
-                        <Copy size={16} xl:size={18} className="text-secondary-900 group-hover/copy:text-white" />
+                        <Copy size={16} className="text-secondary-900 group-hover/copy:text-white" />
                       )}
                     </button>
                   )}
@@ -588,7 +588,7 @@ export function MediaGallery({
                       <div className="h-full w-full bg-secondary-900 flex items-center justify-center relative group">
                         <video src={url} className="h-full w-full object-cover opacity-60" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <PlayCircle size={20} md:size={24} weight="fill" className="text-white/80" />
+                          <PlayCircle size={20} weight="fill" className="text-white/80" />
                         </div>
                       </div>
                     ) : isHeicFile ? (
@@ -620,7 +620,7 @@ export function MediaGallery({
               >
                 {uploading ? (
                   <>
-                    <CircleNotch size={12} md:size={14} className="animate-spin mr-1 md:mr-2" weight="bold" />
+                    <CircleNotch size={12} className="animate-spin mr-1 md:mr-2" weight="bold" />
                     Đang tải...
                   </>
                 ) : (

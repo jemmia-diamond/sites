@@ -1,13 +1,12 @@
-import React from "react";
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import { MagnifyingGlass, ImageSquare, Sparkle, X } from "@phosphor-icons/react";
-import { ProductModel } from "../../../../types";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { RingSkeleton } from "./RingSkeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
-import { formatPrice } from "../../JewelryTable/utils/formatters";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
+import { TryOnContext } from "../context/TryOnContext";
 
 const extractUrls = (arr: any): string[] => {
   if (!Array.isArray(arr)) return [];
@@ -18,37 +17,10 @@ const extractUrls = (arr: any): string[] => {
   }).filter(Boolean) as string[];
 };
 
-interface MobileStep3Props {
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  isLoadingRings: boolean;
-  isLoadingMore: boolean;
-  rings: ProductModel[];
-  selectedRing: ProductModel | null;
-  handleSelectRing: (ring: ProductModel) => void;
-  mobileSentinelRef: React.RefObject<HTMLDivElement | null>;
-  setToastMessage: (msg: string | null) => void;
-  handleTryOn: () => void;
-  isTryingOn?: boolean;
-  setStep?: (s: number) => void;
-  maxStep?: number;
-}
+export function MobileStep3() {
+  const context = use(TryOnContext);
+  const selectedRing = context?.state.selectedRing;
 
-export function MobileStep3({
-  searchQuery,
-  setSearchQuery,
-  isLoadingRings,
-  isLoadingMore,
-  rings,
-  selectedRing,
-  handleSelectRing,
-  mobileSentinelRef,
-  setToastMessage,
-  handleTryOn,
-  isTryingOn,
-  setStep,
-  maxStep,
-}: MobileStep3Props) {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(!!selectedRing);
   const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
@@ -74,27 +46,29 @@ export function MobileStep3({
     }
   }, [selectedRing]);
 
+  if (!context) return null;
+  const {
+    state: {
+      searchQuery,
+      isLoadingRings,
+      isLoadingMore,
+      rings,
+      isTryingOn,
+      maxStep,
+    },
+    actions: {
+      setSearchQuery,
+      handleSelectRing,
+      handleTryOn,
+      setStep,
+    },
+    meta: { mobileSentinelRef },
+  } = context;
+
   // Helper to detect video URLs
   const isVideoUrl = (url: string) => {
     return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
   };
-
-  // Construct attribute description string
-  const attributesList: string[] = [];
-  if (selectedRing?.attributes?.fineness) {
-    attributesList.push(selectedRing.attributes.fineness);
-  }
-  if (selectedRing?.attributes?.materialColor) {
-    attributesList.push(selectedRing.attributes.materialColor);
-  }
-  if (selectedRing?.attributes?.ringSize && selectedRing.attributes.ringSize !== 0) {
-    attributesList.push(`Ni ${selectedRing.attributes.ringSize}`);
-  }
-  const erpCode = selectedRing?.attributes?.erpCode || selectedRing?.attributes?.code;
-  if (erpCode) {
-    attributesList.push(erpCode);
-  }
-  const attributesString = attributesList.join(" - ");
 
   // Extract all media categories
   const tryOnUrls = selectedRing
@@ -327,7 +301,8 @@ export function MobileStep3({
                 onClick={() => {
                   handleTryOn();
                 }}
-                className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+                variant="secondary"
+                className="w-full h-12 gap-2 font-semibold"
               >
                 {isTryingOn ? "Đang xử lý" : "Thử Nhẫn"}
                 <Sparkle size={16} />
@@ -375,27 +350,24 @@ export function MobileStep3({
   );
 }
 
-interface DesktopStep3LeftProps {
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  isLoadingRings: boolean;
-  isLoadingMore: boolean;
-  rings: ProductModel[];
-  selectedRing: ProductModel | null;
-  handleSelectRing: (ring: ProductModel) => void;
-  desktopSentinelRef: React.RefObject<HTMLDivElement | null>;
-}
+export function DesktopStep3Left() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: {
+      searchQuery,
+      isLoadingRings,
+      isLoadingMore,
+      rings,
+      selectedRing,
+    },
+    actions: {
+      setSearchQuery,
+      handleSelectRing,
+    },
+    meta: { desktopSentinelRef },
+  } = context;
 
-export function DesktopStep3Left({
-  searchQuery,
-  setSearchQuery,
-  isLoadingRings,
-  isLoadingMore,
-  rings,
-  selectedRing,
-  handleSelectRing,
-  desktopSentinelRef,
-}: DesktopStep3LeftProps) {
   return (
     <div className="grow flex flex-col min-h-0 gap-3">
       <div>
@@ -486,17 +458,12 @@ export function DesktopStep3Left({
   );
 }
 
-interface DesktopStep3RightProps {
-  selectedRing: ProductModel | null;
-  handleTryOn: () => void;
-  isTryingOn?: boolean;
-}
+export function DesktopStep3Right() {
+  const context = use(TryOnContext);
+  const selectedRing = context?.state.selectedRing;
+  const isTryingOn = context?.state.isTryingOn;
+  const handleTryOn = context?.actions.handleTryOn;
 
-export function DesktopStep3Right({
-  selectedRing,
-  handleTryOn,
-  isTryingOn = false,
-}: DesktopStep3RightProps) {
   const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
@@ -509,18 +476,9 @@ export function DesktopStep3Right({
   }, [selectedRing]);
 
   // Set previewImage to always be the first website image when selectedRing changes
-  // Set previewImage to always be the first try-on image when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
       const websiteUrls = extractUrls(selectedRing.thumbnails);
-      const tryOnUrls = [
-        ...extractUrls(selectedRing.try_on_images),
-        ...extractUrls(selectedRing.attributes?.try_on_images),
-      ];
-      const actualUrls = [
-        ...extractUrls(selectedRing.images),
-        ...extractUrls(selectedRing.videos),
-      ];
 
       // Always show first try-on image; fallback to website or actual if not available
       const defaultImage = websiteUrls[0] || null;
@@ -530,27 +488,12 @@ export function DesktopStep3Right({
     }
   }, [selectedRing]);
 
+  if (!context || !handleTryOn) return null;
+
   // Helper to detect video URLs
   const isVideoUrl = (url: string) => {
     return /\.(mp4|webm|ogg|mov)(?:\?|$)/i.test(url);
   };
-
-  // Construct attribute description string
-  const attributesList: string[] = [];
-  if (selectedRing?.attributes?.fineness) {
-    attributesList.push(selectedRing.attributes.fineness);
-  }
-  if (selectedRing?.attributes?.materialColor) {
-    attributesList.push(selectedRing.attributes.materialColor);
-  }
-  if (selectedRing?.attributes?.ringSize && selectedRing.attributes.ringSize !== 0) {
-    attributesList.push(`Ni ${selectedRing.attributes.ringSize}`);
-  }
-  const erpCode = selectedRing?.attributes?.erpCode || selectedRing?.attributes?.code;
-  if (erpCode) {
-    attributesList.push(erpCode);
-  }
-  const attributesString = attributesList.join(" - ");
 
   // Extract all media categories
   const tryOnUrls = selectedRing
@@ -694,9 +637,10 @@ export function DesktopStep3Right({
 
         {/* Try On Button */}
         <Button
-          onClick={handleTryOn}
+          onClick={() => handleTryOn()}
           disabled={!selectedRing || isTryingOn}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+          variant="secondary"
+          className="w-full h-12 gap-2 font-semibold"
         >
           Thử Nhẫn
           <Sparkle size={16} />

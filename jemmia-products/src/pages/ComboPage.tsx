@@ -26,6 +26,7 @@ import {
   formatWarehouseName,
   formatEdgeSize,
 } from "@/lib/utils";
+import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ export default function ComboPage() {
   };
 
   const handleRemoveChip = (key: string) => {
-    let nextFilters = { ...filters };
+    const nextFilters = { ...filters };
     if (key === "salePrice") {
       nextFilters.salePriceFrom = undefined;
       nextFilters.salePriceTo = undefined;
@@ -606,10 +607,7 @@ export default function ComboPage() {
             <div ref={lastElementRef} className="h-4 w-full" />
             {isFetchingNextPage && (
               <div className="py-6 flex justify-center items-center w-full">
-                <div className="h-6 w-6 relative">
-                  <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
-                  <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
-                </div>
+                <LoadingSpinner size="md" />
               </div>
             )}
           </div>
@@ -633,8 +631,13 @@ export default function ComboPage() {
         isVideo={isVideo}
         webImages={allWebImages}
         actualImages={allActualImages}
+        tryOnImages={[]}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          if (tab === "actual" || tab === "web") {
+            setActiveTab(tab);
+          }
+        }}
       />
     </LayoutShell>
   );

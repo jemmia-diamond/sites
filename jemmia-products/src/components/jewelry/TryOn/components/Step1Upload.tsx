@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Camera,
@@ -11,28 +11,17 @@ import {
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { TRYON_CAMERA_CAPTURE_ID } from "../constants";
+import { TryOnContext } from "../context/TryOnContext";
 
-interface Step1Props {
-  isCameraActive: boolean;
-  useMirror: boolean;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  startCamera: () => void;
-  capturePhoto: () => void;
-  stopCamera?: () => void;
-}
+export function MobileStep1() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: { isCameraActive, useMirror },
+    actions: { capturePhoto, startCamera, stopCamera, handleFileUpload },
+    meta: { videoRef, fileInputRef },
+  } = context;
 
-export function MobileStep1({
-  isCameraActive,
-  useMirror,
-  videoRef,
-  fileInputRef,
-  handleFileUpload,
-  startCamera,
-  capturePhoto,
-  stopCamera,
-}: Step1Props) {
   if (isCameraActive) {
     return (
       <div className="fixed inset-0 w-full h-full bg-black z-[300] flex flex-col justify-between overflow-hidden">
@@ -60,7 +49,7 @@ export function MobileStep1({
         <div className="relative z-[310] flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
           <button
             type="button"
-            onClick={() => stopCamera?.()}
+            onClick={stopCamera}
             className="text-white bg-black/40 hover:bg-black/60 p-2 rounded-full backdrop-blur-sm transition-all border-none cursor-pointer"
           >
             <ArrowLeft size={20} weight="bold" />
@@ -205,8 +194,8 @@ export function MobileStep1({
             ) as HTMLInputElement;
             fileInput?.click();
           }}
-          className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
-          variant="outline"
+          variant="outline-light"
+          className="w-full h-11 tracking-wider"
         >
           Upload Ảnh
           <UploadSimple size={18} weight="bold" />
@@ -219,7 +208,8 @@ export function MobileStep1({
               startCamera();
             }
           }}
-          className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-normal text-sm h-11 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none tracking-wider"
+          variant="secondary"
+          className="w-full h-11 tracking-wider gap-2 font-normal"
         >
           {isCameraActive ? "Chụp Ảnh Ngay" : "Mở Camera"}
           <Camera size={18} weight="bold" />
@@ -269,13 +259,15 @@ export function DesktopStep1Left() {
   );
 }
 
-export function DesktopStep1Bottom({
-  isCameraActive,
-  fileInputRef,
-  handleFileUpload,
-  startCamera,
-  capturePhoto,
-}: Omit<Step1Props, "useMirror" | "videoRef">) {
+export function DesktopStep1Bottom() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: { isCameraActive },
+    actions: { capturePhoto, startCamera, handleFileUpload },
+    meta: { fileInputRef },
+  } = context;
+
   return (
     <>
       <input
@@ -302,15 +294,16 @@ export function DesktopStep1Bottom({
             startCamera();
           }
         }}
-        className="w-full bg-secondary-800 hover:bg-secondary-700 text-white font-semibold text-sm h-12 flex items-center justify-center gap-2 rounded-none cursor-pointer border-none shadow-none"
+        variant="secondary"
+        className="w-full h-12 gap-2 font-semibold"
       >
         {isCameraActive ? "Chụp Ảnh Ngay" : "Mở Camera"}
         <Camera size={18} weight="bold" />
       </Button>
       <Button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full h-11 rounded-none border-primary-200 text-primary-900 bg-white hover:bg-primary-50 hover:text-primary-500 tracking-wider"
-        variant="outline"
+        variant="outline-light"
+        className="w-full h-11 tracking-wider"
       >
         Upload Ảnh
         <UploadSimple size={18} weight="bold" />
@@ -324,17 +317,14 @@ export function DesktopStep1Bottom({
   );
 }
 
-interface DesktopStep1RightProps {
-  isCameraActive: boolean;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  useMirror: boolean;
-}
+export function DesktopStep1Right() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+  const {
+    state: { isCameraActive, useMirror },
+    meta: { videoRef },
+  } = context;
 
-export function DesktopStep1Right({
-  isCameraActive,
-  videoRef,
-  useMirror,
-}: DesktopStep1RightProps) {
   return (
     <>
       {isCameraActive ? (

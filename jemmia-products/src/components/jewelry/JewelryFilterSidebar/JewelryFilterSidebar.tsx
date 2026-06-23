@@ -11,7 +11,7 @@ import { WarehouseFilter } from "./WarehouseFilter";
 import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
 import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
-import { Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface JewelryFilterSidebarProps {
   onApply: (filters: JewelryFilter) => void;
@@ -595,7 +595,7 @@ export function JewelryFilterSidebar({
               const chips = buildChips(filters);
               setAppliedChips(chips);
               onChipsChange?.(chips);
-              onClose();
+              onClose?.();
             }}
             className="w-full bg-secondary-900 hover:bg-secondary-900 text-white font-bold"
           >

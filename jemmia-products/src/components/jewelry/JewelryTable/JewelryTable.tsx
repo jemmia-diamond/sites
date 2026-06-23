@@ -21,8 +21,10 @@ import {
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
 import { SerialListModal } from "./SerialListModal";
+import { JewelryTableContext } from "./context/JewelryTableContext";
 import { MediaGallery } from "./MediaGallery";
 import { API_BASE_URL } from "../../../config";
+import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
 import { cn } from "@/lib/utils";
 
 const extractUrls = (arr: any): string[] => {
@@ -43,6 +45,56 @@ interface JewelryTableProps {
   expandedId: string | null;
   onToggleExpand: (id: string | null) => void;
 }
+
+const isVideo = (url: string) =>
+  !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
+
+const handleDownloadSingle = async (url: string) => {
+  try {
+    const urlParts = url.split('/');
+    let fileName = urlParts[urlParts.length - 1];
+    if (fileName.includes('?')) {
+      fileName = fileName.split('?')[0];
+    }
+
+    if (!fileName.includes('.')) {
+      const ext = isVideo(url) ? 'mp4' : 'jpg';
+      fileName = `media_${Date.now()}.${ext}`;
+    }
+
+    const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
+
+    try {
+      const response = await fetch(cacheBusterUrl, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-store'
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      const blob = await response.blob();
+      const { saveAs } = await import("file-saver");
+      saveAs(blob, fileName);
+    } catch (fetchError) {
+      console.warn("Fetch failed, falling back to window.open", fetchError);
+      window.open(url, '_blank');
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải file:", url, error);
+  }
+};
+
+const handleDownloadAll = (images: string[]) => {
+  images.forEach((imageUrl) => {
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = imageUrl.split("/").pop() || "image.jpg";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+};
 
 export function JewelryTable({
   jewelries,
@@ -124,55 +176,6 @@ export function JewelryTable({
     setUploadConfig(null);
   };
 
-  const handleDownloadSingle = async (url: string) => {
-    try {
-      const urlParts = url.split('/');
-      let fileName = urlParts[urlParts.length - 1];
-      if (fileName.includes('?')) {
-        fileName = fileName.split('?')[0];
-      }
-
-      if (!fileName.includes('.')) {
-        const ext = isVideo(url) ? 'mp4' : 'jpg';
-        fileName = `media_${Date.now()}.${ext}`;
-      }
-
-      const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-
-      try {
-        const response = await fetch(cacheBusterUrl, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-store'
-        });
-
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        const blob = await response.blob();
-        const { saveAs } = await import("file-saver");
-        saveAs(blob, fileName);
-      } catch (fetchError) {
-        console.warn("Fetch failed, falling back to window.open", fetchError);
-        window.open(url, '_blank');
-      }
-    } catch (error) {
-      console.error("Lỗi khi tải file:", url, error);
-    }
-  };
-
-  const handleDownloadAll = (images: string[]) => {
-    images.forEach((imageUrl) => {
-      const link = document.createElement("a");
-      link.href = imageUrl;
-      link.download = imageUrl.split("/").pop() || "image.jpg";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  };
-
-  const isVideo = (url: string) =>
-    !!url.match(/\.(mp4|webm|ogg|mov)(?:\?|$)|^blob:|^data:video/i);
 
   const handleOpenSerialModal = (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => {
     setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
@@ -185,8 +188,20 @@ export function JewelryTable({
     }
   };
 
+  const contextValue = {
+    warehouseIds,
+    stockStatus,
+    expandedId,
+    brokenImages,
+    onToggleExpand,
+    onImageError: handleImageError,
+    onPreview: handlePreview,
+    onOpenSerialModal: handleOpenSerialModal,
+    onUploadSuccess: handleUploadSuccess,
+  };
+
   return (
-    <>
+    <JewelryTableContext value={contextValue}>
       <div className="relative border border-primary-100 bg-white flex flex-col flex-1 min-h-0 w-full max-w-full xl:overflow-hidden">
         <div className="flex-1 xl:overflow-y-auto overflow-x-hidden md:overflow-x-auto min-w-0 w-full relative">
           <Table className="w-full xl:min-w-[1200px] border-collapse">
@@ -196,18 +211,6 @@ export function JewelryTable({
               {jewelries.map((product) => (
                 <JewelryTableRow
                   product={product}
-                  warehouseIds={warehouseIds}
-                  stockStatus={stockStatus}
-                  isExpanded={expandedId === product.id}
-                  expandedId={expandedId}
-                  brokenImages={brokenImages}
-                  onImageError={handleImageError}
-                  onPreview={handlePreview}
-                  onToggleExpand={(id) =>
-                    onToggleExpand(expandedId === id ? null : id)
-                  }
-                  onOpenSerialModal={handleOpenSerialModal}
-                  onUploadSuccess={handleUploadSuccess}
                   key={product.id}
                 />
               ))}
@@ -216,10 +219,7 @@ export function JewelryTable({
           <div ref={lastElementRef} className="h-4 w-full" />
           {isFetchingNextPage && (
             <div className="py-6 flex justify-center items-center w-full">
-              <div className="h-6 w-6 relative">
-                <div className="absolute inset-0 border-2 border-primary-50 rounded-full"></div>
-                <div className="absolute inset-0 border-2 border-t-secondary-900 rounded-full animate-spin"></div>
-              </div>
+              <LoadingSpinner size="md" />
             </div>
           )}
         </div>
@@ -256,7 +256,7 @@ export function JewelryTable({
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
-    </>
+    </JewelryTableContext>
   );
 }
 
@@ -583,7 +583,7 @@ function MediaViewer({
       <div className="flex items-center justify-between px-4 md:px-4 py-4 md:py-4 bg-secondary-800 sticky top-0 z-50">
         <div className="flex items-center gap-3 md:gap-4">
           <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10 bg-white/10 text-white rounded-full hover:bg-white hover:text-secondary-700 transition-all" onClick={() => onSelectMedia(null)}>
-            <CaretLeft size={18} md:size={20} />
+            <CaretLeft size={18} />
           </Button>
           <div>
             <h3 className="text-sm md:text-lg font-black text-white uppercase tracking-tight">Chi tiết</h3>
@@ -598,11 +598,11 @@ function MediaViewer({
             disabled={!selectedMedia}
             className="h-8 md:h-10 px-3 md:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
           >
-            <DownloadSimple size={14} md:size={16} />
+            <DownloadSimple size={14} />
             <span className="hidden md:inline">Tải về</span>
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10 bg-white/10 text-white rounded-full hover:bg-red-500 hover:text-white transition-all" onClick={onClose}>
-            <X size={16} md:size={20} />
+            <X size={16} />
           </Button>
         </div>
       </div>
@@ -621,7 +621,7 @@ function MediaViewer({
               className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 h-10 w-10 md:h-14 md:w-14 bg-white/90 md:bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-100 xl:opacity-0 xl:group-hover/viewer:opacity-100 transition-all shadow-md z-30"
               onClick={handlePrev}
             >
-              <CaretLeft size={20} md:size={24} weight="bold" />
+              <CaretLeft size={20} weight="bold" />
             </Button>
             <Button
               variant="ghost"
@@ -629,7 +629,7 @@ function MediaViewer({
               className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 h-10 w-10 md:h-14 md:w-14 bg-white/90 md:bg-white hover:bg-secondary-900 text-secondary-900 hover:text-white rounded-full opacity-100 xl:opacity-0 xl:group-hover/viewer:opacity-100 transition-all shadow-md z-30"
               onClick={handleNext}
             >
-              <CaretRight size={20} md:size={24} weight="bold" />
+              <CaretRight size={20} weight="bold" />
             </Button>
           </>
         )}

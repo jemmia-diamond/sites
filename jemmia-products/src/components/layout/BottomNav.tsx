@@ -1,24 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useTryOnGlobal } from "../jewelry/TryOn/context/TryOnGlobalContext";
 
 export function BottomNav() {
   const location = useLocation();
-
-  const [hasUnreadResult, setHasUnreadResult] = useState(() => {
-    return sessionStorage.getItem("tryon_unread_result") === "true";
-  });
-
-  useEffect(() => {
-    const handleUnreadChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ hasUnread: boolean }>;
-      setHasUnreadResult(customEvent.detail.hasUnread);
-    };
-    window.addEventListener("tryon:unread-change", handleUnreadChange);
-    return () => {
-      window.removeEventListener("tryon:unread-change", handleUnreadChange);
-    };
-  }, []);
+  const { hasUnreadResult, openTryOn } = useTryOnGlobal();
 
   const navItems = [
     {
@@ -67,7 +53,7 @@ export function BottomNav() {
 
       {/* Try on button */}
       <button
-        onClick={() => window.dispatchEvent(new Event("tryon:open"))}
+        onClick={openTryOn}
         className="h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
       >
         <span className="relative nav-tab-item nav-tab-item-inactive">

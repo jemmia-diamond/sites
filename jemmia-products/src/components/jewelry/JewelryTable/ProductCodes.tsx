@@ -49,6 +49,40 @@ function CodeButton({ item }: { item: CopyableItem; key?: React.Key }) {
   );
 }
 
+function CodesList({
+  items,
+  copiedText,
+  onCopy,
+}: {
+  items: CopyableItem[];
+  copiedText: string | null;
+  onCopy: (e: React.MouseEvent, text: string) => void;
+}) {
+  return (
+    <div className="flex flex-col items-stretch gap-1">
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="group/item flex items-center justify-between gap-3 px-2.5 py-1.5 border border-primary-100 bg-primary-50 cursor-pointer hover:bg-primary-100/80 transition-colors"
+          onClick={(e) => onCopy(e, item.code)}
+          title={`Copy ${item.label}`}
+        >
+          <span className="text-secondary-900 text-[11px] font-black uppercase">
+            {item.code}
+          </span>
+          <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+            {copiedText === item.code ? (
+              <Check size={14} weight="bold" className="text-green-600" />
+            ) : (
+              <Copy size={14} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProductCodes({ product, className, showCopyAlways }: ProductCodesProps) {
   const { open, setOpen, isMobile, isTablet, onEnter, onLeave, handleOpenChange } = useResponsivePopover();
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -127,32 +161,6 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
   };
 
   const shouldShowAbove = coords ? (coords.bottom + 160 > window.innerHeight) : false;
-
-  function CodesList({ items }: { items: CopyableItem[] }) {
-    return (
-      <div className="flex flex-col items-stretch gap-1">
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="group/item flex items-center justify-between gap-3 px-2.5 py-1.5 border border-primary-100 bg-primary-50 cursor-pointer hover:bg-primary-100/80 transition-colors"
-            onClick={(e) => handleCopy(e, item.code)}
-            title={`Copy ${item.label}`}
-          >
-            <span className="text-secondary-900 text-[11px] font-black uppercase">
-              {item.code}
-            </span>
-            <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
-              {copiedText === item.code ? (
-                <Check size={14} weight="bold" className="text-green-600" />
-              ) : (
-                <Copy size={14} weight="bold" className="text-secondary-900/40 group-hover/item:text-secondary-900 transition-colors" />
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   if (allItems.length === 0) {
     return (
@@ -241,7 +249,7 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
           onMouseLeave={onLeave}
         >
           <div className="bg-white border border-primary-100 shadow-2xl p-1.5 min-w-[180px] flex flex-col animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
-            <CodesList items={allItems} />
+            <CodesList items={allItems} copiedText={copiedText} onCopy={handleCopy} />
           </div>
         </div>,
         document.body
@@ -251,7 +259,7 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
         <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
           <BottomSheet open={open} onOpenChange={handleOpenChange} title={`Mã sản phẩm`}>
             <div className="pb-4">
-              <CodesList items={allItems} />
+              <CodesList items={allItems} copiedText={copiedText} onCopy={handleCopy} />
             </div>
           </BottomSheet>
         </div>,
@@ -268,7 +276,7 @@ export function ProductCodes({ product, className, showCopyAlways }: ProductCode
                 </DialogTitle>
               </DialogHeader>
               <div className="p-4">
-                <CodesList items={allItems} />
+                <CodesList items={allItems} copiedText={copiedText} onCopy={handleCopy} />
               </div>
             </DialogContent>
           </Dialog>
