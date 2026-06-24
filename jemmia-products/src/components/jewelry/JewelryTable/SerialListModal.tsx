@@ -191,12 +191,12 @@ function SerialListDesktopTable({
                   </span>
                 </div>
                 <div className="w-[80px] shrink-0 text-center flex flex-col justify-center items-center">
-                  <span className="text-xs font-semibold text-secondary-600 leading-none block">
+                  <span className="text-xs font-semibold text-secondary-800 leading-none block">
                     {v.attributes?.goldWeight ? `${formatGoldWeight(v.attributes.goldWeight)}` : "--"}
                   </span>
                 </div>
                 <div className="w-[80px] shrink-0 text-center">
-                  <span className="text-xs font-semibold text-secondary-600 leading-none">
+                  <span className="text-xs font-semibold text-secondary-800 leading-none">
                     {v.attributes?.storageSize1 && v.attributes?.storageSize2
                       ? `${v.attributes.storageSize1}-${v.attributes.storageSize2}`
                       : v.attributes?.storageSize1 || v.attributes?.storageSize2 || "--"}
@@ -219,7 +219,7 @@ function SerialListDesktopTable({
                         {v.orderReference || "--"}
                       </a>
                     ) : (
-                      <span className="text-xs font-medium text-secondary-600 leading-none">
+                      <span className="text-xs font-medium text-secondary-800 leading-none">
                         {v.orderReference || "--"}
                       </span>
                     )}
@@ -285,13 +285,13 @@ function SerialListMobileCards({
             <div className="grid grid-cols-2 gap-1.5">
               <div className="flex items-center gap-2">
                 <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Trọng lượng vàng</span>
-                <span className="text-[10px] -mt-0.5 font-semibold text-secondary-600 leading-none">
+                <span className="text-[10px] -mt-0.5 font-semibold text-secondary-800 leading-none">
                   {v.attributes?.goldWeight ? `${formatGoldWeight(v.attributes.goldWeight)}` : "--"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[8px] font-bold text-primary-300 uppercase tracking-wider">Viên chủ</span>
-                <span className="text-[10px] -mt-0.5 font-semibold text-secondary-600 leading-none">
+                <span className="text-[10px] -mt-0.5 font-semibold text-secondary-800 leading-none">
                   {v.attributes?.storageSize1 && v.attributes?.storageSize2
                     ? `${v.attributes.storageSize1}-${v.attributes.storageSize2}`
                     : v.attributes?.storageSize1 || v.attributes?.storageSize2 || "--"}

@@ -133,36 +133,36 @@ export function JewelryTableRow({
 
   const actualImages = isBundle
     ? product.products!.flatMap((p) => [
-        ...(p.images?.map((img) => img.url) || []),
-        ...(p.videos?.map((v) => v.url) || []),
-      ])
+      ...(p.images?.map((img) => img.url) || []),
+      ...(p.videos?.map((v) => v.url) || []),
+    ])
     : [
-        ...(product.images?.map((img) => img.url) || []),
-        ...(product.videos?.map((v) => v.url) || []),
-      ];
+      ...(product.images?.map((img) => img.url) || []),
+      ...(product.videos?.map((v) => v.url) || []),
+    ];
 
   const designCode = isBundle
     ? product.products
-        ?.map((p) => p.attributes.designCode)
-        .filter(Boolean)
-        .join(" / ")
+      ?.map((p) => p.attributes.designCode)
+      .filter(Boolean)
+      .join(" / ")
     : product.attributes?.designCode;
 
   const stockBySKU = !isBundle ? getGroupedStock(product, warehouseIds) : {};
 
   const totalStockCount = isBundle
     ? product.products!.reduce((acc, p) => {
-        const subProductStockBySKU = getGroupedStock(p, warehouseIds);
-        const subProductStockCount = Object.values(subProductStockBySKU).reduce(
-          (subAcc, curr) => subAcc + curr.totalHaravanQuantity,
-          0,
-        );
-        return acc + subProductStockCount;
-      }, 0)
-    : Object.values(stockBySKU).reduce(
-        (acc, curr) => acc + curr.totalHaravanQuantity,
+      const subProductStockBySKU = getGroupedStock(p, warehouseIds);
+      const subProductStockCount = Object.values(subProductStockBySKU).reduce(
+        (subAcc, curr) => subAcc + curr.totalHaravanQuantity,
         0,
       );
+      return acc + subProductStockCount;
+    }, 0)
+    : Object.values(stockBySKU).reduce(
+      (acc, curr) => acc + curr.totalHaravanQuantity,
+      0,
+    );
 
   const allVariants = (product.variants || []) as any[];
   const allPrices = allVariants
@@ -175,13 +175,13 @@ export function JewelryTableRow({
   const fourView = !isBundle && product.attributes?.["4view"];
   const subProductNam = isBundle
     ? product.products?.find((p) => p.attributes?.gender === "Nam") ||
-      product.products?.[0]
+    product.products?.[0]
     : null;
   const subProductNu = isBundle
     ? product.products?.find((p) => p.attributes?.gender === "Nữ") ||
-      (product.products && product.products.length > 1
-        ? product.products[1]
-        : null)
+    (product.products && product.products.length > 1
+      ? product.products[1]
+      : null)
     : null;
   const fourViewNam = subProductNam?.attributes?.["4view"];
   const fourViewNu = subProductNu?.attributes?.["4view"];
@@ -192,23 +192,23 @@ export function JewelryTableRow({
 
   const uploadOptions = isBundle
     ? [
-        ...(subProductNam?.attributes?.designCode
-          ? [
-              {
-                label: "Nhẫn Nam",
-                designCode: subProductNam.attributes.designCode,
-              },
-            ]
-          : []),
-        ...(subProductNu?.attributes?.designCode
-          ? [
-              {
-                label: "Nhẫn Nữ",
-                designCode: subProductNu.attributes.designCode,
-              },
-            ]
-          : []),
-      ]
+      ...(subProductNam?.attributes?.designCode
+        ? [
+          {
+            label: "Nhẫn Nam",
+            designCode: subProductNam.attributes.designCode,
+          },
+        ]
+        : []),
+      ...(subProductNu?.attributes?.designCode
+        ? [
+          {
+            label: "Nhẫn Nữ",
+            designCode: subProductNu.attributes.designCode,
+          },
+        ]
+        : []),
+    ]
     : undefined;
 
   const priceDisplay = isBundle
@@ -243,7 +243,7 @@ export function JewelryTableRow({
         className={cn(
           "transition-all cursor-pointer group min-h-[3.5rem] relative hidden md:table-row",
           isExpanded
-            ? "bg-secondary-700 divide-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
+            ? "bg-secondary-800 divide-secondary-700 hover:bg-secondary-800 border-b border-secondary-900"
             : "border-primary-100 hover:bg-primary-50/30 divide-primary-50"
         )}
         onClick={() => onToggleExpand(product.id)}
@@ -426,7 +426,7 @@ export function JewelryTableRow({
         className={cn(
           "transition-all cursor-pointer group relative md:hidden",
           isExpanded
-            ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
+            ? "bg-secondary-800 hover:bg-secondary-800 border-b border-secondary-800"
             : "border-primary-100 hover:bg-primary-50/30"
         )}
         onClick={() => onToggleExpand(product.id)}
@@ -485,8 +485,15 @@ export function JewelryTableRow({
               <div className="w-full flex flex-col gap-2">
                 <div className="flex items-center gap-1 justify-between w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
-                    <ProductCodes product={product} isExpanded={isExpanded} />
+                    <ProductCodes
+                      product={product}
+                      isExpanded={isExpanded}
+                      className={cn(
+                        isExpanded && "[&_button]:bg-white/20 [&_button]:text-white"
+                      )}
+                    />
                   </div>
+
                 </div>
                 {/* Price */}
                 <div className="inline-flex items-center relative w-fit">
@@ -836,7 +843,7 @@ function ExpandedPanel({
               showUpload={true}
               uploadOptions={uploadOptions}
               brokenImages={brokenImages || new Set()}
-              onImageError={onImageError || (() => {})}
+              onImageError={onImageError || (() => { })}
               onPreview={(images, index, config) => {
                 if (onPreview) {
                   onPreview(images, index, {
@@ -854,7 +861,7 @@ function ExpandedPanel({
         </div>
       </div>
 
-      <div className="divide-y divide-secondary-600">
+      <div className="divide-y divide-secondary-800">
         {Object.entries(stockBySKU).map(([sku, group], idx) => {
           const variant = group.firstVariant;
           const hasSale =

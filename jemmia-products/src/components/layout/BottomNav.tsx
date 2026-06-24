@@ -57,7 +57,7 @@ export function BottomNav() {
         className="h-full flex items-center justify-center flex-1 transition-all cursor-pointer border-none bg-transparent"
       >
         <span className="relative nav-tab-item nav-tab-item-inactive">
-          Thử Nhẫn
+          Thử nhẫn
           {hasUnreadResult && (
             <span className="absolute -top-1 -right-2 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>

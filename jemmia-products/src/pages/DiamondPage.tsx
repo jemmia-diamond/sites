@@ -470,7 +470,7 @@ export default function DiamondPage() {
               lastElementRef={lastElementRef}
               isFetchingNextPage={isFetchingNextPage}
               expandedId={expandedId}
-              onToggleExpand={setExpandedId}
+              onToggleExpand={(id) => setExpandedId((prev) => (prev === id ? null : id))}
             />
           )}
         </div>

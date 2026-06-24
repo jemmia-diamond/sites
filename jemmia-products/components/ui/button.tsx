@@ -16,7 +16,7 @@ const buttonVariants = cva(
           "text-primary-600 hover:bg-primary-50 active:bg-primary-100 disabled:text-primary-300",
         // Keep compatibility with shadcn defaults if needed
         default: "bg-primary-900 text-white hover:bg-primary-800",
-        secondary: "bg-secondary-800 text-white hover:bg-secondary-700",
+        secondary: "bg-secondary-900 text-white hover:bg-secondary-800 disabled:bg-slate-100 disabled:text-slate-400",
         ghost: "hover:bg-primary-50 text-primary-900",
         destructive: "bg-critical text-white hover:bg-critical/90",
         "outline-light":

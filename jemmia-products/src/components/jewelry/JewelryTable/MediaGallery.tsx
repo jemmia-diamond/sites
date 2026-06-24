@@ -290,7 +290,7 @@ export function MediaGallery({
                   size="sm"
                   onClick={handleDownloadSelected}
                   disabled={isDownloading || selectedMediaUrls.length === 0}
-                  className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-700 hover:text-white flex items-center gap-1 disabled:opacity-40"
+                  className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-800 hover:text-white flex items-center gap-1 disabled:opacity-40"
                 >
                   {isDownloading ? (
                     <CircleNotch size={13} className="animate-spin" />
@@ -322,7 +322,7 @@ export function MediaGallery({
       </div>
 
       {/* Desktop header */}
-      <div className="hidden md:flex items-center justify-between px-8 py-6 bg-secondary-800 sticky top-0 z-20 gap-4">
+      <div className="hidden md:flex items-center justify-between px-8 py-6 bg-secondary-900 sticky top-0 z-20 gap-4">
         <div>
           <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
             Thư viện
@@ -351,7 +351,7 @@ export function MediaGallery({
                 size="sm"
                 onClick={handleDownloadSelected}
                 disabled={isDownloading || selectedMediaUrls.length === 0}
-                className="h-10 px-4 border-white font-bold text-xs uppercase tracking-widest bg-white text-secondary-700 hover:bg-secondary-700 hover:text-white transition-all flex items-center gap-2 disabled:bg-white/50 disabled:text-secondary-700/50 disabled:border-transparent"
+                className="h-10 px-4 border-white font-bold text-xs uppercase tracking-widest bg-white text-secondary-900 hover:bg-secondary-800 hover:text-white transition-all flex items-center gap-2 disabled:bg-white/50 disabled:text-secondary-900 disabled:border-transparent"
               >
                 {isDownloading ? (
                   <CircleNotch size={14} className="animate-spin" />
@@ -443,7 +443,7 @@ export function MediaGallery({
                     onClick={(e) => handleToggleSelect(url, e)}
                   >
                     <div className={`w-5 h-5 xl:w-6 xl:h-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected
-                      ? 'bg-secondary-700 border-secondary-700 text-white'
+                      ? 'bg-secondary-900 border-secondary-900 text-white'
                       : 'bg-white border-primary-200 text-transparent'
                       }`}>
                       {isSelected && <Checks size={12} weight="bold" />}
@@ -507,7 +507,7 @@ export function MediaGallery({
             </DialogTitle>
           </DialogHeader>
           <div className="px-4 md:px-6 py-3 md:py-4">
-            <p className="text-xs md:text-sm text-secondary-600 font-medium mb-3 md:mb-4">
+            <p className="text-xs md:text-sm text-secondary-800 font-medium mb-3 md:mb-4">
               Bạn có chắc chắn muốn tải lên <span className="font-bold text-secondary-900">{selectedFiles.length} tệp</span> không?
             </p>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-1 md:pr-2">

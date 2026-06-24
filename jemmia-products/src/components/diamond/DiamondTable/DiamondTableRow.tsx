@@ -218,7 +218,7 @@ export function DiamondTableRow({
         className={cn(
           "transition-all cursor-pointer group relative md:hidden",
           isExpanded
-            ? "bg-secondary-700 hover:bg-secondary-700 border-b border-secondary-700"
+            ? "bg-secondary-800 hover:bg-secondary-800 border-b border-secondary-800"
             : "border-primary-100 hover:bg-primary-50/30"
         )}
         onClick={() => onToggleExpand(diamond.id)}
@@ -245,7 +245,7 @@ export function DiamondTableRow({
                 {diamond.warehouses.length > 0 && !isIncoming && diamond.warehouses.map((wh, idx) => (
                   <span key={idx} className={cn(
                     "text-[10px] px-0.5 font-semibold tracking-tight whitespace-nowrap",
-                    isExpanded ? "text-white bg-secondary-600" : "bg-primary-50 text-secondary-900",
+                    isExpanded ? "text-white bg-secondary-700" : "bg-primary-50 text-secondary-900",
                   )}>
                     {formatWarehouseName(wh.name)}
                   </span>
@@ -312,7 +312,7 @@ export function DiamondTableRow({
       {isExpanded && (
         <tr className="hover:bg-transparent border-none">
           <TableCell colSpan={9} className="p-0">
-            <div className="px-3 py-2 border-t border-x-2 border-b-2 border-secondary-700 animate-in fade-in slide-in-from-top-1 duration-200 space-y-1">
+            <div className="px-3 py-2 border-t border-x-2 border-b-2 border-secondary-800 animate-in fade-in slide-in-from-top-1 duration-200 space-y-1">
               {/* Row 1: Identification + Illustration + Shape */}
               <div className="flex items-center gap-3">
                 {/* Identification */}
