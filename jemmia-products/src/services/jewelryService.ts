@@ -10,7 +10,7 @@ export const jewelryService = {
 
 
   getJewelries: async (filters: JewelryFilter): Promise<PaginateResponse<ProductModel>> => {
-    const limit = 20;
+    const limit = filters.limit || 20;
     const offset = ((filters.page || 1) - 1) * limit;
 
     // Mapping logic

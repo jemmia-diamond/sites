@@ -97,6 +97,7 @@ export interface JewelryFilter {
   ringHeadStyles?: string[];
   ringBandStyles?: string[];
   missingMedia?: boolean;
+  limit?: number;
 }
 
 export interface JewelryVariant {

@@ -4,6 +4,19 @@ import { isVideo } from "./media";
 
 export const downloadFile = async (url: string): Promise<void> => {
   try {
+    // Handle base64 / data URLs
+    if (url.startsWith("data:")) {
+      const mimeMatch = url.match(/data:([^;]+);/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+      const ext = mimeType.split("/")[1] || "jpg";
+      const fileName = `media_${Date.now()}.${ext}`;
+
+      const response = await fetch(url);
+      const blob = await response.blob();
+      saveAs(blob, fileName);
+      return;
+    }
+
     const urlParts = url.split("/");
     let fileName = urlParts[urlParts.length - 1];
     if (fileName.includes("?")) {
