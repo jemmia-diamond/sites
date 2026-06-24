@@ -95,7 +95,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         <Button
           onClick={openTryOn}
           variant={'secondary'}
-          className="relative  hidden md:flex "
+          className="relative hidden md:flex "
         >
           <Sparkle size={18} className="text-white" />
           <span>Thử nhẫn</span>
