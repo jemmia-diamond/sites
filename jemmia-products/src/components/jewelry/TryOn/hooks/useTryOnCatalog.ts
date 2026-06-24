@@ -11,6 +11,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
   const [rings, setRings] = useState<ProductModel[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("Nhẫn Nữ");
   const [isLoadingRings, setIsLoadingRings] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -18,7 +19,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
 
   const mobileSentinelRef = useRef<HTMLDivElement>(null);
   const desktopSentinelRef = useRef<HTMLDivElement>(null);
-  const lastFetchedRef = useRef<{ query: string; page: number } | null>(null);
+  const lastFetchedRef = useRef<{ query: string; type: string; page: number } | null>(null);
 
   // Debounce search query state
   useEffect(() => {
@@ -31,22 +32,23 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     };
   }, [searchQuery]);
 
-  // Reset pagination when debounced search query changes
+  // Reset pagination when debounced search query or selected type changes
   useEffect(() => {
     setPage(1);
     setHasNextPage(true);
     setRings([]);
     lastFetchedRef.current = null;
-  }, [debouncedSearchQuery]);
+  }, [debouncedSearchQuery, selectedType]);
 
   // Load rings for Step 3
   useEffect(() => {
     if (step !== 3 || !isOpen) return;
 
-    // If we have already successfully fetched this page and query, do not fetch again
+    // If we have already successfully fetched this page, query, and type, do not fetch again
     if (
       lastFetchedRef.current &&
       lastFetchedRef.current.query === debouncedSearchQuery &&
+      lastFetchedRef.current.type === selectedType &&
       lastFetchedRef.current.page === page
     ) {
       return;
@@ -61,12 +63,14 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       }
 
       try {
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
         const res = await jewelryService.getJewelries({
           page: page,
           searchQuery: debouncedSearchQuery || undefined,
-          type: "Nhẫn Nữ",
+          type: selectedType,
           stockStatus: "IN_STOCK",
           missingMedia: false,
+          limit: isMobile ? 21 : 20,
         });
 
         if (isMounted) {
@@ -83,7 +87,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
             });
           }
           setHasNextPage(res.meta ? res.meta.hasNext : newRings.length > 0);
-          lastFetchedRef.current = { query: debouncedSearchQuery, page };
+          lastFetchedRef.current = { query: debouncedSearchQuery, type: selectedType, page };
         }
       } catch (e) {
         console.error("Failed to load rings:", e);
@@ -100,7 +104,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     return () => {
       isMounted = false;
     };
-  }, [step, debouncedSearchQuery, page, isOpen]);
+  }, [step, debouncedSearchQuery, selectedType, page, isOpen]);
 
   // Infinite scroll intersection observers
   useEffect(() => {
@@ -140,6 +144,8 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     rings,
     searchQuery,
     setSearchQuery,
+    selectedType,
+    setSelectedType,
     isLoadingRings,
     isLoadingMore,
     mobileSentinelRef,
