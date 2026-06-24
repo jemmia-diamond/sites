@@ -1,4 +1,4 @@
-import React, { use, useState, useEffect } from "react";
+import React, { use, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,17 +9,20 @@ import {
   CornersOut,
   LockSimple,
   ArrowLeft,
+  Check,
+  CloudArrowUp,
+  X,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
-import { TRYON_CAMERA_CAPTURE_ID } from "../constants";
+import { TRYON_CAMERA_CAPTURE_ID, ACTIVE_TRYON_SESSION_KEY } from "../constants";
 import { TryOnContext } from "../context/TryOnContext";
 
 export function MobileStep1() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { isCameraActive, useMirror },
-    actions: { capturePhoto, startCamera, stopCamera, handleFileUpload },
+    state: { isCameraActive, useMirror, maxStep, uploadedImage },
+    actions: { capturePhoto, startCamera, stopCamera, handleFileUpload, setStep, setUploadedImage, setMaxStep },
     meta: { videoRef, fileInputRef },
   } = context;
 
@@ -36,15 +39,6 @@ export function MobileStep1() {
             useMirror ? "transform scale-x-[-1]" : ""
           }`}
         />
-
-        {/* Hand Overlay Guide */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-14 z-[305]">
-          <img
-            src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-            className="w-full h-full object-contain opacity-60 scale-[165%] rotate-180"
-            alt="Camera Overlay Hand"
-          />
-        </div>
 
         {/* Header Controls */}
         <div className="relative z-[310] flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
@@ -101,7 +95,7 @@ export function MobileStep1() {
     <div className="grow flex flex-col justify-between gap-3 min-h-0">
       {/* Progress Bar & Info */}
       <div className="space-y-3">
-        <MobileProgressBar activeCount={1} />
+        <MobileProgressBar activeCount={1} onStepClick={setStep} maxStep={maxStep} />
         <div className="space-y-1 text-start">
           <h4 className="text-primary-900 font-bold text-base leading-tight">
             Chụp ảnh bàn tay của bạn
@@ -112,7 +106,7 @@ export function MobileStep1() {
       {/* Middle Silhouette Area */}
       <div className="grow flex items-center justify-center py-1 min-h-0">
         <div className="h-full w-full aspect-[4/5] border border-dashed border-primary-200 bg-slate-100 relative overflow-hidden flex flex-col justify-between py-4 shadow-sm mx-auto">
-          {/* Hand preview (camera video or default silhouette) */}
+          {/* Hand preview (camera video or uploaded image or default silhouette) */}
           <div className="absolute inset-0 flex items-center justify-center pb-20">
             {isCameraActive ? (
               <video
@@ -124,6 +118,13 @@ export function MobileStep1() {
                   useMirror ? "transform scale-x-[-1]" : ""
                 }`}
               />
+            ) : uploadedImage ? (
+              <img
+                src={uploadedImage}
+                className="w-full h-full object-contain"
+                alt="Uploaded Hand Preview"
+                draggable={false}
+              />
             ) : (
               <img
                 src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
@@ -132,16 +133,23 @@ export function MobileStep1() {
                 draggable={false}
               />
             )}
-            {isCameraActive && (
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center pb-20">
-                <img
-                  src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-                  className="w-full h-full object-contain opacity-60 rotate-180"
-                  alt="Camera Overlay Hand"
-                />
-              </div>
-            )}
           </div>
+
+          {/* Close / Remove button */}
+          {!isCameraActive && uploadedImage && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadedImage(null);
+                setMaxStep(1);
+                sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+              }}
+              className="absolute top-3 right-3 bg-white/85 hover:bg-white text-slate-800 p-2 rounded-full shadow-md z-20 transition-colors border-none cursor-pointer flex items-center justify-center"
+            >
+              <X size={16} weight="bold" />
+            </button>
+          )}
 
           {/* Spacer */}
           <div className="grow" />
@@ -222,35 +230,35 @@ export function MobileStep1() {
 
 export function DesktopStep1Left() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <div className="space-y-2">
         <h4 className="text-primary-900 font-bold text-xl md:text-2xl tracking-tight leading-tight">
-          Chụp ảnh bàn tay của bạn
+          Upload ảnh bàn tay của bạn
         </h4>
       </div>
       <div className="pt-2">
         <ul className="space-y-5 text-sm font-medium text-primary-600">
           <li className="flex items-start gap-3">
-            <div className="text-secondary-700 shrink-0 mt-0.5">
+            <div className="text-secondary-800 shrink-0 mt-0.5">
               <SunDim size={20} weight="regular" />
             </div>
-            <span className="leading-relaxed">
-              Đặt bàn tay lên bề mặt phẳng trong điều kiện ánh sáng tốt
+            <span className="leading-relaxed text-slate-800">
+              Bàn tay được đặt lên bề mặt phẳng trong điều kiện ánh sáng tốt
             </span>
           </li>
           <li className="flex items-start gap-3">
-            <div className="text-secondary-700 shrink-0 mt-0.5">
+            <div className="text-secondary-800 shrink-0 mt-0.5">
               <HandPalm size={20} weight="regular" />
             </div>
-            <span className="leading-relaxed">
+            <span className="leading-relaxed text-slate-800">
               Xòe nhẹ các ngón tay để cảm biến nhận diện
             </span>
           </li>
           <li className="flex items-start gap-3">
-            <div className="text-secondary-700 shrink-0 mt-0.5">
+            <div className="text-secondary-800 shrink-0 mt-0.5">
               <CornersOut size={20} weight="regular" />
             </div>
-            <span className="leading-relaxed">
+            <span className="leading-relaxed text-slate-800">
               Tránh bóng đổ mạnh hoặc ảnh bị mờ, mất nét
             </span>
           </li>
@@ -264,8 +272,8 @@ export function DesktopStep1Bottom() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { isCameraActive },
-    actions: { capturePhoto, startCamera, handleFileUpload },
+    state: { uploadedImage },
+    actions: { handleFileUpload, setStep },
     meta: { fileInputRef },
   } = context;
 
@@ -279,38 +287,17 @@ export function DesktopStep1Bottom() {
         className="hidden"
         onChange={handleFileUpload}
       />
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        id={TRYON_CAMERA_CAPTURE_ID}
-        className="hidden"
-        onChange={handleFileUpload}
-      />
       <Button
-        onClick={() => {
-          if (isCameraActive) {
-            capturePhoto();
-          } else {
-            startCamera();
-          }
-        }}
+        onClick={() => setStep(2)}
+        disabled={!uploadedImage}
         variant="secondary"
         className="w-full h-12 gap-2 font-semibold"
       >
-        {isCameraActive ? "Chụp Ảnh Ngay" : "Mở Camera"}
-        <Camera size={18} weight="bold" />
-      </Button>
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        variant="outline-light"
-        className="w-full h-11 tracking-wider"
-      >
-        Upload Ảnh
-        <UploadSimple size={18} weight="bold" />
+        Sử dụng hình ảnh
+        <Check size={18} weight="bold" />
       </Button>
 
-      <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-3 select-none">
+      <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
         <LockSimple size={14} weight="regular" />
         <span>Ảnh của bạn là riêng tư và được bảo vệ</span>
       </div>
@@ -322,37 +309,42 @@ export function DesktopStep1Right() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { isCameraActive, useMirror },
-    actions: { processFile },
-    meta: { videoRef, fileInputRef },
+    state: { uploadedImage },
+    actions: { processFile, setUploadedImage, setMaxStep },
+    meta: { fileInputRef },
   } = context;
 
   const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDragging) {
-      setIsDragging(true);
-    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
+    dragCounter.current = 0;
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
@@ -384,52 +376,79 @@ export function DesktopStep1Right() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={() => {
-        if (!isCameraActive) {
-          fileInputRef.current?.click();
-        }
+        fileInputRef.current?.click();
       }}
-      className={`absolute inset-0 w-full h-full border-2 rounded-lg border-dashed border-slate-300 hover:border-slate-400 transition-all duration-300 flex flex-col items-center justify-center overflow-hidden bg-slate-100 ${
-        isCameraActive ? "" : "cursor-pointer"
-      }`}
+      className="absolute inset-0 w-full h-full border-2 rounded-lg border-dashed border-slate-300 hover:border-slate-400 transition-all duration-300 flex flex-col items-center justify-center overflow-hidden cursor-pointer bg-white"
     >
-      {isCameraActive ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className={`w-full h-full object-cover pointer-events-none rounded-lg ${
-            useMirror ? "transform scale-x-[-1]" : ""
-          }`}
-        />
-      ) : (
-        <img
-          src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
-          className="w-full h-full object-contain pointer-events-none select-none opacity-40"
-          alt="Hand Silhouette"
-          draggable={false}
-        />
-      )}
+      {/* Background overlay with 50% opacity */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage:
+            "url('https://cdn.hstatic.net/files/200000355853/file/ece298d0ec2c16f10310d45724b276a6035cb503__1_.png')",
+          backgroundRepeat: "repeat",
+          opacity: 0.5,
+        }}
+      />
 
-      {isCameraActive && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
-          <img
-            src="https://cdn.hstatic.net/files/200000355853/file/20260616-164029.webp"
-            className="w-full h-full"
-            alt="Hand overlay guide"
-          />
-        </div>
-      )}
+      {/* Content wrapper with relative positioning to stack above background overlay */}
+      <div
+        className={`relative z-10 w-full h-full flex flex-col items-center justify-center ${isDragging ? "invisible" : ""}`}
+      >
+        {uploadedImage ? (
+          <div className="w-full h-full relative">
+            <img
+              src={uploadedImage}
+              className="w-full h-full object-contain bg-black pointer-events-none select-none"
+              alt="Hand Preview"
+              draggable={false}
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white">
+              <UploadSimple size={28} className="mb-2" />
+              <span className="text-sm font-semibold">
+                Thay đổi ảnh bàn tay
+              </span>
+            </div>
+
+            {/* Close / Remove button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadedImage(null);
+                setMaxStep(1);
+                sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+              }}
+              className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-lg z-20 hover:scale-105 active:scale-95 transition-all border-none cursor-pointer flex items-center justify-center"
+            >
+              <X size={16} weight="bold" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center p-6 select-none pointer-events-none">
+            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm">
+              <CloudArrowUp size={36} className="text-slate-500" />
+            </div>
+            <h5 className="text-slate-700 font-medium text-sm mb-1.5">
+              Kéo hình ảnh của bạn vào đây hoặc
+            </h5>
+            <span className="text-blue-600 font-semibold text-sm underline hover:text-blue-700 pointer-events-auto">
+              Nhấn để tải lên
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Drag & Drop Visual Overlay */}
       {isDragging && (
-        <div className="absolute inset-0 w-full h-full rounded-lg transition-all duration-300 flex flex-col items-center justify-center overflow-hidden bg-slate-100 cursor-pointer pointer-events-none">
-          <div className="w-12 h-12 rounded-full bg-primary-50 text-secondary-800 flex items-center justify-center mb-3 animate-bounce">
-            <UploadSimple size={24} weight="bold" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-transparent cursor-pointer pointer-events-none z-[50] border-none">
+          <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-sm animate-bounce">
+            <UploadSimple size={28} weight="bold" />
           </div>
-          <h5 className="text-primary-900 font-bold text-sm leading-tight mb-1">
+          <h5 className="text-slate-700 font-medium text-sm mb-1.5">
             Kéo thả ảnh vào đây
           </h5>
-          <p className="text-primary-600/70 text-[10px] max-w-[200px] leading-relaxed">
+          <p className="text-slate-500 font-normal text-xs">
             Hỗ trợ định dạng PNG, JPG hoặc WEBP
           </p>
         </div>

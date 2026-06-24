@@ -6,9 +6,12 @@ import {
   LockSimple,
   Question,
   CornersOutIcon,
+  ArrowRightIcon,
+  X,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { TryOnContext } from "../context/TryOnContext";
+import { ACTIVE_TRYON_SESSION_KEY } from "../constants";
 
 export function MobileStep2() {
   const context = use(TryOnContext);
@@ -26,6 +29,7 @@ export function MobileStep2() {
     actions: {
       setStep,
       setUploadedImage,
+      setMaxStep,
       startCamera,
       handleContainerTouchStart,
       handleContainerTouchMove,
@@ -34,6 +38,7 @@ export function MobileStep2() {
       handleContainerMouseMove,
       handleContainerMouseUp,
       handleOpenGuide: onOpenGuide,
+      resetZoom,
     },
     meta: { ringContainerRef },
   } = context;
@@ -54,7 +59,7 @@ export function MobileStep2() {
       <div className="grow flex items-center justify-center py-1 min-h-0">
         <div
           ref={ringContainerRef}
-          className="h-full w-full relative flex-col rounded-lg overflow-hidden flex items-center justify-center select-none mx-auto animate-in fade-in zoom-in-95 duration-200"
+          className="h-full w-full relative flex-col rounded-lg bg-black overflow-hidden flex items-center justify-center select-none mx-auto animate-in fade-in zoom-in-95 duration-200"
           onTouchStart={handleContainerTouchStart}
           onTouchMove={handleContainerTouchMove}
           onTouchEnd={handleContainerTouchEnd}
@@ -81,7 +86,7 @@ export function MobileStep2() {
             >
               <img
                 src={uploadedImage}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain bg-black"
                 alt="Hand Preview"
                 draggable={false}
               />
@@ -113,6 +118,23 @@ export function MobileStep2() {
             </div>
           )}
 
+          {/* Reset button at top center */}
+          {!showResumePopup && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                resetZoom();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center gap-1.5 cursor-pointer border border-slate-200 shadow-md transition-all text-xs font-semibold select-none active:scale-95 animate-in fade-in duration-200"
+              title="Đặt lại vị trí & căn chỉnh"
+            >
+              <ArrowCounterClockwise size={14} className="text-slate-600" />
+              <span>Đặt lại</span>
+            </button>
+          )}
+
           {/* Guide info button */}
           <button
             onClick={(e) => {
@@ -124,6 +146,25 @@ export function MobileStep2() {
           >
             <Question size={20} />
           </button>
+
+          {/* Close / Remove button */}
+          {!showResumePopup && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setUploadedImage(null);
+                setMaxStep(1);
+                setStep(1);
+                sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+              }}
+              onMouseDown={(e) => e.stopPropagation()} // Prevent triggering drag/move gestures
+              className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md z-[100] transition-colors border-none cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
+              title="Xóa hình ảnh"
+            >
+              <X size={16} weight="bold" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -156,6 +197,9 @@ export function MobileStep2() {
 }
 
 export function DesktopStep2Left() {
+  const context = use(TryOnContext);
+  const isMobileBehavior = context?.state?.isMobileBehavior ?? false;
+
   return (
     <div className="space-y-2">
       <div className="space-y-2">
@@ -165,14 +209,45 @@ export function DesktopStep2Left() {
       </div>
       <div className="pt-2">
         <ul className="space-y-5 text-sm font-medium text-primary-600">
-          <li className="flex items-start gap-3">
-            <div className="text-secondary-700 shrink-0 mt-0.5">
-              <CornersOutIcon size={20} weight="regular" />
-            </div>
-            <span className="leading-relaxed text-slate-800">
-              Đặt vùng đỏ tại vị trí thử nhẫn
-            </span>
-          </li>
+          {isMobileBehavior ? (
+            <>
+              <li className="flex items-start gap-3">
+                <div className="text-secondary-800 shrink-0 mt-0.5">
+                  <CornersOutIcon size={20} weight="regular" />
+                </div>
+                <span className="leading-relaxed text-slate-800">
+                  Nhấn giữ và di chuyển chuột để dịch chuyển hoặc xoay ảnh bàn tay.
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="text-secondary-800 shrink-0 mt-0.5">
+                  <ArrowCounterClockwise size={20} weight="regular" />
+                </div>
+                <span className="leading-relaxed text-slate-800">
+                  Đặt ảnh bàn tay sao cho vị trí đốt ngón tay đeo nhẫn khớp với khung đỏ ở giữa.
+                </span>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="flex items-start gap-3">
+                <div className="text-secondary-800 shrink-0 mt-0.5">
+                  <CornersOutIcon size={20} weight="regular" />
+                </div>
+                <span className="leading-relaxed text-slate-800">
+                  Nhấn giữ và kéo chuột để vẽ một khung màu đỏ bao quanh vị trí đốt ngón tay đeo nhẫn.
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="text-secondary-800 shrink-0 mt-0.5">
+                  <ArrowCounterClockwise size={20} weight="regular" />
+                </div>
+                <span className="leading-relaxed text-slate-800">
+                  Sử dụng các điều khiển xoay và dịch chuyển trên khung để khớp vị trí đeo nhẫn.
+                </span>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>
@@ -183,32 +258,22 @@ export function DesktopStep2Bottom() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { uploadedImage },
+    state: { uploadedImage, redBox, isMobileBehavior },
     actions: { setStep, setUploadedImage, startCamera },
   } = context;
+
+  const isNextDisabled = !uploadedImage || (!isMobileBehavior && (!redBox || !redBox.hasDrawn));
 
   return (
     <div className="flex flex-col gap-3.5">
       <Button
         onClick={() => setStep(3)}
-        disabled={!uploadedImage}
+        disabled={isNextDisabled}
         variant="secondary"
         className="w-full h-12 gap-2 font-semibold"
       >
-        Dùng hình ảnh này
-        <Check size={16} weight="bold" />
-      </Button>
-      <Button
-        onClick={() => {
-          setStep(1);
-          setUploadedImage(null);
-          startCamera();
-        }}
-        variant="outline-light"
-        className="w-full h-12 tracking-wider"
-      >
-        Chụp lại
-        <ArrowCounterClockwise size={18} />
+        Tiếp theo
+        <ArrowRightIcon size={16} weight="bold" />
       </Button>
 
       <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
