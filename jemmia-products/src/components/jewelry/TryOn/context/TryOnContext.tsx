@@ -7,6 +7,7 @@ export interface TryOnState {
   uploadedImage: string | null;
   selectedRing: ProductModel | null;
   isMobile: boolean;
+  isMobileBehavior: boolean;
   toastMessage: string | null;
   isGenerating: boolean;
   generatedImage: string | null;
@@ -19,6 +20,7 @@ export interface TryOnState {
   guideStep: number;
   showResumePopup: boolean;
   showExitPopup: boolean;
+  showSaveSuccessPopup: boolean;
   savedSessionStep: number | null;
   alignmentPreviewUrl: string | null;
   
@@ -36,6 +38,7 @@ export interface TryOnState {
   // Catalog hooks state
   rings: ProductModel[];
   searchQuery: string;
+  selectedType: string;
   isLoadingRings: boolean;
   isLoadingMore: boolean;
 }
@@ -57,6 +60,7 @@ export interface TryOnActions {
   setMaxStep: (step: number) => void;
   setShowResumePopup: (show: boolean) => void;
   setShowExitPopup: (show: boolean) => void;
+  setShowSaveSuccessPopup: (show: boolean) => void;
   setSavedSessionStep: (step: number | null) => void;
   setAlignmentPreviewUrl: (url: string | null) => void;
 
@@ -80,6 +84,7 @@ export interface TryOnActions {
 
   // Catalog Actions
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedType: React.Dispatch<React.SetStateAction<string>>;
 
   // Common operations
   handleOpenGuide: () => void;
@@ -96,6 +101,14 @@ export interface TryOnActions {
   handleDownload: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   processFile: (file: File) => void;
+  handleRotateRedBox: (deg: number) => void;
+  handleResetRedBox: () => void;
+  handleRotateStart: (e: React.MouseEvent) => void;
+  handleRotateTouchStart: (e: React.TouchEvent) => void;
+  handleDragStart: (e: React.MouseEvent) => void;
+  handleDragTouchStart: (e: React.TouchEvent) => void;
+  handleResizeStart: (e: React.MouseEvent, corner: string) => void;
+  handleResizeTouchStart: (e: React.TouchEvent, corner: string) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
 }

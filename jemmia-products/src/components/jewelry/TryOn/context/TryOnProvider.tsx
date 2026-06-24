@@ -138,6 +138,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   const [maxStep, setMaxStep] = useState(1);
   const [showResumePopup, setShowResumePopup] = useState(false);
   const [showExitPopup, setShowExitPopup] = useState(false);
+  const [showSaveSuccessPopup, setShowSaveSuccessPopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
 
@@ -170,15 +171,20 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     }
   };
 
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
+
   // Responsive device width observer
   useEffect(() => {
-    const checkMobile = () => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
       setIsMobile(window.innerWidth < 993);
     };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const isMobileBehavior = isMobile || windowWidth <= 1280;
 
   // Custom Hooks
   const {
@@ -191,6 +197,9 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   } = useTryOnCamera({
     isMobile,
     onPhotoCaptured: async (dataUrl) => {
+      if (typeof handleResetRedBox === "function") {
+        handleResetRedBox();
+      }
       const compressed = await resizeAndCompressImage({ base64OrUrl: dataUrl });
       setUploadedImage(compressed);
       setImageTranslate([0, 0]);
@@ -218,6 +227,15 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     imageRotation,
     setImageRotation,
     redBox,
+    setRedBox,
+    handleRotateRedBox,
+    handleResetRedBox,
+    handleRotateStart,
+    handleRotateTouchStart,
+    handleDragStart,
+    handleDragTouchStart,
+    handleResizeStart,
+    handleResizeTouchStart,
     containerWidth,
     setContainerWidth,
     ringContainerRef,
@@ -228,12 +246,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     handleContainerMouseMove,
     handleContainerMouseUp,
     resetZoom,
-  } = useTryOnGestures({ step, uploadedImage });
+  } = useTryOnGestures({ step, uploadedImage, isMobileBehavior });
 
   const {
     rings,
     searchQuery,
     setSearchQuery,
+    selectedType,
+    setSelectedType,
     isLoadingRings,
     isLoadingMore,
     mobileSentinelRef,
@@ -290,12 +310,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
             setIsGenerating(false);
             setisTryingOn(false);
 
-            sessionStorage.setItem("tryon_unread_result", "true");
-            window.dispatchEvent(
-              new CustomEvent("tryon:unread-change", {
-                detail: { hasUnread: true },
-              })
-            );
+            if (!isOpen) {
+              sessionStorage.setItem("tryon_unread_result", "true");
+              window.dispatchEvent(
+                new CustomEvent("tryon:unread-change", {
+                  detail: { hasUnread: true },
+                })
+              );
+            }
 
             toast.success("Thử nhẫn hoàn tất!", {
               duration: 5000,
@@ -390,6 +412,9 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
           if (session.imageRotation !== undefined) {
             setImageRotation(session.imageRotation);
           }
+          if (session.redBox !== undefined) {
+            setRedBox(session.redBox);
+          }
           setMaxStep(4);
           setIsGenerating(true);
           setisTryingOn(true);
@@ -438,6 +463,9 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
               }
               if (session.imageRotation !== undefined) {
                 setImageRotation(session.imageRotation);
+              }
+              if (session.redBox !== undefined) {
+                setRedBox(session.redBox);
               }
 
               setMaxStep(resumeStep);
@@ -509,14 +537,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         imageScale,
         imageTranslate,
         imageRotation,
-        redBox,
-        fingerPosition: { x: 0, y: 0 },
-        ringScale: 1.0,
-        ringRotation: 0,
-        dragTranslate: [0, 0],
         generatedImage,
         generatedImages,
         selectedGeneratedImage,
+        redBox,
       };
       safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
     }
@@ -527,10 +551,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     imageScale,
     imageTranslate,
     imageRotation,
-    redBox,
     generatedImage,
     generatedImages,
     selectedGeneratedImage,
+    redBox,
   ]);
 
   // Cleanup polling on unmount
@@ -606,9 +630,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
       // Draw red box overlay mapped to original coordinates and rotated
       if (redBox) {
+        const netRotation = (redBox.rotation || 0) - imageRotation;
         ctx.save();
         ctx.translate(finalCenterX, finalCenterY);
-        ctx.rotate((-imageRotation * Math.PI) / 180);
+        ctx.rotate((netRotation * Math.PI) / 180);
 
         ctx.fillStyle = "rgba(239, 68, 68, 0.5)";
         ctx.fillRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
@@ -729,12 +754,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
             setIsGenerating(false);
             setisTryingOn(false);
 
-            sessionStorage.setItem("tryon_unread_result", "true");
-            window.dispatchEvent(
-              new CustomEvent("tryon:unread-change", {
-                detail: { hasUnread: true },
-              })
-            );
+            if (!isOpen) {
+              sessionStorage.setItem("tryon_unread_result", "true");
+              window.dispatchEvent(
+                new CustomEvent("tryon:unread-change", {
+                  detail: { hasUnread: true },
+                })
+              );
+            }
 
             toast.success("Thử nhẫn hoàn tất!", {
               duration: 5000,
@@ -826,9 +853,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
           // Draw red box overlay mapped to original coordinates and rotated
           if (redBox) {
+            const netRotation = (redBox.rotation || 0) - imageRotation;
             ctx.save();
             ctx.translate(finalCenterX, finalCenterY);
-            ctx.rotate((-imageRotation * Math.PI) / 180);
+            ctx.rotate((netRotation * Math.PI) / 180);
 
             ctx.fillStyle = "rgba(239, 68, 68, 0.5)";
             ctx.fillRect(-finalBoxW / 2, -finalBoxH / 2, finalBoxW, finalBoxH);
@@ -889,10 +917,6 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         imageTranslate,
         imageRotation,
         redBox,
-        fingerPosition: { x: 0, y: 0 },
-        ringScale: 1.0,
-        ringRotation: 0,
-        dragTranslate: [0, 0],
       };
       safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
 
@@ -909,7 +933,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
   const handleComplete = async () => {
     try {
-      if (generatedImage && !generatedImage.startsWith("data:")) {
+      if (generatedImage) {
         const designCode = selectedRing?.attributes?.designCode || "";
         await axios.post("/image-generation/save", {
           designCode,
@@ -919,9 +943,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     } catch (err) {
       console.error("Failed to save image-generation result:", err);
     } finally {
-      handleResetAll();
-      stopCamera();
-      onClose();
+      setShowSaveSuccessPopup(true);
     }
   };
 
@@ -1018,9 +1040,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         const finalBoxH = redBoxHeight / S_total;
 
         imgRing.onload = () => {
+          const netRotation = (redBox.rotation || 0) - imageRotation;
           ctx.save();
           ctx.translate(finalCenterX, finalCenterY);
-          ctx.rotate((-imageRotation * Math.PI) / 180);
+          ctx.rotate((netRotation * Math.PI) / 180);
           ctx.drawImage(
             imgRing,
             -finalBoxW / 2,
@@ -1117,6 +1140,9 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
   const processFile = (file: File) => {
     stopCamera();
+    if (typeof handleResetRedBox === "function") {
+      handleResetRedBox();
+    }
     const reader = new FileReader();
     reader.onload = async (event) => {
       if (event.target?.result) {
@@ -1160,6 +1186,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       uploadedImage,
       selectedRing,
       isMobile,
+      isMobileBehavior,
       toastMessage,
       isGenerating,
       generatedImage,
@@ -1172,6 +1199,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       guideStep,
       showResumePopup,
       showExitPopup,
+      showSaveSuccessPopup,
       savedSessionStep,
       alignmentPreviewUrl,
       isCameraActive,
@@ -1183,6 +1211,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       containerWidth,
       rings,
       searchQuery,
+      selectedType,
       isLoadingRings,
       isLoadingMore,
     },
@@ -1203,6 +1232,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       setMaxStep,
       setShowResumePopup,
       setShowExitPopup,
+      setShowSaveSuccessPopup,
       setSavedSessionStep,
       setAlignmentPreviewUrl,
       startCamera,
@@ -1220,6 +1250,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       handleContainerMouseUp,
       resetZoom,
       setSearchQuery,
+      setSelectedType,
       handleOpenGuide,
       handleCloseAttempt,
       handleResumeSession,
@@ -1234,6 +1265,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       handleDownload,
       handleFileUpload,
       processFile,
+      handleRotateRedBox,
+      handleResetRedBox,
+      handleRotateStart,
+      handleRotateTouchStart,
+      handleDragStart,
+      handleDragTouchStart,
+      handleResizeStart,
+      handleResizeTouchStart,
       handleZoomIn,
       handleZoomOut,
     },
