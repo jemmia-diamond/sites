@@ -42,11 +42,11 @@ export function MobileProgressBar({ activeCount, className, onStepClick, disable
               }
             }}
             className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center font-medium text-xs transition-all duration-500 ease-in-out z-10",
-              isClickable && !disabled && "cursor-pointer hover:scale-105 active:scale-95",
-              isCompleted && "bg-secondary-900 border-2 border-secondary-900 text-white shadow-sm",
-              isActive && "bg-white border-2 border-secondary-900 text-secondary-900 shadow-sm",
-              !isCompleted && !isActive && "bg-white border-2 border-gray-400 text-gray-400"
+              "rounded-full lg:pt-0.5 flex items-center justify-center font-medium text-xs transition-all duration-500 ease-in-out z-10",
+              isClickable && !disabled && "w-8 h-8 cursor-pointer hover:scale-105 active:scale-95",
+              isCompleted && "w-8 h-8 bg-secondary-900 border-2 xl:border-3 border-secondary-900 text-white shadow-sm",
+              isActive && "bg-secondary-200 w-9 h-9 border-2 xl:border-3 border-secondary-900 text-secondary-900 shadow-sm",
+              !isCompleted && !isActive && "w-8 h-8 bg-white border border-gray-400 text-gray-400"
             )}
           >
             0{stepNum}
