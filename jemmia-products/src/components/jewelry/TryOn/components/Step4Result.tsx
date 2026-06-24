@@ -5,6 +5,7 @@ import { ResultCanvas } from "./ResultCanvas";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { TryOnContext } from "../context/TryOnContext";
+import { Check } from "lucide-react";
 
 export function MobileStep4() {
   const context = use(TryOnContext);
@@ -52,17 +53,18 @@ export function MobileStep4() {
           <Button
             onClick={() => handleTryOn({ force: true })}
             variant="outline-light"
-            className="w-full h-11 tracking-wider"
+            className="w-full h-11"
           >
-            <span>Thử lại</span>
+            <span>Tạo lại ảnh này</span>
             <ArrowCounterClockwise size={18} />
           </Button>
           <Button
             onClick={handleComplete}
             variant="secondary"
-            className="w-full h-11 tracking-wider font-normal"
+            className="w-full h-11 text-sm font-normal"
           >
-            Hoàn tất
+            Lưu và thoát
+            <Check size={18} />
           </Button>
         </div>
       )}
@@ -109,14 +111,39 @@ export function MobileStep4() {
 }
 
 export function DesktopStep4Left() {
+  const context = use(TryOnContext);
+  if (!context) return null;
+
+  const { state } = context;
+  const { selectedRing } = state;
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <div className="space-y-1">
-          <h4 className="text-primary-900 font-bold text-lg leading-tight">
-            Hoàn tất tạo ảnh
-          </h4>
-        </div>
+        {/* Selected Ring Card */}
+        {selectedRing && (
+          <div className="border border-primary-100 p-4 bg-white rounded relative w-full shadow-sm">
+            {/* <span className="absolute top-3 left-3 bg-[#E6F4F2] text-secondary-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+              Nhẫn đã chọn
+            </span> */}
+            <div className="flex gap-4 items-center">
+              <div className="flex items-center justify-center w-1/3">
+                <img
+                  src={selectedRing.thumbnails?.[0]?.url}
+                  className="h-auto w-full aspect-square object-cover"
+                  alt={selectedRing.title}
+                />
+              </div>
+              <div className="text-left">
+                <h4 className="text-slate-700 font-medium text-base leading-snug">
+                  {selectedRing.type || "Loại nhẫn"}
+                </h4>
+                <h4 className="text-slate-900 font-black text-base leading-snug">
+                  {selectedRing.attributes?.designCode || "--"}
+                </h4>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -128,9 +155,7 @@ export function DesktopStep4Bottom() {
 
   const { state, actions } = context;
   const {
-    selectedRing,
     isGenerating,
-    selectedGeneratedImage,
     generationError,
   } = state;
 
@@ -141,44 +166,15 @@ export function DesktopStep4Bottom() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Selected Ring Card */}
-      {selectedRing && (
-        <div className="border border-primary-100 p-4 bg-white rounded relative w-full shadow-sm">
-          <span className="absolute top-3 left-3 bg-[#E6F4F2] text-secondary-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-            Nhẫn đã chọn
-          </span>
-          <div className="flex items-center justify-center min-h-64 mb-3">
-            {selectedRing.thumbnails?.[0]?.url ? (
-              <img
-                src={selectedRing.thumbnails?.[0]?.url}
-                className="h-auto w-full min-h-64 aspect-square object-cover"
-                alt={selectedRing.title}
-              />
-            ) : (
-              <div className="min-h-64 w-full aspect-square flex flex-col items-center justify-center bg-slate-100 border-slate-300 text-xs text-slate-400 gap-2 select-none">
-                <ImageSquare size={48} className="text-slate-400" />
-                <span>No Image</span>
-              </div>
-            )}
-          </div>
-          <div className="space-y-3 text-left">
-            <h4 className="text-secondary-900 font-black text-base leading-snug">
-              {selectedRing.type || "Loại nhẫn"} -{" "}
-              {selectedRing.attributes?.designCode || "--"}
-            </h4>
-          </div>
-        </div>
-      )}
-
       {/* Desktop Actions */}
       {!isGenerating && !generationError && (
-        <div className="flex gap-3 mt-2">
+        <div className="flex flex-col gap-3 mt-2">
           <Button
             onClick={() => handleTryOn({ force: true })}
             variant="outline-light"
             className="w-full h-11 tracking-wider"
           >
-            <span>Thử lại</span>
+            <span>Tạo lại ảnh này</span>
             <ArrowCounterClockwise size={18} />
           </Button>
           <Button
@@ -186,7 +182,8 @@ export function DesktopStep4Bottom() {
             variant="secondary"
             className="w-full h-11 tracking-wider font-normal"
           >
-            Hoàn tất
+            Lưu và Thoát
+            <Check size={18} />
           </Button>
         </div>
       )}

@@ -1,7 +1,9 @@
-import React, { use } from "react";
-import { DownloadSimple, WarningCircle } from "@phosphor-icons/react";
+import React, { use, useState } from "react";
+import { DownloadSimple, WarningCircle, Copy, Check } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TryOnContext } from "../context/TryOnContext";
+import { downloadFile } from "@/lib/download";
+import { copyImage } from "@/lib/media";
 
 interface ResultCanvasProps {
   onViewProduct?: () => void;
@@ -9,6 +11,8 @@ interface ResultCanvasProps {
 
 export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
   const context = use(TryOnContext);
+  const [copied, setCopied] = useState(false);
+
   if (!context) return null;
 
   const { state, actions } = context;
@@ -23,9 +27,16 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
 
   const {
     handleSelectGeneratedImage,
-    handleDownload,
     setIsFullscreen,
   } = actions;
+
+  const handleCopy = async (imageUrl: string) => {
+    const success = await copyImage(imageUrl);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (generationError) {
     return (
@@ -103,11 +114,11 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
 
   /* State C: Final / selectedGeneratedImage is not null */
   return (
-    <div className="w-full h-full relative overflow-hidden mx-auto flex items-center justify-center">
-      <div className="relative w-fit h-fit max-w-full max-h-full bg-white border border-slate-200 shadow-md rounded-lg overflow-hidden">
+    <div className="max-w-225 h-full lg:h-auto w-full aspect-square bg-black border border-slate-200 shadow-md rounded-lg relative overflow-hidden mx-auto flex items-center justify-center">
+      <div className="relative w-full h-full max-w-full max-h-full bg-white overflow-hidden">
         <img
           src={selectedGeneratedImage}
-          className="max-w-full max-h-full block w-auto h-auto cursor-pointer"
+          className="w-full h-full object-contain bg-black cursor-pointer"
           alt="AI Generated Try On Result"
           onClick={() => setIsFullscreen(true)}
         />
@@ -118,12 +129,26 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
           }`}
         >
           <button
-            onClick={handleDownload}
+            onClick={() => selectedGeneratedImage && downloadFile(selectedGeneratedImage)}
             className={`${
               isMobile ? "w-11 h-11" : "w-12 h-12"
             } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            title="Tải xuống hình ảnh"
           >
             <DownloadSimple size={isMobile ? 20 : 22} />
+          </button>
+          <button
+            onClick={() => selectedGeneratedImage && handleCopy(selectedGeneratedImage)}
+            className={`${
+              isMobile ? "w-11 h-11" : "w-12 h-12"
+            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            title="Sao chép hình ảnh"
+          >
+            {copied ? (
+              <Check size={isMobile ? 18 : 20} className="text-emerald-600 font-bold" />
+            ) : (
+              <Copy size={isMobile ? 20 : 22} />
+            )}
           </button>
           {onViewProduct && (
             <button
@@ -131,6 +156,7 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
               className={`${
                 isMobile ? "w-11 h-11" : "w-12 h-12"
               } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+              title="Xem thông tin sản phẩm"
             >
               <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg" alt="ring-icon"/>
             </button>
@@ -140,5 +166,3 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
     </div>
   );
 }
-
-

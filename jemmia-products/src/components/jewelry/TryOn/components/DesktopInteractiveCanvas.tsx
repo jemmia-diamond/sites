@@ -1,25 +1,12 @@
 import { use } from "react";
 import {
-  MagnifyingGlassPlus,
-  MagnifyingGlassMinus,
-  Question,
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  X,
 } from "@phosphor-icons/react";
 import { TryOnContext } from "../context/TryOnContext";
 import { DesktopStep1Right } from "./Step1Upload";
-
-const getScaleFromSlider = (v: number): number => {
-  if (v <= 1) {
-    return 0.5 + v * 0.5; // Maps [0, 1] to [0.5, 1.0]
-  }
-  return 1.0 + (v - 1) * 5.0; // Maps [1, 2] to [1.0, 6.0]
-};
-
-const getSliderFromScale = (scale: number): number => {
-  if (scale <= 1.0) {
-    return Math.max(0, (scale - 0.5) / 0.5); // Maps [0.5, 1.0] to [0, 1]
-  }
-  return Math.min(2, 1.0 + (scale - 1.0) / 5.0); // Maps [1.0, 6.0] to [1, 2]
-};
+import { ACTIVE_TRYON_SESSION_KEY } from "../constants";
 
 export function DesktopInteractiveCanvas() {
   const context = use(TryOnContext);
@@ -29,26 +16,31 @@ export function DesktopInteractiveCanvas() {
   const {
     step,
     uploadedImage,
+    redBox,
+    showResumePopup,
+    isMobileBehavior,
     imageScale,
     imageTranslate,
     imageRotation,
-    redBox,
-    containerWidth,
-    showResumePopup,
   } = state;
 
   const {
-    setImageScale,
-    setImageRotation,
     handleContainerTouchStart,
     handleContainerTouchMove,
     handleContainerTouchEnd,
     handleContainerMouseDown,
     handleContainerMouseMove,
     handleContainerMouseUp,
-    handleZoomIn,
-    handleZoomOut,
-    handleOpenGuide,
+    handleRotateStart,
+    handleRotateTouchStart,
+    handleDragStart,
+    handleDragTouchStart,
+    resetZoom,
+    handleResizeStart,
+    handleResizeTouchStart,
+    setUploadedImage,
+    setMaxStep,
+    setStep,
   } = actions;
 
   const { ringContainerRef } = meta;
@@ -57,13 +49,13 @@ export function DesktopInteractiveCanvas() {
     <div className="grow flex items-center justify-center bg-[#F8FAFC] p-6 relative overflow-hidden min-w-0">
       <div
         ref={ringContainerRef}
-        className={`w-full max-w-160 2xl:max-w-180 3xl:max-w-210 rounded-lg h-auto aspect-square relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
+        className={`max-w-225 h-auto w-full aspect-square bg-black rounded-lg relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
           step === 1
             ? "bg-transparent border-none"
             : "bg-black border border-primary-200 shadow-lg"
         }`}
         style={{
-          cursor: step === 2 ? "grab" : "default",
+          cursor: step === 2 ? "crosshair" : "default",
           touchAction: "none",
         }}
         onTouchStart={handleContainerTouchStart}
@@ -77,28 +69,73 @@ export function DesktopInteractiveCanvas() {
       >
         {step === 1 && <DesktopStep1Right />}
 
+        {/* Reset button at top center */}
+        {step === 2 && !showResumePopup && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              resetZoom();
+            }}
+            onMouseDown={(e) => e.stopPropagation()} // Prevent triggering drag/move gestures
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center gap-1.5 cursor-pointer border border-slate-200 shadow-md transition-all text-xs font-semibold select-none active:scale-95 animate-in fade-in duration-200"
+            title="Đặt lại vị trí & căn chỉnh"
+          >
+            <ArrowCounterClockwise size={14} className="text-slate-600" />
+            <span>Đặt lại</span>
+          </button>
+        )}
+
+        {/* Close/Remove button */}
+        {step === 2 && !showResumePopup && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setUploadedImage(null);
+              setMaxStep(1);
+              setStep(1);
+              sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+            }}
+            onMouseDown={(e) => e.stopPropagation()} // Prevent triggering drag/move gestures
+            className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-lg z-[100] transition-colors border-none cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95 animate-in fade-in duration-200"
+            title="Xóa hình ảnh"
+          >
+            <X size={16} weight="bold" />
+          </button>
+        )}
+
         {uploadedImage && step !== 1 && (
           <div
             style={{
               width: "100%",
               height: "100%",
-              transform: `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`,
+              transform: isMobileBehavior
+                ? `translate(${imageTranslate[0]}px, ${imageTranslate[1]}px) scale(${imageScale}) rotate(${imageRotation}deg)`
+                : "none",
               transformOrigin: "center center",
             }}
-            className="flex items-center justify-center pointer-events-none select-none"
+            className="flex items-center justify-center pointer-events-none select-none relative"
           >
             <img
               src={uploadedImage}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-black"
               alt="Hand Preview"
               draggable={false}
             />
+            {/* Dark overlay backdrop when red box has not been drawn on desktop step 2 */}
+            {step === 2 && !isMobileBehavior && (!redBox || !redBox.hasDrawn) && (
+              <div className="absolute inset-0 bg-black/30 transition-all duration-300 flex items-center justify-center">
+              </div>
+            )}
           </div>
         )}
 
-        {/* Fixed, Non-editable Centered Red Box on Desktop */}
-        {step === 2 && !showResumePopup && redBox && (
+        {/* Drawn & Rotatable Red Box on Desktop Step 2 */}
+        {step === 2 && !showResumePopup && redBox && redBox.hasDrawn && (
           <div
+            onMouseDown={isMobileBehavior ? undefined : handleDragStart}
+            onTouchStart={isMobileBehavior ? undefined : handleDragTouchStart}
             style={{
               position: "absolute",
               left: `${redBox.x}%`,
@@ -108,120 +145,109 @@ export function DesktopInteractiveCanvas() {
               border: "2px solid rgb(239, 68, 68)",
               backgroundColor: "rgba(239, 68, 68, 0.5)",
               boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.5)",
-              pointerEvents: "none",
+              transform: `rotate(${redBox.rotation || 0}deg)`,
+              transformOrigin: "center center",
+              pointerEvents: isMobileBehavior ? "none" : "auto",
+              cursor: isMobileBehavior ? "default" : "move",
               zIndex: 40,
             }}
-          />
-        )}
-
-        {/* Vertical Zoom Slider on Desktop */}
-        {step === 2 && !showResumePopup && (
-          <div
-            onMouseDown={(e) => e.stopPropagation()}
-            onMouseMove={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-            className="absolute right-4 top-4 bottom-20 z-[100] py-4 rounded-full bg-black/60 flex flex-col items-center justify-between select-none animate-in fade-in slide-in-from-right-4 duration-300 w-10"
           >
-            <button
-              type="button"
-              onClick={handleZoomIn}
-              className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-              title="Phóng to"
-            >
-              <MagnifyingGlassPlus
-                size={16}
-                weight="bold"
-                className="text-white"
-              />
-            </button>
+            {/* Rotation Handle */}
+            {!isMobileBehavior && (
+              <>
+                <div
+                  onMouseDown={handleRotateStart}
+                  onTouchStart={handleRotateTouchStart}
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-red-500 flex items-center justify-center cursor-alias shadow-md hover:bg-slate-50 transition-all select-none active:cursor-grabbing"
+                  style={{
+                    pointerEvents: "auto",
+                  }}
+                  title="Nhấn giữ và kéo để xoay"
+                >
+                  <ArrowClockwise size={12} className="text-red-500 font-bold" />
+                </div>
+                {/* Connecting line */}
+                <div
+                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-red-500 pointer-events-none"
+                />
+              </>
+            )}
 
-            <div className="flex-1 w-full flex items-center justify-center relative">
-              <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.01"
-                value={getSliderFromScale(imageScale)}
-                onChange={(e) =>
-                  setImageScale(getScaleFromSlider(Number(e.target.value)))
-                }
-                style={{
-                  width: `${Math.max(100, containerWidth - 210)}px`,
-                  background: `linear-gradient(to right, #ffffff 0%, #ffffff ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 ${(getSliderFromScale(imageScale) / 2) * 100}%, #94a3b8 100%)`,
-                }}
-                className="custom-slider-vertical-rotated"
-              />
-            </div>
+            {/* Resize Handles */}
+            {!isMobileBehavior && (
+              <>
+                {/* 4 Corner Handles (Square Right-Angled L-shapes) */}
+                {/* Top-Left */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "tl")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "tl")}
+                  className="absolute top-0 left-0 w-3.5 h-3.5 -translate-x-[2px] -translate-y-[2px] border-t-[3px] border-l-[3px] border-white cursor-nwse-resize z-20"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh kích thước"
+                />
+                {/* Top-Right */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "tr")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "tr")}
+                  className="absolute top-0 right-0 translate-x-[2px] -translate-y-[2px] w-3.5 h-3.5 border-t-[3px] border-r-[3px] border-white cursor-nesw-resize z-20"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh kích thước"
+                />
+                {/* Bottom-Left */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "bl")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "bl")}
+                  className="absolute bottom-0 left-0 -translate-x-[2px] translate-y-[2px] w-3.5 h-3.5 border-b-[3px] border-l-[3px] border-white cursor-nesw-resize z-20"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh kích thước"
+                />
+                {/* Bottom-Right */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "br")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "br")}
+                  className="absolute bottom-0 right-0 translate-x-[2px] translate-y-[2px] w-3.5 h-3.5 border-b-[3px] border-r-[3px] border-white cursor-nwse-resize z-20"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh kích thước"
+                />
 
-            <button
-              type="button"
-              onClick={handleZoomOut}
-              className="w-6 h-6 shrink-0 rounded-full hover:bg-slate-100 text-slate-800 flex items-center justify-center cursor-pointer transition-all active:scale-90"
-              title="Thu nhỏ"
-            >
-              <MagnifyingGlassMinus
-                size={16}
-                weight="bold"
-                className="text-white"
-              />
-            </button>
+                {/* 4 Edge Handles (Thin, Transparent Interactive Zones) */}
+                {/* Top Edge */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "t")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "t")}
+                  className="absolute top-0 left-3 right-3 h-2.5 -translate-y-1/2 cursor-ns-resize z-10 bg-transparent"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh chiều cao"
+                />
+                {/* Bottom Edge */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "b")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "b")}
+                  className="absolute bottom-0 left-3 right-3 h-2.5 translate-y-1/2 cursor-ns-resize z-10 bg-transparent"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh chiều cao"
+                />
+                {/* Left Edge */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "l")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "l")}
+                  className="absolute top-3 bottom-3 left-0 w-2.5 -translate-x-1/2 cursor-ew-resize z-10 bg-transparent"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh chiều rộng"
+                />
+                {/* Right Edge */}
+                <div
+                  onMouseDown={(e) => handleResizeStart(e, "r")}
+                  onTouchStart={(e) => handleResizeTouchStart(e, "r")}
+                  className="absolute top-3 bottom-3 right-0 w-2.5 translate-x-1/2 cursor-ew-resize z-10 bg-transparent"
+                  style={{ pointerEvents: "auto" }}
+                  title="Kéo để chỉnh chiều rộng"
+                />
+              </>
+            )}
 
-            <span className="font-mono text-[10px] text-white font-bold w-10 shrink-0 text-center select-none">
-              {Math.round(imageScale * 100)}%
-            </span>
           </div>
         )}
-
-        {/* Floating Rotation Slider on Desktop */}
-        <div className="absolute bottom-4 w-full flex px-4 gap-4 z-[100]">
-          {step === 2 && !showResumePopup && (
-            <div
-              onMouseDown={(e) => e.stopPropagation()}
-              onMouseMove={(e) => e.stopPropagation()}
-              onMouseUp={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-              className="px-4 flex-1 select-none flex items-center gap-3 bg-black/60 rounded-full animate-in fade-in slide-in-from-bottom-4 duration-300"
-            >
-              <span className="text-[10px] text-white font-bold whitespace-nowrap">
-                Xoay:
-              </span>
-              <input
-                type="range"
-                min="-180"
-                max="180"
-                value={imageRotation}
-                onChange={(e) => setImageRotation(Number(e.target.value))}
-                style={{
-                  background: `linear-gradient(to right, #ffffff 0%, #ffffff ${((imageRotation + 180) / 360) * 100}%, #94a3b8 ${((imageRotation + 180) / 360) * 100}%, #94a3b8 100%)`,
-                }}
-                className="grow custom-slider"
-              />
-              <span className="font-mono text-[10px] text-white font-bold text-right">
-                {imageRotation}°
-              </span>
-            </div>
-          )}
-
-          {step === 2 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenGuide();
-              }}
-              className="w-10 h-10 rounded-full bg-white/95 hover:bg-white text-black flex items-center justify-center cursor-pointer border border-primary-100 shadow-md transition-all active:scale-95"
-              title="Hướng dẫn cử chỉ"
-            >
-              <Question size={20} />
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );

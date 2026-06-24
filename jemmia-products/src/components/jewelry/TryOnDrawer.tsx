@@ -27,9 +27,7 @@ import { MobileProgressBar } from "./TryOn/components/MobileProgressBar";
 import { TryOnGuide } from "./TryOn/components/TryOnGuide";
 
 // Constants
-import {
-  TRYON_GUIDE_SHOWN_KEY,
-} from "./TryOn/constants";
+import { TRYON_GUIDE_SHOWN_KEY } from "./TryOn/constants";
 
 interface TryOnDrawerProps {
   isOpen: boolean;
@@ -40,9 +38,7 @@ export function TryOnDrawer({ isOpen, onClose }: TryOnDrawerProps) {
   return (
     <TryOnProvider isOpen={isOpen} onClose={onClose}>
       <AnimatePresence>
-        {isOpen && (
-          <TryOnDrawerInner onClose={onClose} />
-        )}
+        {isOpen && <TryOnDrawerInner onClose={onClose} />}
       </AnimatePresence>
     </TryOnProvider>
   );
@@ -67,6 +63,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     showGuide,
     showResumePopup,
     showExitPopup,
+    showSaveSuccessPopup,
     savedSessionStep,
     alignmentPreviewUrl,
     isMobile,
@@ -76,6 +73,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     setStep,
     setShowResumePopup,
     setShowExitPopup,
+    setShowSaveSuccessPopup,
     setShowGuide,
     setAlignmentPreviewUrl,
     stopCamera,
@@ -201,47 +199,137 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
                 <img src="https://cdn.hstatic.net/files/200000355853/file/frame.svg" />
               </div>
 
-              {/* Title */}
-              <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
-                Thoát khỏi quá trình này?
-              </h3>
+              {step === 4 && isGenerating ? (
+                <>
+                  {/* Title */}
+                  <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
+                    Đang tạo hình ảnh
+                  </h3>
 
-              {/* Description */}
-              <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
-                Bạn đang ở bước {step}/4. Nếu thoát, các thay đổi chưa lưu có thể bị mất
-              </p>
+                  {/* Description */}
+                  <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
+                    Hình ảnh đang được tạo <br /> tiến trình sẽ tiếp tục ngay cả khi bạn thoát
+                  </p>
+
+                  {/* Buttons */}
+                  <Button
+                    onClick={() => {
+                      stopCamera();
+                      onClose();
+                      setShowExitPopup(false);
+                    }}
+                    variant="secondary"
+                    className="w-full h-12 mt-6 font-semibold"
+                  >
+                    Thoát
+                  </Button>
+                  <Button
+                    onClick={() => setShowExitPopup(false)}
+                    variant="outline"
+                    className="w-full h-12 tracking-wider mt-3 font-semibold"
+                  >
+                    Ở lại
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {/* Title */}
+                  <h3 className="text-slate-900 font-bold text-lg leading-snug tracking-tight mb-2 mx-4 lg:mx-0">
+                    Thoát khỏi quá trình này?
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-slate-500 text-sm leading-relaxed mx-4 lg:mx-0">
+                    Bạn đang ở bước {step}/4. Nếu thoát, các thay đổi chưa lưu có thể bị mất
+                  </p>
+
+                  {/* Buttons */}
+                  <Button
+                    onClick={() => {
+                      stopCamera();
+                      onClose();
+                      setShowExitPopup(false);
+                    }}
+                    variant="secondary"
+                    className="w-full h-12 gap-2 mt-6"
+                  >
+                    Lưu & Thoát
+                  </Button>
+                  <Button
+                    onClick={() => setShowExitPopup(false)}
+                    variant="outline"
+                    className="w-full h-12 tracking-wider mt-3"
+                  >
+                    Ở lại
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={() => {
+                      setShowExitPopup(false);
+                      handleResetAll();
+                      stopCamera();
+                      onClose();
+                    }}
+                    className="w-full text-center py-3 mt-3 cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-600"
+                  >
+                    Thoát không lưu
+                  </Button>
+                </>
+              )}
+            </motion.div>
+          </div>,
+          document.body,
+        )}
+
+      {showSaveSuccessPopup &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white shadow-2xl p-4 lg:p-6 max-w-sm w-full border border-slate-100 flex flex-col items-center text-center animate-in fade-in zoom-in duration-200"
+            >
+              {/* Green Check Icon Container */}
+              <div className="w-20 h-20 flex items-center justify-center">
+                <img
+                  src="https://cdn.hstatic.net/files/200000355853/file/chatgpt_image_18_00_48_24_thg_6__2026_1__1_.png"
+                  alt="Success Check"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              {/* Title */}
+              <h3 className="text-slate-900 font-bold text-base leading-relaxed mb-6 mx-4">
+                Hình ảnh của bạn đã được lưu <br /> trong thư viện ảnh của sản phẩm
+              </h3>
 
               {/* Buttons */}
               <Button
                 onClick={() => {
-                  stopCamera();
-                  onClose();
-                  setShowExitPopup(false);
+                  handleResetAll();
+                  setShowSaveSuccessPopup(false);
                 }}
                 variant="secondary"
-                className="w-full h-12 gap-2 mt-6"
+                className="w-full h-12 font-semibold"
               >
-                Lưu & Thoát
+                Tạo hình mới
               </Button>
               <Button
-                onClick={() => setShowExitPopup(false)}
-                variant="outline"
-                className="w-full h-12 tracking-wider mt-3"
-              >
-                Ở lại
-              </Button>
-              <Button
-                variant="ghost"
-                type="button"
                 onClick={() => {
-                  setShowExitPopup(false);
                   handleResetAll();
                   stopCamera();
                   onClose();
+                  setShowSaveSuccessPopup(false);
                 }}
-                className="w-full text-center py-3 mt-3 cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-600"
+                variant="outline"
+                className="w-full h-12 tracking-wider mt-3 font-semibold text-slate-800"
               >
-                Thoát không lưu
+                Thoát
               </Button>
             </motion.div>
           </div>,
@@ -249,35 +337,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
         )}
 
       {/* Header Title Bar */}
-      <div className="h-12 px-4 bg-white border-b border-primary-100 flex items-center justify-between shrink-0 relative">
-        <div className="flex items-center">
-          {step === 1 ? (
-            <button
-              onClick={handleCloseAttempt}
-              className="text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
-            >
-              <ArrowLeft size={18} weight="bold" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                if (step === 4 && isGenerating) return;
-                if (step === 2) stopCamera();
-                setStep(step - 1);
-              }}
-              disabled={step === 4 && isGenerating}
-              className={cn(
-                "text-primary-900/60 hover:text-primary-900 p-1 rounded-full hover:bg-primary-50 transition-colors cursor-pointer",
-                step === 4 &&
-                  isGenerating &&
-                  "opacity-20 cursor-not-allowed pointer-events-none",
-              )}
-            >
-              <ArrowLeft size={18} weight="bold" />
-            </button>
-          )}
-        </div>
-
+      <div className="h-12 lg:h-14 px-4 bg-white border-b border-primary-100 flex items-center justify-end lg:justify-between shrink-0 relative">
         {isMobile ? (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <img
@@ -288,9 +348,12 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             />
           </div>
         ) : (
-          <span className="font-bold text-lg select-none text-primary-900">
-            Visualize On Your Hand
-          </span>
+          <img
+            src="https://file.hstatic.net/200000355853/file/logo.svg"
+            alt="Jemmia Logo"
+            className="h-8 w-auto"
+            referrerPolicy="no-referrer"
+          />
         )}
 
         <div className="flex items-center gap-4">
@@ -322,11 +385,10 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             {/* Left Panel: Instructions/Upload/Catalog */}
             <div
               className={cn(
-                "p-6 flex flex-col justify-between shrink-0 overflow-y-auto transition-all duration-300",
-                step === 3 ? "w-full md:w-[70%]" : "w-full md:w-[35%]",
+                "p-6 flex flex-col justify-between shrink-0 overflow-y-auto transition-all duration-300 w-full md:w-[35%]"
               )}
             >
-              <div className="space-y-5 flex flex-col min-h-0">
+              <div className="space-y-5 flex flex-col min-h-0 h-full">
                 {/* Progress Tracker */}
                 <div className="w-full shrink-0 mb-5">
                   <MobileProgressBar
@@ -344,7 +406,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
               </div>
 
               {/* Bottom Actions for Left Panel */}
-              <div className="flex flex-col gap-2.5 shrink-0">
+              <div className="flex flex-col gap-3.5 shrink-0">
                 {step === 1 && <DesktopStep1Bottom />}
                 {step === 2 && <DesktopStep2Bottom />}
                 {step === 4 && <DesktopStep4Bottom />}
