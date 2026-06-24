@@ -25,10 +25,10 @@ export function LayoutShell({ children, searchPlaceholder }: LayoutShellProps) {
   return (
     <div className="relative min-h-screen xl:h-screen w-full font-sans antialiased bg-white text-primary-900 selection:bg-secondary-200 selection:text-secondary-900 flex flex-col xl:overflow-hidden">
       <Header searchPlaceholder={searchPlaceholder} />
-      
+
       {isTryOnGenerating && (
         <div className="fixed bottom-16 md:bottom-4 right-4 z-55 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-primary-100 shadow-lg rounded-full py-1.5 px-3 text-xs text-primary-900 font-medium animate-in fade-in duration-200">
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary-600" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary-800" />
           <span className="text-[10px] tracking-tight uppercase font-bold text-secondary-800">Đang thử nhẫn...</span>
         </div>
       )}

@@ -256,7 +256,7 @@ export function CompactGallery({
             </DialogTitle>
           </DialogHeader>
           <div className="px-4 py-2">
-            <p className="text-sm text-secondary-600 font-medium mb-4">
+            <p className="text-sm text-secondary-800 font-medium mb-4">
               Bạn có chắc chắn muốn tải lên <span className="font-bold text-secondary-900">{selectedFiles.length} tệp</span> không?
             </p>
             <div className="grid grid-cols-4 gap-3 max-h-[300px] overflow-y-auto pr-2">

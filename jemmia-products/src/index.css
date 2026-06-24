@@ -19,15 +19,16 @@
 
   /* Secondary Palette - Diamond Aura */
   --color-secondary-50: #EFFEFD;
-  --color-secondary-100: #C8FFFA;
-  --color-secondary-200: #90FFF6;
-  --color-secondary-300: #51F7F0;
-  --color-secondary-400: #1DE4E2;
-  --color-secondary-500: #05C5C7;
-  --color-secondary-600: #009DA1;
-  --color-secondary-700: #057C80;
-  --color-secondary-800: #085C65;
-  --color-secondary-900: #013A40;
+  --color-secondary-100: #DDF9F9;
+  --color-secondary-200: #C5F3F4;
+  --color-secondary-300: #95E8E9;
+  --color-secondary-400: #65DCDD;
+  --color-secondary-500: #35D1D2;
+  --color-secondary-600: #05C5C7;
+  --color-secondary-700: #049E9F;
+  --color-secondary-800: #037677;
+  --color-secondary-900: #024F50;
+  --color-secondary-950: #013A40;
 
   /* Tertiary Palette - Golden Radiance */
   --color-tertiary-50: #FCF8F0;
