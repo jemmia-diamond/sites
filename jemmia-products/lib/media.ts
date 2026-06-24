@@ -15,6 +15,7 @@ export const getDisplayUrl = (url: string): string => {
 export function convertToPngBlob(blob: Blob): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     const objectUrl = URL.createObjectURL(blob);
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -58,7 +59,8 @@ export async function copyImage(imageUrl: string): Promise<boolean> {
       }
       blob = new Blob([u8arr], { type: mime });
     } else {
-      const response = await fetch(imageUrl);
+      const cacheBusterUrl = imageUrl + (imageUrl.includes("?") ? "&" : "?") + "cb=" + new Date().getTime();
+      const response = await fetch(cacheBusterUrl, { mode: "cors", cache: "no-store" });
       blob = await response.blob();
     }
 
