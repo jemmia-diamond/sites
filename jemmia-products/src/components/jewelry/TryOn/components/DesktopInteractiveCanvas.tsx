@@ -125,7 +125,7 @@ export function DesktopInteractiveCanvas() {
             />
             {/* Dark overlay backdrop when red box has not been drawn on desktop step 2 */}
             {step === 2 && !isMobileBehavior && (!redBox || !redBox.hasDrawn) && (
-              <div className="absolute inset-0 bg-black/30 transition-all duration-300 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50 transition-all duration-300 flex items-center justify-center">
               </div>
             )}
           </div>

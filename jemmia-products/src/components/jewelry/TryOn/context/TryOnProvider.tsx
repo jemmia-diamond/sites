@@ -18,6 +18,8 @@ import {
   TRYON_CAMERA_CAPTURE_ID,
 } from "../constants";
 
+import { addJobId } from "../utils/history";
+
 // Helpers
 function getSimpleHash(str: string): string {
   let hash = 0;
@@ -163,7 +165,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   };
 
   const handleCloseAttempt = () => {
-    if (step > 1) {
+    if (step > 1 && step < 4) {
       setShowExitPopup(true);
     } else {
       stopCamera();
@@ -895,16 +897,21 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         }
       });
       formData.append("handImage", file);
+      formData.append("designCode", selectedRing.attributes.designCode);
 
-      const response = await axios.post<{ taskId: string }>("/image-generation/generate", formData, {
+      const response = await axios.post<{ taskId: string; jobId?: number }>("/image-generation/generate", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const taskId = response.data.taskId;
+      const { taskId, jobId } = response.data;
       if (!taskId) {
         throw new Error("Không nhận được taskId từ máy chủ.");
+      }
+
+      if (jobId) {
+        addJobId(jobId);
       }
 
       // Save active try-on session
