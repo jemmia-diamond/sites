@@ -161,7 +161,7 @@ export function HistoryContent({
       )}
 
       {/* Search Input Bar */}
-      <div className="relative w-[40%] mb-4 shrink-0">
+      <div className="relative w-full lg:w-[40%] mb-4 shrink-0">
         <input
           type="text"
           value={searchQuery}
