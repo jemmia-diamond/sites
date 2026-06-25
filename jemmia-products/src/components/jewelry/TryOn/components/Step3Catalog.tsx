@@ -420,16 +420,16 @@ export function DesktopStep3Right() {
             className="absolute right-4 top-3 text-primary-400"
           />
         </div>
-        <div className="relative w-[200px] max-w-full">
+        <div className="relative w-[200px] max-w-full h-full">
           <Select value={selectedType} onValueChange={(val) => { if (val) setSelectedType(val); }}>
-            <SelectTrigger className="w-full h-10 text-xs font-semibold px-4 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] text-[#004B49] justify-between">
+            <SelectTrigger className="w-full h-full! text-xs font-semibold px-4 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] text-[#004B49] justify-between">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white rounded-md border border-slate-200 shadow-lg text-[#004B49]">
-              <SelectItem value="Nhẫn Nữ" className="text-xs font-medium">Nhẫn Nữ</SelectItem>
-              <SelectItem value="Nhẫn Nam" className="text-xs font-medium">Nhẫn Nam</SelectItem>
-              <SelectItem value="Nhẫn Nữ Nguyên Chiếc" className="text-xs font-medium">Nhẫn Nữ Nguyên Chiếc</SelectItem>
-              <SelectItem value="Nhẫn Nam Nguyên Chiếc" className="text-xs font-medium">Nhẫn Nam Nguyên Chiếc</SelectItem>
+              <SelectItem value="Nhẫn Nữ" className="text-xs py-2 font-medium">Nhẫn Nữ</SelectItem>
+              <SelectItem value="Nhẫn Nam" className="text-xs py-2 font-medium">Nhẫn Nam</SelectItem>
+              <SelectItem value="Nhẫn Nữ Nguyên Chiếc" className="text-xs py-2 font-medium">Nhẫn Nữ Nguyên Chiếc</SelectItem>
+              <SelectItem value="Nhẫn Nam Nguyên Chiếc" className="text-xs py-2 font-medium">Nhẫn Nam Nguyên Chiếc</SelectItem>
             </SelectContent>
           </Select>
         </div>

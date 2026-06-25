@@ -5,7 +5,6 @@ import { ResultCanvas } from "./ResultCanvas";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { TryOnContext } from "../context/TryOnContext";
-import { Check } from "lucide-react";
 
 export function MobileStep4() {
   const context = use(TryOnContext);
@@ -24,7 +23,7 @@ export function MobileStep4() {
   const {
     handleStepClick,
     handleTryOn,
-    handleComplete,
+    handleResetAll,
   } = actions;
 
   return (
@@ -56,15 +55,13 @@ export function MobileStep4() {
             className="w-full h-11"
           >
             <span>Tạo lại ảnh này</span>
-            <ArrowCounterClockwise size={18} />
           </Button>
           <Button
-            onClick={handleComplete}
+            onClick={handleResetAll}
             variant="secondary"
             className="w-full h-11 text-sm font-normal"
           >
-            Lưu và thoát
-            <Check size={18} />
+            Thử lại nhẫn
           </Button>
         </div>
       )}
@@ -161,7 +158,7 @@ export function DesktopStep4Bottom() {
 
   const {
     handleTryOn,
-    handleComplete,
+    handleResetAll,
   } = actions;
 
   return (
@@ -175,15 +172,13 @@ export function DesktopStep4Bottom() {
             className="w-full h-11 tracking-wider"
           >
             <span>Tạo lại ảnh này</span>
-            <ArrowCounterClockwise size={18} />
           </Button>
           <Button
-            onClick={handleComplete}
+            onClick={handleResetAll}
             variant="secondary"
             className="w-full h-11 tracking-wider font-normal"
           >
-            Lưu và Thoát
-            <Check size={18} />
+            Thử lại nhẫn
           </Button>
         </div>
       )}

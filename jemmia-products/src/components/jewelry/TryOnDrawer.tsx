@@ -1,12 +1,15 @@
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { HistoryDialog } from "./TryOn/components/HistoryDialog";
+import { HistoryContent } from "./TryOn/components/HistoryContent";
 import {
   ArrowLeft,
   X,
   WarningCircle,
   ArrowRight,
   ArrowCounterClockwise,
+  ClockCounterClockwiseIcon,
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -59,6 +62,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     toastMessage,
     isGenerating,
     selectedGeneratedImage,
+    generatedImage,
     isFullscreen,
     showGuide,
     showResumePopup,
@@ -83,9 +87,14 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     handleStepClick,
     handleComplete,
     handleCloseFullscreen,
+    setGeneratedImage,
+    setGeneratedImages,
+    setSelectedGeneratedImage,
   } = actions;
 
   const { lightboxRef } = meta;
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false);
 
   return createPortal(
     <motion.div
@@ -337,26 +346,33 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
         )}
 
       {/* Header Title Bar */}
-      <div className="h-12 lg:h-14 px-4 bg-white border-b border-primary-100 flex items-center justify-end lg:justify-between shrink-0 relative">
-        {isMobile ? (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <img
-              src="https://file.hstatic.net/200000355853/file/logo.svg"
-              alt="Jemmia Logo"
-              className="h-5 w-auto"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        ) : (
-          <img
-            src="https://file.hstatic.net/200000355853/file/logo.svg"
-            alt="Jemmia Logo"
-            className="h-8 w-auto"
-            referrerPolicy="no-referrer"
-          />
-        )}
+      <div className="h-12 lg:h-14 px-4 lg:px-6 bg-white border-b border-primary-100 flex items-center justify-between shrink-0 relative">
+        <img
+          src="https://file.hstatic.net/200000355853/file/logo.svg"
+          alt="Jemmia Logo"
+          className="h-8 w-auto absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0"
+          referrerPolicy="no-referrer"
+        />
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-0">
+          {isMobile ? (
+            <button
+              onClick={() => setIsMobileHistoryOpen((prev) => !prev)}
+              className={cn(
+                "p-1.5 rounded-full transition-colors cursor-pointer",
+                isMobileHistoryOpen
+                  ? "text-teal-700 bg-teal-50"
+                  : "text-primary-900/60 hover:text-primary-900 hover:bg-primary-50"
+              )}
+            >
+              <ClockCounterClockwiseIcon size={18} />
+            </button>
+          ) : (
+            <Button variant={"ghost"} onClick={() => setIsHistoryOpen(true)}>
+              Lịch sử
+              <ClockCounterClockwiseIcon size={18}/>
+            </Button>
+          )}
           <button
             onClick={handleCloseAttempt}
             className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
@@ -372,13 +388,30 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
           <div
             className={cn(
               "flex-1 flex flex-col justify-between bg-white min-w-0 p-4",
-              step === 1 ? "overflow-hidden" : "overflow-y-auto",
+              (step === 1 || isMobileHistoryOpen) ? "overflow-hidden" : "overflow-y-auto",
             )}
           >
-            {step === 1 && <MobileStep1 />}
-            {step === 2 && <MobileStep2 />}
-            {step === 3 && <MobileStep3 />}
-            {step === 4 && <MobileStep4 />}
+            {isMobileHistoryOpen ? (
+              <HistoryContent
+                isMobile={true}
+                activeImageUrl={selectedGeneratedImage}
+                onClose={() => setIsMobileHistoryOpen(false)}
+                onSelectImage={(imageUrl) => {
+                  setGeneratedImage(imageUrl);
+                  setGeneratedImages([imageUrl]);
+                  setSelectedGeneratedImage(imageUrl);
+                  setStep(4);
+                  setIsMobileHistoryOpen(false);
+                }}
+              />
+            ) : (
+              <>
+                {step === 1 && <MobileStep1 />}
+                {step === 2 && <MobileStep2 />}
+                {step === 3 && <MobileStep3 />}
+                {step === 4 && <MobileStep4 />}
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -434,6 +467,19 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
         lightboxRef={lightboxRef}
         selectedGeneratedImage={selectedGeneratedImage}
         handleCloseFullscreen={handleCloseFullscreen}
+      />
+
+      <HistoryDialog
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        activeImageUrl={selectedGeneratedImage}
+        onSelectImage={(imageUrl) => {
+          setGeneratedImage(imageUrl);
+          setGeneratedImages([imageUrl]);
+          setSelectedGeneratedImage(imageUrl);
+          setStep(4);
+          setIsHistoryOpen(false);
+        }}
       />
 
       {/* Alignment Preview Modal */}
