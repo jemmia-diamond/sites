@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { jewelryService } from "../../../../services/jewelryService";
 import { ProductModel } from "../../../../types";
 
+export const ALL_RING_TYPES = [
+  "Nhẫn Nữ",
+  "Nhẫn Nam",
+  "Nhẫn Nữ Nguyên Chiếc",
+  "Nhẫn Nam Nguyên Chiếc",
+];
+
 interface UseTryOnCatalogProps {
   step: number;
   isOpen: boolean;
@@ -11,7 +18,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
   const [rings, setRings] = useState<ProductModel[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("Nhẫn Nữ");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(ALL_RING_TYPES);
   const [isLoadingRings, setIsLoadingRings] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -19,7 +26,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
 
   const mobileSentinelRef = useRef<HTMLDivElement>(null);
   const desktopSentinelRef = useRef<HTMLDivElement>(null);
-  const lastFetchedRef = useRef<{ query: string; type: string; page: number } | null>(null);
+  const lastFetchedRef = useRef<{ query: string; types: string[]; page: number } | null>(null);
   const prevStepRef = useRef<number>(step);
 
   // Debounce search query state
@@ -40,18 +47,18 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       setHasNextPage(true);
       setRings([]);
       setSearchQuery("");
-      setSelectedType("Nhẫn Nữ");
+      setSelectedTypes(ALL_RING_TYPES);
       lastFetchedRef.current = null;
     }
   }, [step, isOpen]);
 
-  // Reset pagination when debounced search query or selected type changes
+  // Reset pagination when debounced search query or selected types changes
   useEffect(() => {
     setPage(1);
     setHasNextPage(true);
     setRings([]);
     lastFetchedRef.current = null;
-  }, [debouncedSearchQuery, selectedType]);
+  }, [debouncedSearchQuery, selectedTypes]);
 
   // Load rings for Step 3
   useEffect(() => {
@@ -77,11 +84,11 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       return;
     }
 
-    // If we have already successfully fetched this page, query, and type, do not fetch again
+    // If we have already successfully fetched this page, query, and types, do not fetch again
     if (
       lastFetchedRef.current &&
       lastFetchedRef.current.query === debouncedSearchQuery &&
-      lastFetchedRef.current.type === selectedType &&
+      JSON.stringify(lastFetchedRef.current.types) === JSON.stringify(selectedTypes) &&
       lastFetchedRef.current.page === page
     ) {
       return;
@@ -100,7 +107,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
         const res = await jewelryService.getJewelries({
           page: page,
           searchQuery: debouncedSearchQuery || undefined,
-          type: selectedType,
+          types: selectedTypes,
           stockStatus: "IN_STOCK",
           missingMedia: false,
           limit: isMobile ? 21 : 20,
@@ -120,7 +127,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
             });
           }
           setHasNextPage(res.meta ? res.meta.hasNext : newRings.length > 0);
-          lastFetchedRef.current = { query: debouncedSearchQuery, type: selectedType, page };
+          lastFetchedRef.current = { query: debouncedSearchQuery, types: selectedTypes, page };
         }
       } catch (e) {
         console.error("Failed to load rings:", e);
@@ -137,7 +144,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     return () => {
       isMounted = false;
     };
-  }, [step, debouncedSearchQuery, selectedType, page, isOpen]);
+  }, [step, debouncedSearchQuery, selectedTypes, page, isOpen]);
 
   // Infinite scroll intersection observers
   useEffect(() => {
@@ -177,8 +184,8 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     rings,
     searchQuery,
     setSearchQuery,
-    selectedType,
-    setSelectedType,
+    selectedTypes,
+    setSelectedTypes,
     isLoadingRings,
     isLoadingMore,
     mobileSentinelRef,

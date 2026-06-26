@@ -83,6 +83,7 @@ export interface ProductType {
 
 export interface JewelryFilter {
   type?: string;
+  types?: string[];
   styles?: string[];
   stockStatus?: StockStatusFilter;
   warehouseIds?: string[];
