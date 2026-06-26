@@ -60,7 +60,7 @@ export function MobileStep3() {
     actions: { setSearchQuery, setSelectedTypes, handleSelectRing, handleTryOn, setStep },
     meta: { mobileSentinelRef },
   } = context;
-  console.log(selectedTypes);
+
   const activeImages = getRingUrls(selectedRing, activeTab, generatedImages);
 
   return (
