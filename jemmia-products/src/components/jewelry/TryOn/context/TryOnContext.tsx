@@ -41,6 +41,7 @@ export interface TryOnState {
   selectedType: string;
   isLoadingRings: boolean;
   isLoadingMore: boolean;
+  selectedRingMediaTab: "try_on" | "website" | "actual";
 }
 
 export interface TryOnActions {
@@ -85,6 +86,7 @@ export interface TryOnActions {
   // Catalog Actions
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   setSelectedType: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedRingMediaTab: (tab: "try_on" | "website" | "actual") => void;
 
   // Common operations
   handleOpenGuide: () => void;

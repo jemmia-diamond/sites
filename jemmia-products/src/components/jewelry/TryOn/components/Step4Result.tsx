@@ -5,6 +5,7 @@ import { ResultCanvas } from "./ResultCanvas";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { TryOnContext } from "../context/TryOnContext";
+import { SelectedRingMediaDetail } from "./SelectedRingMediaDetail";
 
 export function MobileStep4() {
   const context = use(TryOnContext);
@@ -114,32 +115,15 @@ export function DesktopStep4Left() {
   const { state } = context;
   const { selectedRing } = state;
   return (
-    <div className="space-y-5">
-      <div className="space-y-3">
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col">
         {/* Selected Ring Card */}
-        {selectedRing && (
-          <div className="border border-primary-100 p-4 bg-white rounded relative w-full shadow-sm">
-            {/* <span className="absolute top-3 left-3 bg-[#E6F4F2] text-secondary-800 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-              Nhẫn đã chọn
-            </span> */}
-            <div className="flex gap-4 items-center">
-              <div className="flex items-center justify-center w-1/3">
-                <img
-                  src={selectedRing.thumbnails?.[0]?.url}
-                  className="h-auto w-full aspect-square object-cover"
-                  alt={selectedRing.title}
-                />
-              </div>
-              <div className="text-left">
-                <h4 className="text-slate-700 font-medium text-base leading-snug">
-                  {selectedRing.type || "Loại nhẫn"}
-                </h4>
-                <h4 className="text-slate-900 font-black text-base leading-snug">
-                  {selectedRing.attributes?.designCode || "--"}
-                </h4>
-              </div>
-            </div>
-          </div>
+        {selectedRing ? (
+          <SelectedRingMediaDetail />
+        ) : (
+          <p className="text-xs text-center text-primary-400 py-6">
+            Chưa có sản phẩm nào được chọn
+          </p>
         )}
       </div>
     </div>
