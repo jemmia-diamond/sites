@@ -24,16 +24,7 @@ import { MediaGallery } from "./MediaGallery";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { downloadFile, downloadFiles } from "@/lib/download";
-import { isVideo, getDisplayUrl } from "@/lib/media";
-
-const extractUrls = (arr: any): string[] => {
-  if (!Array.isArray(arr)) return [];
-  return arr.map((item: any) => {
-    if (typeof item === 'string') return item;
-    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
-    return null;
-  }).filter(Boolean) as string[];
-};
+import { isVideo, getDisplayUrl, extractUrls } from "@/lib/media";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];

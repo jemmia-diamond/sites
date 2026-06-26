@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import screenfull from "screenfull";
 import { ProductModel } from "../../../../types";
-import { TryOnContext } from "./TryOnContext";
+import { TryOnContext, ImageTab } from "./TryOnContext";
 
 // Hooks
 import { useTryOnCamera } from "../hooks/useTryOnCamera";
@@ -143,6 +143,11 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   const [showSaveSuccessPopup, setShowSaveSuccessPopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
+  const [selectedRingMediaTab, setSelectedRingMediaTab] = useState<ImageTab>(ImageTab.TRY_ON);
+
+  useEffect(() => {
+    setSelectedRingMediaTab(ImageTab.TRY_ON);
+  }, [selectedRing]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
@@ -1221,6 +1226,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       selectedType,
       isLoadingRings,
       isLoadingMore,
+      selectedRingMediaTab,
     },
     actions: {
       setStep,
@@ -1258,6 +1264,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       resetZoom,
       setSearchQuery,
       setSelectedType,
+      setSelectedRingMediaTab,
       handleOpenGuide,
       handleCloseAttempt,
       handleResumeSession,

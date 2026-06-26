@@ -1,62 +1,16 @@
-import React, { use } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MagnifyingGlass, ImageSquare, Sparkle, X, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { RingSkeleton } from "./RingSkeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
-import { createPortal } from "react-dom";
-import { TryOnContext } from "../context/TryOnContext";
+import { TryOnContext, ImageTab } from "../context/TryOnContext";
 import { isVideo } from "@/lib/media";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FullscreenGallery } from "./FullscreenGallery";
-
-const extractUrls = (arr: any): string[] => {
-  if (!Array.isArray(arr)) return [];
-  return arr.map((item: any) => {
-    if (typeof item === 'string') return item;
-    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
-    return null;
-  }).filter(Boolean) as string[];
-};
-
-const getRingUrls = (
-  selectedRing: any,
-  tab: "try_on" | "website" | "actual",
-): string[] => {
-  if (!selectedRing) return [];
-  const isBundle = selectedRing.products && selectedRing.products.length > 0;
-
-  if (tab === "try_on") {
-    return [
-      ...extractUrls(selectedRing.try_on_images),
-      ...extractUrls(selectedRing.attributes?.try_on_images),
-      ...(isBundle
-        ? selectedRing.products.flatMap((p: any) => [
-          ...extractUrls(p.try_on_images),
-          ...extractUrls(p.attributes?.try_on_images),
-        ])
-        : []),
-    ];
-  }
-
-  if (tab === "website") {
-    return isBundle
-      ? selectedRing.products.flatMap((p: any) => extractUrls(p.thumbnails))
-      : extractUrls(selectedRing.thumbnails);
-  }
-
-  // actual
-  return isBundle
-    ? selectedRing.products.flatMap((p: any) => [
-      ...extractUrls(p.images),
-      ...extractUrls(p.videos),
-    ])
-    : [
-      ...extractUrls(selectedRing.images),
-      ...extractUrls(selectedRing.videos),
-    ];
-};
+import { SelectedRingMediaDetail, getRingUrls } from "./SelectedRingMediaDetail";
+import { RING_MEDIA_TABS } from "./MediaTabBar";
 
 
 
@@ -64,23 +18,23 @@ export function MobileStep3() {
   const context = use(TryOnContext);
   const selectedRing = context?.state.selectedRing;
 
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(!!selectedRing);
-  const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
-  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(!!selectedRing);
+  const [activeTab, setActiveTab] = useState<ImageTab>(ImageTab.TRY_ON);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Auto-detect and set active tab / default preview image when selectedRing changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedRing) {
-      setActiveTab("try_on");
-      const websiteUrls = getRingUrls(selectedRing, "website");
+      setActiveTab(ImageTab.TRY_ON);
+      const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
       setPreviewImage(websiteUrls[0] || null);
     } else {
       setPreviewImage(null);
     }
   }, [selectedRing]);
 
-  const handleTabChange = (tabId: "try_on" | "website" | "actual") => {
+  const handleTabChange = (tabId: ImageTab) => {
     setActiveTab(tabId);
   };
 
@@ -99,23 +53,7 @@ export function MobileStep3() {
     meta: { mobileSentinelRef },
   } = context;
 
-  // Extract all media categories
-  const tryOnUrls = getRingUrls(selectedRing, "try_on");
-  const websiteUrls = getRingUrls(selectedRing, "website");
-  const actualUrls = getRingUrls(selectedRing, "actual");
-
-  const activeImages =
-    activeTab === "try_on"
-      ? tryOnUrls
-      : activeTab === "website"
-        ? websiteUrls
-        : actualUrls;
-
-  const tabs = [
-    { id: "try_on" as const, label: "Ảnh thử nhẫn" },
-    { id: "website" as const, label: "Ảnh website" },
-    { id: "actual" as const, label: "Ảnh/video thực tế" },
-  ];
+  const activeImages = getRingUrls(selectedRing, activeTab);
 
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
@@ -287,7 +225,7 @@ export function MobileStep3() {
 
               {/* Media Gallery Tab Bar */}
               <div className="flex border-b border-primary-100 mt-2.5 shrink-0">
-                {tabs.map((tab) => {
+                {RING_MEDIA_TABS.map((tab) => {
                   const isActive = activeTab === tab.id;
                   return (
                     <button
@@ -379,7 +317,7 @@ export function MobileStep3() {
           mediaList={
             activeImages.includes(fullscreenImage)
               ? activeImages
-              : getRingUrls(selectedRing, "website")
+              : getRingUrls(selectedRing, ImageTab.WEBSITE)
           }
           currentUrl={fullscreenImage}
           onClose={() => setFullscreenImage(null)}
@@ -510,206 +448,37 @@ export function DesktopStep3Left() {
   const isTryingOn = context?.state.isTryingOn;
   const handleTryOn = context?.actions.handleTryOn;
 
-  const [activeTab, setActiveTab] = React.useState<
-    "try_on" | "website" | "actual"
-  >("try_on");
-  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
-    null,
-  );
-
-  // Auto-detect and set active tab / default preview image when selectedRing changes
-  React.useEffect(() => {
-    if (selectedRing) {
-      setActiveTab("try_on");
-      const websiteUrls = getRingUrls(selectedRing, "website");
-      setPreviewImage(websiteUrls[0] || null);
-    } else {
-      setPreviewImage(null);
-    }
-  }, [selectedRing]);
-
-  const handleTabChange = (tabId: "try_on" | "website" | "actual") => {
-    setActiveTab(tabId);
-  };
-
   if (!context || !handleTryOn) return null;
 
-  // Extract all media categories
-  const tryOnUrls = getRingUrls(selectedRing, "try_on");
-  const websiteUrls = getRingUrls(selectedRing, "website");
-  const actualUrls = getRingUrls(selectedRing, "actual");
-
-  const activeImages =
-    activeTab === "try_on"
-      ? tryOnUrls
-      : activeTab === "website"
-        ? websiteUrls
-        : actualUrls;
-
-  const tabs = [
-    { id: "try_on" as const, label: "Hình thử nhẫn" },
-    { id: "website" as const, label: "Hình website" },
-    { id: "actual" as const, label: "Hình thực tế" },
-  ];
-
   return (
-    <div className="grow h-full flex flex-col justify-between items-center min-w-0 overflow-y-auto">
-      <div className="w-full flex flex-col justify-between grow pl-0">
-        <div className="border border-primary-100 rounded p-4 bg-white flex flex-col">
-
-          {/* Selected product detail content */}
-          {selectedRing ? (
-            <div className="flex flex-col text-start">
-              {/* Image & Metadata Side-by-Side Flex Container */}
-              <div className="flex gap-4 items-center">
-                {/* Large Preview Image */}
-                <div
-                  onClick={() => previewImage && setFullscreenImage(previewImage)}
-                  className="w-1/3 flex justify-center items-center bg-white select-none cursor-pointer border border-primary-50 hover:opacity-95"
-                >
-                  {previewImage ? (
-                    isVideo(previewImage) ? (
-                      <div className="relative aspect-square w-auto">
-                        <video
-                          src={previewImage}
-                          className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center">
-                            <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[12px] border-l-secondary-900 border-b-[6px] border-b-transparent ml-1" />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={previewImage}
-                        className="object-contain aspect-square w-auto"
-                        alt={selectedRing.title}
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full aspect-square flex flex-col items-center justify-center bg-slate-100 text-xs text-slate-400 gap-2">
-                      <ImageSquare size={14} className="text-slate-400" />
-                      <span>Chưa có hình ảnh</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Header Product Metadata */}
-                <div className="flex-1 flex flex-col">
-                  <h4 className="text-slate-700 font-medium text-base leading-snug">
-                    {selectedRing.type || "Loại nhẫn"}
-                  </h4>
-                  <h4 className="text-slate-900 font-black text-base leading-snug">
-                    {selectedRing.attributes?.designCode || "--"}
-                  </h4>
-                </div>
-              </div>
-
-              {/* Media Gallery Tab Bar */}
-              <div className="flex border-b border-primary-100 mt-4">
-                {tabs.map((tab) => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={cn(
-                        "flex-1 text-center pb-2 text-xs font-medium border-b-2 transition-all duration-200 cursor-pointer",
-                        isActive
-                          ? "text-secondary-800 border-secondary-800 font-semibold"
-                          : "text-slate-500 border-transparent hover:text-slate-700",
-                      )}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Horizontal Scroll Gallery */}
-              <div className="flex gap-2 overflow-x-auto pt-3 no-scrollbar scroll-smooth">
-                {activeImages.map((url, idx) => {
-                  const isVid = url && isVideo(url);
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => setFullscreenImage(url)}
-                      className={cn(
-                        "w-20 h-20 2xl:h-25 2xl:w-25 min-w-20 min-h-20 2xl:min-w-25 2xl:min-h-25 border cursor-pointer overflow-hidden transition-all duration-200 relative rounded-sm",
-                      )}
-                    >
-                      {isVid ? (
-                        <video
-                          src={url}
-                          className="w-full h-full object-cover"
-                          preload="metadata"
-                          muted
-                          playsInline
-                        />
-                      ) : (
-                        <img
-                          src={url}
-                          className="w-full h-full object-cover"
-                          alt={`Thumbnail ${idx}`}
-                        />
-                      )}
-                      {isVid && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
-                            <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[8px] border-l-secondary-900 border-b-[4px] border-b-transparent ml-0.5" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {activeImages.length === 0 && (
-                  <div className="w-full text-center py-4 text-xs text-slate-400 italic">
-                    Không có hình ảnh nào
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
+    <div className="flex-1 min-h-0 flex flex-col justify-between items-center w-full">
+      <div className="w-full flex flex-col justify-between flex-1 min-h-0 pl-0">
+        {selectedRing ? (
+          <SelectedRingMediaDetail />
+        ) : (
+          <div className="border border-primary-100 rounded p-4 bg-white flex flex-col w-full shadow-sm">
             <div className="flex flex-col items-center justify-center text-center py-20">
               <div className="w-20 h-20 rounded-full bg-primary-50 flex items-center justify-center mb-4 text-[#004B49]">
                 <Sparkle size={32} />
               </div>
               <p className="text-sm font-semibold text-primary-500">
-                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử
-                nghiệm.
+                Vui lòng chọn một trang sức để xem chi tiết và bắt đầu thử nghiệm.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Try On Button */}
         <Button
           onClick={() => handleTryOn()}
           disabled={!selectedRing || isTryingOn}
           variant="secondary"
-          className="w-full h-12 gap-2 font-semibold"
+          className="w-full h-12 gap-2 font-semibold mt-4 shrink-0"
         >
           Thử nhẫn
           <Sparkle size={16} />
         </Button>
       </div>
-
-      {/* Fullscreen Image/Video Overlay Viewer */}
-      {fullscreenImage && (
-        <FullscreenGallery
-          mediaList={
-            activeImages.includes(fullscreenImage)
-              ? activeImages
-              : getRingUrls(selectedRing, "website")
-          }
-          currentUrl={fullscreenImage}
-          onClose={() => setFullscreenImage(null)}
-          onSelect={setFullscreenImage}
-        />
-      )}
     </div>
   );
 }

@@ -1,6 +1,18 @@
 import { createContext } from "react";
 import { ProductModel } from "../../../../types";
 
+export enum ImageTab {
+  TRY_ON = "try_on",
+  WEBSITE = "website",
+  ACTUAL = "actual",
+}
+
+export const IMAGE_TAB_LABELS: Record<ImageTab, string> = {
+  [ImageTab.TRY_ON]: "Hình thử nhẫn",
+  [ImageTab.WEBSITE]: "Hình website",
+  [ImageTab.ACTUAL]: "Hình thực tế",
+};
+
 export interface TryOnState {
   step: number;
   maxStep: number;
@@ -41,6 +53,7 @@ export interface TryOnState {
   selectedType: string;
   isLoadingRings: boolean;
   isLoadingMore: boolean;
+  selectedRingMediaTab: ImageTab;
 }
 
 export interface TryOnActions {
@@ -85,6 +98,7 @@ export interface TryOnActions {
   // Catalog Actions
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   setSelectedType: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedRingMediaTab: (tab: ImageTab) => void;
 
   // Common operations
   handleOpenGuide: () => void;
