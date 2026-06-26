@@ -1,18 +1,25 @@
 import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MagnifyingGlass, ImageSquare, Sparkle, X, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { MagnifyingGlass, ImageSquare, Sparkle } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { RingSkeleton } from "./RingSkeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { TryOnContext, ImageTab } from "../context/TryOnContext";
 import { isVideo } from "@/lib/media";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FullscreenGallery } from "./FullscreenGallery";
 import { SelectedRingMediaDetail, getRingUrls } from "./SelectedRingMediaDetail";
 import { RING_MEDIA_TABS } from "./MediaTabBar";
+import { ALL_RING_TYPES } from "../hooks/useTryOnCatalog";
 
-
+const RING_TYPE_OPTIONS = [
+  { label: "Tất cả", value: "Tất cả" },
+  { label: "Nhẫn nam", value: "Nhẫn Nam" },
+  { label: "Nhẫn nữ", value: "Nhẫn Nữ" },
+  { label: "Nhẫn nữ nguyên chiếc", value: "Nhẫn Nữ Nguyên Chiếc" },
+  { label: "Nhẫn nam nguyên chiếc", value: "Nhẫn Nam Nguyên Chiếc" },
+];
 
 export function MobileStep3() {
   const context = use(TryOnContext);
@@ -42,7 +49,7 @@ export function MobileStep3() {
   const {
     state: {
       searchQuery,
-      selectedType,
+      selectedTypes,
       isLoadingRings,
       isLoadingMore,
       rings,
@@ -50,7 +57,7 @@ export function MobileStep3() {
       maxStep,
       generatedImages,
     },
-    actions: { setSearchQuery, setSelectedType, handleSelectRing, handleTryOn, setStep },
+    actions: { setSearchQuery, setSelectedTypes, handleSelectRing, handleTryOn, setStep },
     meta: { mobileSentinelRef },
   } = context;
 
@@ -87,20 +94,29 @@ export function MobileStep3() {
             className="absolute right-4 top-3 text-[#7A869A]"
           />
         </div>
-        <div className="relative w-full">
-          <Select value={selectedType} onValueChange={(val) => { if (val) setSelectedType(val); }}>
-            <SelectTrigger className="w-full h-10 text-xs font-semibold px-4 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] text-[#004B49] justify-between">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-white rounded-md border border-slate-200 shadow-lg text-secondary-900">
-              <SelectGroup>
-                <SelectItem value="Nhẫn Nữ" className="text-xs font-medium">Nhẫn Nữ</SelectItem>
-                <SelectItem value="Nhẫn Nam" className="text-xs font-medium">Nhẫn Nam</SelectItem>
-                <SelectItem value="Nhẫn Nữ Nguyên Chiếc" className="text-xs font-medium">Nhẫn Nữ Nguyên Chiếc</SelectItem>
-                <SelectItem value="Nhẫn Nam Nguyên Chiếc" className="text-xs font-medium">Nhẫn Nam Nguyên Chiếc</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          {RING_TYPE_OPTIONS.map((opt) => {
+            const isActive =
+              opt.value === "Tất cả"
+                ? selectedTypes?.length === ALL_RING_TYPES.length
+                : selectedTypes?.length === 1 && selectedTypes[0] === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() =>
+                  setSelectedTypes(opt.value === "Tất cả" ? ALL_RING_TYPES : [opt.value])
+                }
+                className={cn(
+                  "shrink-0 h-9 px-4 rounded-full text-xs font-semibold border transition-all duration-200",
+                  isActive
+                    ? "bg-[#004B49] text-white border-[#004B49]"
+                    : "bg-white text-primary-700 border-slate-200 hover:border-primary-300"
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -333,10 +349,16 @@ export function DesktopStep3Right() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { searchQuery, selectedType, isLoadingRings, isLoadingMore, rings, selectedRing },
-    actions: { setSearchQuery, setSelectedType, handleSelectRing },
+    state: { searchQuery, selectedTypes, isLoadingRings, isLoadingMore, rings, selectedRing },
+    actions: { setSearchQuery, setSelectedTypes, handleSelectRing },
     meta: { desktopSentinelRef },
   } = context;
+  const selectValue = selectedTypes.length === ALL_RING_TYPES.length ? "Tất cả" : selectedTypes[0];
+
+  const handleDesktopTypeChange = (val: string) => {
+    if (!val) return;
+    setSelectedTypes(val === "Tất cả" ? ALL_RING_TYPES : [val]);
+  };
 
   return (
     <div className="grow flex flex-col min-h-0 gap-3 bg-[#F8FAFC] p-6">
@@ -360,11 +382,12 @@ export function DesktopStep3Right() {
           />
         </div>
         <div className="relative w-[200px] max-w-full h-full">
-          <Select value={selectedType} onValueChange={(val) => { if (val) setSelectedType(val); }}>
+          <Select value={selectValue} onValueChange={handleDesktopTypeChange}>
             <SelectTrigger className="w-full h-full! text-xs font-semibold px-4 bg-white border border-slate-200 rounded-full focus:outline-none focus:border-[#004B49] text-[#004B49] justify-between">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white rounded-md border border-slate-200 shadow-lg text-[#004B49]">
+              <SelectItem value="Tất cả" className="text-xs py-2 font-medium">Tất cả</SelectItem>
               <SelectItem value="Nhẫn Nữ" className="text-xs py-2 font-medium">Nhẫn Nữ</SelectItem>
               <SelectItem value="Nhẫn Nam" className="text-xs py-2 font-medium">Nhẫn Nam</SelectItem>
               <SelectItem value="Nhẫn Nữ Nguyên Chiếc" className="text-xs py-2 font-medium">Nhẫn Nữ Nguyên Chiếc</SelectItem>

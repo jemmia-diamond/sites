@@ -35,11 +35,11 @@ export interface TryOnState {
   showSaveSuccessPopup: boolean;
   savedSessionStep: number | null;
   alignmentPreviewUrl: string | null;
-  
+
   // Camera hooks state
   isCameraActive: boolean;
   useMirror: boolean;
-  
+
   // Gestures hooks state
   imageScale: number;
   imageTranslate: [number, number];
@@ -50,7 +50,7 @@ export interface TryOnState {
   // Catalog hooks state
   rings: ProductModel[];
   searchQuery: string;
-  selectedType: string;
+  selectedTypes: string[];
   isLoadingRings: boolean;
   isLoadingMore: boolean;
   selectedRingMediaTab: ImageTab;
@@ -97,7 +97,7 @@ export interface TryOnActions {
 
   // Catalog Actions
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  setSelectedType: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedTypes: React.Dispatch<React.SetStateAction<string[]>>;
   setSelectedRingMediaTab: (tab: ImageTab) => void;
 
   // Common operations

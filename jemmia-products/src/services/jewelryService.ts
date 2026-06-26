@@ -36,6 +36,10 @@ export const jewelryService = {
         params.type = filters.type;
       }
 
+      if (filters.types && filters.types.length > 0) {
+        params.types = filters.types;
+      }
+
       // Warehouse logic
       const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
       if (filters.warehouseIds && filters.warehouseIds.length > 0) {
