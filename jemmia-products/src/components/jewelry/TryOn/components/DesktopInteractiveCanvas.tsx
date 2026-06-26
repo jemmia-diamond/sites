@@ -1,7 +1,6 @@
 import { use } from "react";
 import {
   ArrowClockwise,
-  ArrowCounterClockwise,
   X,
 } from "@phosphor-icons/react";
 import { TryOnContext } from "../context/TryOnContext";
@@ -69,22 +68,7 @@ export function DesktopInteractiveCanvas() {
       >
         {step === 1 && <DesktopStep1Right />}
 
-        {/* Reset button at top center */}
-        {step === 2 && !showResumePopup && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              resetZoom();
-            }}
-            onMouseDown={(e) => e.stopPropagation()} // Prevent triggering drag/move gestures
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center gap-1.5 cursor-pointer border border-slate-200 shadow-md transition-all text-xs font-semibold select-none active:scale-95 animate-in fade-in duration-200"
-            title="Đặt lại vị trí & căn chỉnh"
-          >
-            <ArrowCounterClockwise size={14} className="text-slate-600" />
-            <span>Đặt lại</span>
-          </button>
-        )}
+
 
         {/* Close/Remove button */}
         {step === 2 && !showResumePopup && (
