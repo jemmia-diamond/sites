@@ -1,11 +1,10 @@
-import React, { use } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MagnifyingGlass, ImageSquare, Sparkle, X, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { RingSkeleton } from "./RingSkeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
-import { createPortal } from "react-dom";
 import { TryOnContext, ImageTab } from "../context/TryOnContext";
 import { isVideo } from "@/lib/media";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,13 +18,13 @@ export function MobileStep3() {
   const context = use(TryOnContext);
   const selectedRing = context?.state.selectedRing;
 
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(!!selectedRing);
-  const [activeTab, setActiveTab] = React.useState<ImageTab>(ImageTab.TRY_ON);
-  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(!!selectedRing);
+  const [activeTab, setActiveTab] = useState<ImageTab>(ImageTab.TRY_ON);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Auto-detect and set active tab / default preview image when selectedRing changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedRing) {
       setActiveTab(ImageTab.TRY_ON);
       const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
