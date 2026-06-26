@@ -10,12 +10,13 @@ import { MediaGrid } from "./MediaGrid";
 export const getRingUrls = (
   selectedRing: ProductModel | null | undefined,
   tab: ImageTab,
+  generatedImages?: string[] | null,
 ): string[] => {
   if (!selectedRing) return [];
   const isBundle = selectedRing.products && selectedRing.products.length > 0;
 
   if (tab === ImageTab.TRY_ON) {
-    return [
+    const baseUrls = [
       ...extractUrls(selectedRing.try_on_images),
       ...extractUrls(selectedRing.attributes?.try_on_images),
       ...(isBundle
@@ -25,6 +26,11 @@ export const getRingUrls = (
         ])
         : []),
     ];
+    if (generatedImages && generatedImages.length > 0) {
+      const uniqueGenerated = generatedImages.filter((img) => img && !baseUrls.includes(img));
+      return [...uniqueGenerated, ...baseUrls];
+    }
+    return baseUrls;
   }
 
   if (tab === ImageTab.WEBSITE) {
@@ -72,7 +78,8 @@ export function SelectedRingMediaDetail() {
 
   if (!context || !selectedRing) return null;
 
-  const activeImages = getRingUrls(selectedRing, activeTab);
+  const generatedImages = context.state.generatedImages;
+  const activeImages = getRingUrls(selectedRing, activeTab, generatedImages);
 
   return (
     <div className="border border-primary-100 rounded p-4 bg-white flex flex-col w-full shadow-sm max-h-full min-h-0">

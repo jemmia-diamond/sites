@@ -20,6 +20,7 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
   const mobileSentinelRef = useRef<HTMLDivElement>(null);
   const desktopSentinelRef = useRef<HTMLDivElement>(null);
   const lastFetchedRef = useRef<{ query: string; type: string; page: number } | null>(null);
+  const prevStepRef = useRef<number>(step);
 
   // Debounce search query state
   useEffect(() => {
@@ -42,7 +43,25 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
 
   // Load rings for Step 3
   useEffect(() => {
-    if (step !== 3 || !isOpen) return;
+    if (step !== 3 || !isOpen) {
+      prevStepRef.current = step;
+      return;
+    }
+
+    const returnedToStep3 = prevStepRef.current !== 3;
+    prevStepRef.current = step;
+
+    if (returnedToStep3) {
+      lastFetchedRef.current = null;
+      setPage(1);
+      setHasNextPage(true);
+      setRings([]);
+      return;
+    }
+
+    if (page !== 1 && lastFetchedRef.current === null) {
+      return;
+    }
 
     // If we have already successfully fetched this page, query, and type, do not fetch again
     if (
