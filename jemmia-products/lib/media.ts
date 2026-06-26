@@ -83,11 +83,22 @@ export async function copyImage(imageUrl: string): Promise<boolean> {
   }
 }
 
-export const extractUrls = (arr: any): string[] => {
+export type RawMediaItem = string | { url?: string } | null | undefined;
+export type RawMediaInput = RawMediaItem[] | null | undefined;
+
+/**
+ * Normalizes and extracts media URL strings
+ * @returns A clean array of valid URL strings.
+ */
+export const extractUrls = (arr: RawMediaInput): string[] => {
   if (!Array.isArray(arr)) return [];
-  return arr.map((item: any) => {
-    if (typeof item === 'string') return item;
-    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
-    return null;
-  }).filter(Boolean) as string[];
+  return arr
+    .map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object' && typeof item.url === 'string') {
+        return item.url;
+      }
+      return null;
+    })
+    .filter((url): url is string => !!url);
 };

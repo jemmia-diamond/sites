@@ -7,6 +7,12 @@ export enum ImageTab {
   ACTUAL = "actual",
 }
 
+export const IMAGE_TAB_LABELS: Record<ImageTab, string> = {
+  [ImageTab.TRY_ON]: "Hình thử nhẫn",
+  [ImageTab.WEBSITE]: "Hình website",
+  [ImageTab.ACTUAL]: "Hình thực tế",
+};
+
 export interface TryOnState {
   step: number;
   maxStep: number;

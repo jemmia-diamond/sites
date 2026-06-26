@@ -11,6 +11,7 @@ import { isVideo } from "@/lib/media";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FullscreenGallery } from "./FullscreenGallery";
 import { SelectedRingMediaDetail, getRingUrls } from "./SelectedRingMediaDetail";
+import { RING_MEDIA_TABS } from "./MediaTabBar";
 
 
 
@@ -53,23 +54,7 @@ export function MobileStep3() {
     meta: { mobileSentinelRef },
   } = context;
 
-  // Extract all media categories
-  const tryOnUrls = getRingUrls(selectedRing, ImageTab.TRY_ON);
-  const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
-  const actualUrls = getRingUrls(selectedRing, ImageTab.ACTUAL);
-
-  const activeImages =
-    activeTab === ImageTab.TRY_ON
-      ? tryOnUrls
-      : activeTab === ImageTab.WEBSITE
-        ? websiteUrls
-        : actualUrls;
-
-  const tabs = [
-    { id: ImageTab.TRY_ON, label: "Ảnh thử nhẫn" },
-    { id: ImageTab.WEBSITE, label: "Ảnh website" },
-    { id: ImageTab.ACTUAL, label: "Ảnh/video thực tế" },
-  ];
+  const activeImages = getRingUrls(selectedRing, activeTab);
 
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">
@@ -241,7 +226,7 @@ export function MobileStep3() {
 
               {/* Media Gallery Tab Bar */}
               <div className="flex border-b border-primary-100 mt-2.5 shrink-0">
-                {tabs.map((tab) => {
+                {RING_MEDIA_TABS.map((tab) => {
                   const isActive = activeTab === tab.id;
                   return (
                     <button
