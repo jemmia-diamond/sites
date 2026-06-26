@@ -146,25 +146,6 @@ export function MobileStep2() {
           >
             <Question size={20} />
           </button>
-
-          {/* Close / Remove button */}
-          {!showResumePopup && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setUploadedImage(null);
-                setMaxStep(1);
-                setStep(1);
-                sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
-              }}
-              onMouseDown={(e) => e.stopPropagation()} // Prevent triggering drag/move gestures
-              className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-md z-[100] transition-colors border-none cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95"
-              title="Xóa hình ảnh"
-            >
-              <X size={16} weight="bold" />
-            </button>
-          )}
         </div>
       </div>
 

@@ -31,6 +31,7 @@ import { TryOnGuide } from "./TryOn/components/TryOnGuide";
 
 // Constants
 import { TRYON_GUIDE_SHOWN_KEY } from "./TryOn/constants";
+import { useTryOnGlobal } from "./TryOn/context/TryOnGlobalContext";
 
 interface TryOnDrawerProps {
   isOpen: boolean;
@@ -96,14 +97,14 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
   const { lightboxRef } = meta;
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false);
-
+  const { isTryOnGenerating } = useTryOnGlobal();
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15, ease: "linear" }}
-      className="fixed inset-0 w-full h-full bg-white z-[200] flex flex-col overflow-hidden"
+      className="fixed inset-0 w-full h-full bg-white z-[202] flex flex-col overflow-hidden"
     >
       {/* Toast Notification */}
       <AnimatePresence>
@@ -366,19 +367,35 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
                   : "text-primary-900/60 hover:text-primary-900 hover:bg-primary-50"
               )}
             >
-              <ClockCounterClockwiseIcon size={18} />
+              <span className="relative">
+                <ClockCounterClockwiseIcon weight="bold" size={18} />
+                {isTryOnGenerating && (
+                  <span className="absolute -top-0.5 -right-1.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+              </span>
             </button>
           ) : (
             <Button variant={"ghost"} onClick={() => setIsHistoryOpen(true)}>
-              Lịch sử
-              <ClockCounterClockwiseIcon size={18}/>
+              <span className="relative">
+                <span className="flex gap-2"> Lịch sử <ClockCounterClockwiseIcon weight="bold" size={18} /> </span>
+                {isTryOnGenerating && (
+                  <span className="absolute -top-1 -right-2 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+              </span>
+
             </Button>
           )}
           <button
             onClick={handleCloseAttempt}
             className="text-primary-900/60 hover:text-primary-900 p-1.5 rounded-full hover:bg-primary-50 transition-colors cursor-pointer"
           >
-            <X size={18} weight="bold" />
+            <X size={18} weight="bold" color="black" />
           </button>
         </div>
       </div>
