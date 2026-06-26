@@ -71,6 +71,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     savedSessionStep,
     alignmentPreviewUrl,
     isMobile,
+    isMobileBehavior,
   } = state;
 
   const {
@@ -511,7 +512,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
       )}
 
       {/* Guide Modal Overlay */}
-      {showGuide && (
+      {isMobileBehavior && showGuide && (
         <TryOnGuide
           onClose={() => {
             setShowGuide(false);
