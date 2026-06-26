@@ -56,7 +56,9 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
       setPage(1);
       setHasNextPage(true);
       setRings([]);
-      return;
+      if (page !== 1 || rings.length !== 0) {
+        return;
+      }
     }
 
     if (page !== 1 && lastFetchedRef.current === null) {
