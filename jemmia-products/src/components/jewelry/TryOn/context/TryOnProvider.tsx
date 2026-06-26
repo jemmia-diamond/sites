@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import screenfull from "screenfull";
 import { ProductModel } from "../../../../types";
 import { TryOnContext, ImageTab } from "./TryOnContext";
+import { useTryOnGlobal, TryOnApiStatus } from "./TryOnGlobalContext";
 
 // Hooks
 import { useTryOnCamera } from "../hooks/useTryOnCamera";
@@ -19,17 +20,9 @@ import {
 } from "../constants";
 
 import { addJobId } from "../utils/history";
+import { getSimpleHash } from "../utils/hash";
 
 // Helpers
-function getSimpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
-}
 
 function freeStorageSpace(): void {
   try {
@@ -145,6 +138,56 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
   const [selectedRingMediaTab, setSelectedRingMediaTab] = useState<ImageTab>(ImageTab.TRY_ON);
 
+  const { addTask, tasks, activeTaskId, setActiveTaskId, setIsCameraActive, removeTask } = useTryOnGlobal();
+
+  // Listen to activeTaskId from global context to load a specific task result
+  useEffect(() => {
+    if (activeTaskId) {
+      const task = tasks.find((t) => t.taskId === activeTaskId);
+      if (task) {
+        setStep(4);
+        setSelectedRing(task.ring);
+        setUploadedImage(task.uploadedImage);
+        setGeneratedImage(task.resultImage);
+        setGeneratedImages(task.resultImage ? [task.resultImage] : []);
+        setSelectedGeneratedImage(task.resultImage);
+        setIsGenerating(task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING);
+        setisTryingOn(task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING);
+        setGenerationError(task.error);
+        
+        // Remove the task from the list since we are viewing it now
+        removeTask(task.taskId);
+        
+        // Reset activeTaskId so we don't trigger this repeatedly
+        setActiveTaskId(null);
+      }
+    }
+  }, [activeTaskId, tasks, removeTask, setActiveTaskId]);
+
+  // Sync generating state with global tasks for the currently selected ring
+  useEffect(() => {
+    if (step === 4 && isGenerating && selectedRing) {
+      const task = tasks.find(
+        (t) => t.ring.id === selectedRing.id && t.status !== TryOnApiStatus.QUEUED && t.status !== TryOnApiStatus.PROCESSING
+      );
+      if (task) {
+        if (task.status === TryOnApiStatus.COMPLETED && task.resultImage) {
+          setGeneratedImages([task.resultImage]);
+          setGeneratedImage(task.resultImage);
+          setSelectedGeneratedImage(task.resultImage);
+          setIsGenerating(false);
+          setisTryingOn(false);
+          setGenerationError(null);
+        } else if (task.status === TryOnApiStatus.FAILED) {
+          setToastMessage(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
+          setGenerationError(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
+          setIsGenerating(false);
+          setisTryingOn(false);
+        }
+      }
+    }
+  }, [tasks, step, isGenerating, selectedRing]);
+
   useEffect(() => {
     setSelectedRingMediaTab(ImageTab.TRY_ON);
   }, [selectedRing]);
@@ -226,6 +269,13 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     },
   });
 
+  useEffect(() => {
+    setIsCameraActive(isCameraActive);
+    return () => {
+      setIsCameraActive(false);
+    };
+  }, [isCameraActive, setIsCameraActive]);
+
   const {
     imageScale,
     setImageScale,
@@ -285,14 +335,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     pollingIntervalRef.current = setInterval(async () => {
       try {
         const response = await axios.get<{
-          status: "queued" | "processing" | "completed" | "failed";
+          status: TryOnApiStatus;
           result?: { base64?: string; mimeType?: string; url?: string };
           error?: string;
         }>(`/image-generation/status/${taskId}`);
 
         const { status, result, error } = response.data;
 
-        if (status === "completed") {
+        if (status === TryOnApiStatus.COMPLETED) {
           const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64;
           let finalImage = "";
 
@@ -326,17 +376,6 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
               );
             }
 
-            toast.success("Thử nhẫn hoàn tất!", {
-              duration: 5000,
-              description: "Hình ảnh thử nhẫn đã sẵn sàng.",
-              action: {
-                label: "Xem kết quả",
-                onClick: () => {
-                  window.dispatchEvent(new Event("tryon:open"));
-                },
-              },
-            });
-
             // Save cache
             const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
             safeSessionStorageSetItem(cacheKey, JSON.stringify([finalImage]));
@@ -358,7 +397,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
               pollingIntervalRef.current = null;
             }
           }
-        } else if (status === "failed") {
+        } else if (status === TryOnApiStatus.FAILED) {
           setToastMessage(error || "Không thể tạo hình ảnh thử trực tuyến. Quay lại bước 3.");
           setGenerationError(error || "Không thể tạo hình ảnh thử trực tuyến.");
           setIsGenerating(false);
@@ -425,10 +464,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
           setMaxStep(4);
           setIsGenerating(true);
           setisTryingOn(true);
-          pollTaskStatus({
+          addTask({
             taskId: session.taskId,
-            targetRing: session.selectedRing,
-            targetImage: session.uploadedImage,
+            ring: session.selectedRing,
+            uploadedImage: session.uploadedImage,
+            status: TryOnApiStatus.PROCESSING,
+            resultImage: null,
+            error: null,
+            createdAt: Date.now(),
           });
         }
       } catch (err) {
@@ -487,10 +530,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
                 if (session.taskId) {
                   setIsGenerating(true);
                   setisTryingOn(true);
-                  pollTaskStatus({
+                  addTask({
                     taskId: session.taskId,
-                    targetRing: session.selectedRing,
-                    targetImage: session.uploadedImage,
+                    ring: session.selectedRing,
+                    uploadedImage: session.uploadedImage,
+                    status: TryOnApiStatus.PROCESSING,
+                    resultImage: null,
+                    error: null,
+                    createdAt: Date.now(),
                   });
                 } else {
                   setStep(3);
@@ -761,6 +808,16 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
             setIsGenerating(false);
             setisTryingOn(false);
 
+            addTask({
+              taskId: `cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`,
+              ring: selectedRing,
+              uploadedImage,
+              status: TryOnApiStatus.COMPLETED,
+              resultImage: cachedUrls[0],
+              error: null,
+              createdAt: Date.now(),
+            });
+
             if (!isOpen) {
               sessionStorage.setItem("tryon_unread_result", "true");
               window.dispatchEvent(
@@ -769,17 +826,6 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
                 })
               );
             }
-
-            toast.success("Thử nhẫn hoàn tất!", {
-              duration: 5000,
-              description: "Hình ảnh thử nhẫn đã sẵn sàng.",
-              action: {
-                label: "Xem kết quả",
-                onClick: () => {
-                  window.dispatchEvent(new Event("tryon:open"));
-                },
-              },
-            });
           }, 1000);
           return;
         }
@@ -932,8 +978,16 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       };
       safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
 
-      // Start polling
-      pollTaskStatus({ taskId, targetRing: selectedRing, targetImage: uploadedImage });
+      // Add task to global list
+      addTask({
+        taskId,
+        ring: selectedRing,
+        uploadedImage,
+        status: TryOnApiStatus.PROCESSING,
+        resultImage: null,
+        error: null,
+        createdAt: Date.now(),
+      });
     } catch (e) {
       setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
