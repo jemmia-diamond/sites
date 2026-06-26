@@ -3,20 +3,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { useTryOnGlobal, TryOnApiStatus } from "../context/TryOnGlobalContext";
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export function TryOnTaskStack() {
   const { tasks, removeTask, setActiveTaskId, openTryOn, isCameraActive } = useTryOnGlobal();
   const [showPopover, setShowPopover] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   const cardHeight = isMobile ? 84 : 132;
   const spacingHeight = isMobile ? 92 : 140;
@@ -27,7 +19,7 @@ export function TryOnTaskStack() {
     return b.createdAt - a.createdAt;
   });
 
-  if (tasks.length === 0 || isCameraActive) {
+  if (!tasks?.length || isCameraActive) {
     return null;
   }
 

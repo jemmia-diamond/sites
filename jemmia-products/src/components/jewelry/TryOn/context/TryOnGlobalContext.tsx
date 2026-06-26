@@ -39,8 +39,6 @@ export interface TryOnGlobalContextValue {
 
 export const TryOnGlobalContext = createContext<TryOnGlobalContextValue | null>(null);
 
-
-
 export function TryOnGlobalProvider({ children }: { children: React.ReactNode }) {
   const [isTryOnOpen, setIsTryOnOpen] = useState(false);
   const [hasUnreadResult, setHasUnreadResult] = useState(() => {
