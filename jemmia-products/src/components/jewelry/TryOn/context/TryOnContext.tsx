@@ -1,7 +1,11 @@
 import { createContext } from "react";
 import { ProductModel } from "../../../../types";
 
-export type ImageTab = "try_on" | "website" | "actual";
+export enum ImageTab {
+  TRY_ON = "try_on",
+  WEBSITE = "website",
+  ACTUAL = "actual",
+}
 
 export interface TryOnState {
   step: number;

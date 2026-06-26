@@ -1,18 +1,9 @@
 import React, { use } from "react";
 import { ImageSquare } from "@phosphor-icons/react";
 import { TryOnContext, ImageTab } from "../context/TryOnContext";
-import { isVideo } from "@/lib/media";
+import { isVideo, extractUrls } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { FullscreenGallery } from "./FullscreenGallery";
-
-export const extractUrls = (arr: any): string[] => {
-  if (!Array.isArray(arr)) return [];
-  return arr.map((item: any) => {
-    if (typeof item === 'string') return item;
-    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
-    return null;
-  }).filter(Boolean) as string[];
-};
 
 export const getRingUrls = (
   selectedRing: any,
@@ -21,7 +12,7 @@ export const getRingUrls = (
   if (!selectedRing) return [];
   const isBundle = selectedRing.products && selectedRing.products.length > 0;
 
-  if (tab === "try_on") {
+  if (tab === ImageTab.TRY_ON) {
     return [
       ...extractUrls(selectedRing.try_on_images),
       ...extractUrls(selectedRing.attributes?.try_on_images),
@@ -34,7 +25,7 @@ export const getRingUrls = (
     ];
   }
 
-  if (tab === "website") {
+  if (tab === ImageTab.WEBSITE) {
     return isBundle
       ? selectedRing.products.flatMap((p: any) => extractUrls(p.thumbnails))
       : extractUrls(selectedRing.thumbnails);
@@ -55,7 +46,7 @@ export const getRingUrls = (
 export function SelectedRingMediaDetail() {
   const context = use(TryOnContext);
   const selectedRing = context?.state.selectedRing;
-  const activeTab = context?.state.selectedRingMediaTab || "try_on";
+  const activeTab = context?.state.selectedRingMediaTab || ImageTab.TRY_ON;
   const setActiveTab = context?.actions.setSelectedRingMediaTab;
 
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
@@ -66,7 +57,7 @@ export function SelectedRingMediaDetail() {
   // Auto-detect and set default preview image when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
-      const websiteUrls = getRingUrls(selectedRing, "website");
+      const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
       setPreviewImage(websiteUrls[0] || null);
     } else {
       setPreviewImage(null);
@@ -80,21 +71,21 @@ export function SelectedRingMediaDetail() {
   if (!context || !selectedRing) return null;
 
   // Extract all media categories
-  const tryOnUrls = getRingUrls(selectedRing, "try_on");
-  const websiteUrls = getRingUrls(selectedRing, "website");
-  const actualUrls = getRingUrls(selectedRing, "actual");
+  const tryOnUrls = getRingUrls(selectedRing, ImageTab.TRY_ON);
+  const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
+  const actualUrls = getRingUrls(selectedRing, ImageTab.ACTUAL);
 
   const activeImages =
-    activeTab === "try_on"
+    activeTab === ImageTab.TRY_ON
       ? tryOnUrls
-      : activeTab === "website"
+      : activeTab === ImageTab.WEBSITE
         ? websiteUrls
         : actualUrls;
 
   const tabs = [
-    { id: "try_on" as const, label: "Hình thử nhẫn" },
-    { id: "website" as const, label: "Hình website" },
-    { id: "actual" as const, label: "Hình thực tế" },
+    { id: ImageTab.TRY_ON, label: "Hình thử nhẫn" },
+    { id: ImageTab.WEBSITE, label: "Hình website" },
+    { id: ImageTab.ACTUAL, label: "Hình thực tế" },
   ];
 
   return (
@@ -220,7 +211,7 @@ export function SelectedRingMediaDetail() {
           mediaList={
             activeImages.includes(fullscreenImage)
               ? activeImages
-              : getRingUrls(selectedRing, "website")
+              : getRingUrls(selectedRing, ImageTab.WEBSITE)
           }
           currentUrl={fullscreenImage}
           onClose={() => setFullscreenImage(null)}

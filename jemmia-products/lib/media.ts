@@ -82,3 +82,12 @@ export async function copyImage(imageUrl: string): Promise<boolean> {
     return false;
   }
 }
+
+export const extractUrls = (arr: any): string[] => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item: any) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object' && typeof item.url === 'string') return item.url;
+    return null;
+  }).filter(Boolean) as string[];
+};

@@ -6,7 +6,7 @@ import { RingSkeleton } from "./RingSkeleton";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
-import { TryOnContext } from "../context/TryOnContext";
+import { TryOnContext, ImageTab } from "../context/TryOnContext";
 import { isVideo } from "@/lib/media";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FullscreenGallery } from "./FullscreenGallery";
@@ -19,22 +19,22 @@ export function MobileStep3() {
   const selectedRing = context?.state.selectedRing;
 
   const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(!!selectedRing);
-  const [activeTab, setActiveTab] = React.useState<'try_on' | 'website' | 'actual'>('try_on');
+  const [activeTab, setActiveTab] = React.useState<ImageTab>(ImageTab.TRY_ON);
   const [previewImage, setPreviewImage] = React.useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(null);
 
   // Auto-detect and set active tab / default preview image when selectedRing changes
   React.useEffect(() => {
     if (selectedRing) {
-      setActiveTab("try_on");
-      const websiteUrls = getRingUrls(selectedRing, "website");
+      setActiveTab(ImageTab.TRY_ON);
+      const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
       setPreviewImage(websiteUrls[0] || null);
     } else {
       setPreviewImage(null);
     }
   }, [selectedRing]);
 
-  const handleTabChange = (tabId: "try_on" | "website" | "actual") => {
+  const handleTabChange = (tabId: ImageTab) => {
     setActiveTab(tabId);
   };
 
@@ -54,21 +54,21 @@ export function MobileStep3() {
   } = context;
 
   // Extract all media categories
-  const tryOnUrls = getRingUrls(selectedRing, "try_on");
-  const websiteUrls = getRingUrls(selectedRing, "website");
-  const actualUrls = getRingUrls(selectedRing, "actual");
+  const tryOnUrls = getRingUrls(selectedRing, ImageTab.TRY_ON);
+  const websiteUrls = getRingUrls(selectedRing, ImageTab.WEBSITE);
+  const actualUrls = getRingUrls(selectedRing, ImageTab.ACTUAL);
 
   const activeImages =
-    activeTab === "try_on"
+    activeTab === ImageTab.TRY_ON
       ? tryOnUrls
-      : activeTab === "website"
+      : activeTab === ImageTab.WEBSITE
         ? websiteUrls
         : actualUrls;
 
   const tabs = [
-    { id: "try_on" as const, label: "Ảnh thử nhẫn" },
-    { id: "website" as const, label: "Ảnh website" },
-    { id: "actual" as const, label: "Ảnh/video thực tế" },
+    { id: ImageTab.TRY_ON, label: "Ảnh thử nhẫn" },
+    { id: ImageTab.WEBSITE, label: "Ảnh website" },
+    { id: ImageTab.ACTUAL, label: "Ảnh/video thực tế" },
   ];
 
   return (
@@ -333,7 +333,7 @@ export function MobileStep3() {
           mediaList={
             activeImages.includes(fullscreenImage)
               ? activeImages
-              : getRingUrls(selectedRing, "website")
+              : getRingUrls(selectedRing, ImageTab.WEBSITE)
           }
           currentUrl={fullscreenImage}
           onClose={() => setFullscreenImage(null)}

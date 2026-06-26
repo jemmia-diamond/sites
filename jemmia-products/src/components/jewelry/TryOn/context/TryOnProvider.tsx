@@ -143,10 +143,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   const [showSaveSuccessPopup, setShowSaveSuccessPopup] = useState(false);
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
-  const [selectedRingMediaTab, setSelectedRingMediaTab] = useState<ImageTab>("try_on");
+  const [selectedRingMediaTab, setSelectedRingMediaTab] = useState<ImageTab>(ImageTab.TRY_ON);
 
   useEffect(() => {
-    setSelectedRingMediaTab("try_on");
+    setSelectedRingMediaTab(ImageTab.TRY_ON);
   }, [selectedRing]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
