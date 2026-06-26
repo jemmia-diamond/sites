@@ -68,7 +68,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
   }, [query]);
 
   return (
-    <header className="h-12 border-b border-primary-50 bg-white backdrop-blur-md sticky top-0 z-52 flex items-center px-4 xl:px-6 gap-4 md:gap-12 xl:gap-16 transition-all duration-300">
+    <header className="h-12 border-b border-primary-50 bg-white backdrop-blur-md sticky top-0 z-52 flex items-center px-4 xl:px-6 gap-4 md:gap-8 xl:gap-16 transition-all duration-300">
       <Link to="/" className="flex-shrink-0 mx-auto md:mx-0">
         <img
           src="https://file.hstatic.net/200000355853/file/logo.svg"
@@ -95,7 +95,7 @@ export function Header({ searchPlaceholder }: HeaderProps) {
         <Button
           onClick={openTryOn}
           variant={'secondary'}
-          className="relative hidden md:flex"
+          className="relative hidden md:flex min-w-max"
         >
           <Sparkle size={18} className="text-white" />
           <span>Thử nhẫn</span>

@@ -214,7 +214,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       setImageRotation(0);
       const hasShownGuide =
         sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
-      if (!hasShownGuide) {
+      if (!hasShownGuide && isMobileBehavior) {
         setShowGuide(true);
         setGuideStep(1);
       }
@@ -1165,7 +1165,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         setImageRotation(0);
         const hasShownGuide =
           sessionStorage.getItem(TRYON_GUIDE_SHOWN_KEY) === "true";
-        if (!hasShownGuide) {
+        if (!hasShownGuide && isMobileBehavior) {
           setShowGuide(true);
           setGuideStep(1);
         }
