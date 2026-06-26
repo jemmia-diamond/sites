@@ -48,12 +48,13 @@ export function MobileStep3() {
       rings,
       isTryingOn,
       maxStep,
+      generatedImages,
     },
     actions: { setSearchQuery, setSelectedType, handleSelectRing, handleTryOn, setStep },
     meta: { mobileSentinelRef },
   } = context;
 
-  const activeImages = getRingUrls(selectedRing, activeTab);
+  const activeImages = getRingUrls(selectedRing, activeTab, generatedImages);
 
   return (
     <div className="grow flex flex-col justify-between gap-4 min-h-0 overflow-hidden">

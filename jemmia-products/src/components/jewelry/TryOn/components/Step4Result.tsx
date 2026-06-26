@@ -48,8 +48,8 @@ export function MobileStep4() {
 
 
       {/* Bottom Actions for Step 4 */}
-      {!isGenerating && !generationError && (
-        <div className="flex gap-3 pt-4 shrink-0">
+      <div className="flex gap-3 pt-4 shrink-0">
+        {!isGenerating && !generationError && (
           <Button
             onClick={() => handleTryOn({ force: true })}
             variant="outline-light"
@@ -57,15 +57,15 @@ export function MobileStep4() {
           >
             <span>Tạo lại ảnh này</span>
           </Button>
-          <Button
-            onClick={handleResetAll}
-            variant="secondary"
-            className="w-full h-11 text-sm font-normal"
-          >
-            Thử lại nhẫn
-          </Button>
-        </div>
-      )}
+        )}
+        <Button
+          onClick={handleResetAll}
+          variant="secondary"
+          className="w-full h-11 text-sm font-normal"
+        >
+          Thử nhẫn mới
+        </Button>
+      </div>
 
       <BottomSheet
         open={isBottomSheetOpen}
@@ -148,8 +148,8 @@ export function DesktopStep4Bottom() {
   return (
     <div className="flex flex-col gap-4">
       {/* Desktop Actions */}
-      {!isGenerating && !generationError && (
-        <div className="flex flex-col gap-3 mt-2">
+      <div className="flex flex-col gap-3 mt-2">
+        {!isGenerating && !generationError && (
           <Button
             onClick={() => handleTryOn({ force: true })}
             variant="outline-light"
@@ -157,15 +157,15 @@ export function DesktopStep4Bottom() {
           >
             <span>Tạo lại ảnh này</span>
           </Button>
-          <Button
-            onClick={handleResetAll}
-            variant="secondary"
-            className="w-full h-11 tracking-wider font-normal"
-          >
-            Thử lại nhẫn
-          </Button>
-        </div>
-      )}
+        )}
+        <Button
+          onClick={handleResetAll}
+          variant="secondary"
+          className="w-full h-11 tracking-wider font-normal"
+        >
+          Thử nhẫn mới
+        </Button>
+      </div>
     </div>
   );
 }
