@@ -1,6 +1,6 @@
 import React, { use } from "react";
 import { ImageSquare } from "@phosphor-icons/react";
-import { TryOnContext } from "../context/TryOnContext";
+import { TryOnContext, ImageTab } from "../context/TryOnContext";
 import { isVideo } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { FullscreenGallery } from "./FullscreenGallery";
@@ -16,7 +16,7 @@ export const extractUrls = (arr: any): string[] => {
 
 export const getRingUrls = (
   selectedRing: any,
-  tab: "try_on" | "website" | "actual",
+  tab: ImageTab,
 ): string[] => {
   if (!selectedRing) return [];
   const isBundle = selectedRing.products && selectedRing.products.length > 0;
@@ -73,7 +73,7 @@ export function SelectedRingMediaDetail() {
     }
   }, [selectedRing]);
 
-  const handleTabChange = (tabId: "try_on" | "website" | "actual") => {
+  const handleTabChange = (tabId: ImageTab) => {
     if (setActiveTab) setActiveTab(tabId);
   };
 

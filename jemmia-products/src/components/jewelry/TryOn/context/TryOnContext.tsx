@@ -1,6 +1,8 @@
 import { createContext } from "react";
 import { ProductModel } from "../../../../types";
 
+export type ImageTab = "try_on" | "website" | "actual";
+
 export interface TryOnState {
   step: number;
   maxStep: number;
@@ -41,7 +43,7 @@ export interface TryOnState {
   selectedType: string;
   isLoadingRings: boolean;
   isLoadingMore: boolean;
-  selectedRingMediaTab: "try_on" | "website" | "actual";
+  selectedRingMediaTab: ImageTab;
 }
 
 export interface TryOnActions {
@@ -86,7 +88,7 @@ export interface TryOnActions {
   // Catalog Actions
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   setSelectedType: React.Dispatch<React.SetStateAction<string>>;
-  setSelectedRingMediaTab: (tab: "try_on" | "website" | "actual") => void;
+  setSelectedRingMediaTab: (tab: ImageTab) => void;
 
   // Common operations
   handleOpenGuide: () => void;
