@@ -33,6 +33,18 @@ export function useTryOnCatalog({ step, isOpen }: UseTryOnCatalogProps) {
     };
   }, [searchQuery]);
 
+  // Reset catalog state when not active
+  useEffect(() => {
+    if (step !== 3 || !isOpen) {
+      setPage(1);
+      setHasNextPage(true);
+      setRings([]);
+      setSearchQuery("");
+      setSelectedType("Nhẫn Nữ");
+      lastFetchedRef.current = null;
+    }
+  }, [step, isOpen]);
+
   // Reset pagination when debounced search query or selected type changes
   useEffect(() => {
     setPage(1);
