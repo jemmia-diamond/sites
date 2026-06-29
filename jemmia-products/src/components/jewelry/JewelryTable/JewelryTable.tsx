@@ -15,6 +15,7 @@ import {
   Copy,
   Checks,
   CircleNotch,
+  TrashIcon,
 } from "@phosphor-icons/react";
 import { JewelryTableHeader } from "./JewelryTableHeader";
 import { JewelryTableRow } from "./JewelryTableRow";
@@ -25,6 +26,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { downloadFile, downloadFiles } from "@/lib/download";
 import { isVideo, getDisplayUrl, extractUrls } from "@/lib/media";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 
 interface JewelryTableProps {
   jewelries: ProductModel[];
@@ -55,7 +57,7 @@ export function JewelryTable({
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [uploadConfig, setUploadConfig] = useState<{ showUpload?: boolean; designCode?: string; uploadEndpoint?: string; productId?: string; isActual?: boolean; uploadOptions?: { label: string; designCode: string }[]; } | null>(null);
-  const [activeTab, setActiveTab] = useState<'web' | 'actual' | 'try_on'>('web');
+  const [activeTab, setActiveTab] = useState<MediaTab>(MediaTabEnum.WEB);
 
   const activeProduct = uploadConfig?.productId
     ? jewelries.find((j) => j.id === uploadConfig.productId)
@@ -85,19 +87,19 @@ export function JewelryTable({
 
   const allTryOnImages: string[] = activeProduct
     ? [
-        ...extractUrls(activeProduct.try_on_images),
-        ...extractUrls(activeProduct.attributes?.try_on_images),
-        ...(isBundle
-          ? activeProduct.products?.flatMap((p) => [
-              ...extractUrls(p.try_on_images),
-              ...extractUrls(p.attributes?.try_on_images),
-            ]) || []
-          : []),
-      ]
+      ...extractUrls(activeProduct.try_on_images),
+      ...extractUrls(activeProduct.attributes?.try_on_images),
+      ...(isBundle
+        ? activeProduct.products?.flatMap((p) => [
+          ...extractUrls(p.try_on_images),
+          ...extractUrls(p.attributes?.try_on_images),
+        ]) || []
+        : []),
+    ]
     : [];
 
   const displayList = activeProduct
-    ? (activeTab === 'actual' ? allActualImages : (activeTab === 'try_on' ? allTryOnImages : allWebImages))
+    ? (activeTab === MediaTabEnum.ACTUAL ? allActualImages : (activeTab === MediaTabEnum.TRYON ? allTryOnImages : allWebImages))
     : previewList;
 
   const handleImageError = (url: string) =>
@@ -109,7 +111,7 @@ export function JewelryTable({
     setPreviewUrl(images[index]);
     setSelectedMedia(null);
     setUploadConfig(config || null);
-    setActiveTab(config?.isActual ? 'actual' : 'web');
+    setActiveTab(config?.isActual ? MediaTabEnum.ACTUAL : MediaTabEnum.WEB);
   };
 
   const closeMediaDialog = () => {
@@ -202,6 +204,12 @@ export function JewelryTable({
   );
 }
 
+export type MediaTab = MediaTabEnum.WEB | MediaTabEnum.ACTUAL | MediaTabEnum.TRYON;
+export enum MediaTabEnum {
+  WEB = "web",
+  ACTUAL = "actual",
+  TRYON = "try_on",
+}
 interface MediaPreviewDialogProps {
   previewUrl: string | null;
   previewList: string[];
@@ -220,8 +228,8 @@ interface MediaPreviewDialogProps {
   webImages?: string[];
   actualImages?: string[];
   tryOnImages?: string[];
-  activeTab?: 'web' | 'actual' | 'try_on';
-  onTabChange?: (tab: 'web' | 'actual' | 'try_on') => void;
+  activeTab?: MediaTab;
+  onTabChange?: (tab: MediaTab) => void;
 }
 
 export function MediaPreviewDialog({
@@ -241,47 +249,87 @@ export function MediaPreviewDialog({
   webImages = [],
   actualImages = [],
   tryOnImages = [],
-  activeTab = 'actual',
-  onTabChange = () => {},
+  activeTab = MediaTabEnum.ACTUAL,
+  onTabChange = () => { },
 }: MediaPreviewDialogProps) {
-  const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
+  // const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
+  const validPreviewList = previewList;
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [selectedMediaUrlsForDelete, setSelectedMediaUrlsForDelete] = useState<string[]>([]);
+
+  const handleRequestDelete = (urls: string[]) => {
+    setSelectedMediaUrlsForDelete(urls);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteSuccess = async () => {
+    const deletedUrl = selectedMediaUrlsForDelete[0];
+    await onUploadSuccess?.(true);
+    const newList = validPreviewList.filter(
+      (url) => url !== deletedUrl
+    );
+
+    if (newList.length === 0) {
+      onSelectMedia(null);
+    } else {
+      const currentIndex = validPreviewList.indexOf(deletedUrl);
+      const nextIndex = Math.min(currentIndex, newList.length - 1);
+      onSelectMedia(newList[nextIndex]);
+    }
+
+    setSelectedMediaUrlsForDelete([]);
+    setDeleteConfirmOpen(false);
+  };
 
   return (
-    <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="!w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
-        {selectedMedia && (
-          <div className="flex-1 min-h-0 w-full h-full">
-            <MediaViewer
-              selectedMedia={selectedMedia}
+    <>
+      <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="!w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
+          {selectedMedia && (
+            <div className="flex-1 min-h-0 w-full h-full">
+              <MediaViewer
+                selectedMedia={selectedMedia}
+                validPreviewList={validPreviewList}
+                onClose={onClose}
+                onSelectMedia={onSelectMedia}
+                onDownloadFile={onDownloadFile}
+                isVideo={isVideo}
+                onRequestDelete={(url) => handleRequestDelete([url])}
+                activeTab={activeTab}
+              />
+            </div>
+          )}
+          <div className={cn("flex-1 min-h-0 w-full h-full", selectedMedia ? "hidden" : "flex flex-col")}>
+            <MediaGallery
               validPreviewList={validPreviewList}
+              previewIndex={previewIndex}
               onClose={onClose}
+              uploadConfig={uploadConfig}
               onSelectMedia={onSelectMedia}
-              onDownloadFile={onDownloadFile}
+              onDownloadFiles={onDownloadFiles}
+              onImageError={onImageError}
+              onUploadSuccess={onUploadSuccess}
               isVideo={isVideo}
+              webImages={webImages}
+              actualImages={actualImages}
+              tryOnImages={tryOnImages}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              brokenImages={brokenImages}
+              onRequestDelete={handleRequestDelete}
             />
           </div>
-        )}
-        <div className={cn("flex-1 min-h-0 w-full h-full", selectedMedia ? "hidden" : "flex flex-col")}>
-          <MediaGallery
-            validPreviewList={validPreviewList}
-            previewIndex={previewIndex}
-            onClose={onClose}
-            uploadConfig={uploadConfig}
-            onSelectMedia={onSelectMedia}
-            onDownloadFiles={onDownloadFiles}
-            onImageError={onImageError}
-            onUploadSuccess={onUploadSuccess}
-            isVideo={isVideo}
-            webImages={webImages}
-            actualImages={actualImages}
-            tryOnImages={tryOnImages}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            brokenImages={brokenImages}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      <ConfirmDeleteDialog
+        deleteConfirmOpen={deleteConfirmOpen}
+        setDeleteConfirmOpen={setDeleteConfirmOpen}
+        selectedMediaUrls={selectedMediaUrlsForDelete}
+        uploadConfig={uploadConfig}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
+    </>
   );
 }
 
@@ -361,6 +409,8 @@ interface MediaViewerProps {
   onSelectMedia: (url: string | null) => void;
   onDownloadFile: (url: string) => void;
   isVideo: (url: string) => boolean;
+  onRequestDelete: (url: string) => void;
+  activeTab?: MediaTab;
 }
 
 function MediaViewer({
@@ -370,6 +420,8 @@ function MediaViewer({
   onSelectMedia,
   onDownloadFile,
   isVideo,
+  onRequestDelete,
+  activeTab
 }: MediaViewerProps) {
   const currentIndex = validPreviewList.indexOf(selectedMedia);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -519,10 +571,16 @@ function MediaViewer({
       track.style.transform = `translateX(${-containerW}px)`;
     }
   };
-
+  if (validPreviewList.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        Không có hình ảnh
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-4 md:px-4 py-4 md:py-4 bg-secondary-800 sticky top-0 z-50">
+      <div className="flex items-center justify-between px-4 md:px-4 py-4 md:py-4 bg-secondary-900 sticky top-0 z-50">
         <div className="flex items-center gap-3 md:gap-4">
           <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10 bg-white/10 text-white rounded-full hover:bg-white hover:text-secondary-700 transition-all" onClick={() => onSelectMedia(null)}>
             <CaretLeft size={18} />
@@ -533,12 +591,24 @@ function MediaViewer({
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
+          {activeTab === MediaTabEnum.TRYON &&
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRequestDelete(selectedMedia)}
+              disabled={!selectedMedia}
+              className="h-8 md:h-10 px-3 md:px-4 border-white/20 font-bold text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10 bg-white text-secondary-900 hover:bg-secondary-800 hover:text-white transition-all"
+            >
+              <TrashIcon size={14} weight="bold" />
+              <span className="hidden md:inline">Xóa ảnh</span>
+            </Button>
+          }
           <Button
             variant="outline"
             size="sm"
             onClick={() => onDownloadFile(selectedMedia!)}
             disabled={!selectedMedia}
-            className="h-8 md:h-10 px-3 md:px-4 border-white/20 bg-transparent text-white font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10"
+            className="h-8 md:h-10 px-3 md:px-4 border-white/20 font-bold text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-1.5 md:gap-2 disabled:bg-transparent disabled:text-white/30 disabled:border-white/10 bg-white text-secondary-900 hover:bg-secondary-800 hover:text-white transition-all"
           >
             <DownloadSimple size={14} />
             <span className="hidden md:inline">Tải về</span>

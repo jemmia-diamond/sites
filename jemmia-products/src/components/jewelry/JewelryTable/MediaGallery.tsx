@@ -16,11 +16,12 @@ import {
   DownloadSimple,
   Checks,
   Copy,
+  TrashIcon,
 } from "@phosphor-icons/react";
 import axios from "axios";
-import { cn } from "@/lib/utils";
 import { isHeic, getDisplayUrl } from "@/lib/media";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaTab, MediaTabEnum } from "./JewelryTable";
 
 export interface MediaGalleryProps {
   validPreviewList: string[];
@@ -35,9 +36,10 @@ export interface MediaGalleryProps {
   webImages?: string[];
   actualImages?: string[];
   tryOnImages?: string[];
-  activeTab?: 'web' | 'actual' | 'try_on';
-  onTabChange?: (tab: 'web' | 'actual' | 'try_on') => void;
+  activeTab?: MediaTab;
+  onTabChange?: (tab: MediaTab) => void;
   brokenImages?: Set<string>;
+  onRequestDelete: (urls: string[]) => void;
 }
 
 export function MediaGallery({
@@ -53,9 +55,10 @@ export function MediaGallery({
   webImages = [],
   actualImages = [],
   tryOnImages = [],
-  activeTab = 'web',
+  activeTab = MediaTabEnum.WEB,
   onTabChange,
   brokenImages,
+  onRequestDelete
 }: MediaGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -159,6 +162,13 @@ export function MediaGallery({
     }
   };
 
+  const handleDeleteSelected = () => {
+    if (selectedMediaUrls.length === 0) return;
+    if (!uploadConfig?.designCode) return;
+    console.log(selectedMediaUrls);
+    onRequestDelete(selectedMediaUrls);
+  };
+
   const handleSelectOption = (option: { label: string; designCode: string }) => {
     setActiveDesignCode(option.designCode);
     setActiveLabel(option.label);
@@ -228,9 +238,7 @@ export function MediaGallery({
     };
   }, [previewUrls]);
 
-  const allSelected =
-    validPreviewList.length > 0 && selectedMediaUrls.length === validPreviewList.length;
-  const hasActions = validPreviewList.length > 0 || (uploadConfig?.showUpload && activeTab === 'actual');
+  const hasActions = validPreviewList.length > 0 || (uploadConfig?.showUpload && activeTab === MediaTabEnum.ACTUAL);
 
   const openFilePicker = () => {
     if (uploadConfig?.uploadOptions && uploadConfig.uploadOptions.length > 1) {
@@ -246,7 +254,7 @@ export function MediaGallery({
     <div className="flex flex-col h-full bg-white">
       {/* Mobile header */}
       <div className="md:hidden sticky top-0 z-20 bg-secondary-900 shrink-0">
-        <div className="flex items-start justify-between gap-2 px-3 md:px-4 pt-3 pb-2">
+        <div className="flex items-center justify-between gap-2 px-3 md:px-4 pt-3 pb-2">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">
               Thư viện
@@ -255,13 +263,61 @@ export function MediaGallery({
               {uploadConfig?.designCode && (
                 <span className="text-white/90 font-bold">{uploadConfig.designCode}</span>
               )}
-              {uploadConfig?.designCode && " · "}
-              {validPreviewList.length} tệp
               {selectedMediaUrls.length > 0 && (
                 <span className="text-white/80"> · đã chọn {selectedMediaUrls.length}</span>
               )}
             </p>
           </div>
+          {hasActions && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {validPreviewList.length > 0 && (
+                <>
+                  {activeTab === MediaTabEnum.TRYON && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      disabled={selectedMediaUrls.length === 0}
+                      className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-800 hover:text-white flex items-center gap-1 disabled:opacity-40"
+                    >
+                      <TrashIcon size={13} weight="bold" />
+                      Xóa ({selectedMediaUrls.length})
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadSelected}
+                    disabled={isDownloading || selectedMediaUrls.length === 0}
+                    className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-800 hover:text-white flex items-center gap-1 disabled:opacity-40"
+                  >
+                    {isDownloading ? (
+                      <CircleNotch size={13} className="animate-spin" />
+                    ) : (
+                      <DownloadSimple size={13} weight="bold" />
+                    )}
+                    Tải ({selectedMediaUrls.length})
+                  </Button>
+                </>
+              )}
+              {uploadConfig?.showUpload && activeTab === MediaTabEnum.ACTUAL && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading}
+                  onClick={openFilePicker}
+                  className="h-7 shrink-0 px-2.5 border-white/20 bg-transparent text-white font-bold text-[10px] hover:bg-white hover:text-secondary-700 flex items-center gap-1 disabled:opacity-40"
+                >
+                  {uploading ? (
+                    <CircleNotch size={13} className="animate-spin" />
+                  ) : (
+                    <UploadSimple size={13} weight="bold" />
+                  )}
+                  Tải lên
+                </Button>
+              )}
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -271,54 +327,6 @@ export function MediaGallery({
             <X size={16} />
           </Button>
         </div>
-
-        {hasActions && (
-          <div className="flex items-center gap-1.5 px-3 md:px-4 pb-2.5 overflow-x-auto no-scrollbar">
-            {validPreviewList.length > 0 && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleToggleSelectAll}
-                  className="h-7 shrink-0 px-2.5 border-white/20 bg-transparent text-white font-bold text-[10px] hover:bg-white hover:text-secondary-700 flex items-center gap-1"
-                >
-                  <Checks size={13} weight="bold" />
-                  {allSelected ? "Bỏ chọn" : "Chọn hết"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadSelected}
-                  disabled={isDownloading || selectedMediaUrls.length === 0}
-                  className="h-7 shrink-0 px-2.5 border-white bg-white text-secondary-700 font-bold text-[10px] hover:bg-secondary-800 hover:text-white flex items-center gap-1 disabled:opacity-40"
-                >
-                  {isDownloading ? (
-                    <CircleNotch size={13} className="animate-spin" />
-                  ) : (
-                    <DownloadSimple size={13} weight="bold" />
-                  )}
-                  Tải ({selectedMediaUrls.length})
-                </Button>
-              </>
-            )}
-            {uploadConfig?.showUpload && activeTab === 'actual' && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={uploading}
-                onClick={openFilePicker}
-                className="h-7 shrink-0 px-2.5 border-white/20 bg-transparent text-white font-bold text-[10px] hover:bg-white hover:text-secondary-700 flex items-center gap-1 disabled:opacity-40"
-              >
-                {uploading ? (
-                  <CircleNotch size={13} className="animate-spin" />
-                ) : (
-                  <UploadSimple size={13} weight="bold" />
-                )}
-                Tải lên
-              </Button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Desktop header */}
@@ -337,15 +345,18 @@ export function MediaGallery({
         <div className="flex items-center gap-3">
           {validPreviewList.length > 0 && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleToggleSelectAll}
-                className="h-10 px-4 border-white/20 bg-transparent text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-secondary-700 transition-all flex items-center gap-2"
-              >
-                <Checks size={14} />
-                {allSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
-              </Button>
+              {activeTab === MediaTabEnum.TRYON && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedMediaUrls.length === 0}
+                  className="h-10 px-4 border-white font-bold text-xs uppercase tracking-widest bg-white text-secondary-900 hover:bg-secondary-800 hover:text-white transition-all flex items-center gap-2 disabled:bg-white/50 disabled:text-secondary-900 disabled:border-transparent"
+                >
+                  <TrashIcon size={13} weight="bold" />
+                  Xóa ảnh ({selectedMediaUrls.length})
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -362,7 +373,7 @@ export function MediaGallery({
               </Button>
             </>
           )}
-          {uploadConfig?.showUpload && activeTab === 'actual' && (
+          {uploadConfig?.showUpload && activeTab === MediaTabEnum.ACTUAL && (
             <Button
               variant="outline"
               size="sm"
@@ -391,16 +402,16 @@ export function MediaGallery({
 
       {/* Unified shadcn Tabs Bar (below headers) */}
       {webImages && actualImages && (webImages.length > 0 || actualImages.length > 0 || (tryOnImages && tryOnImages.length > 0)) && (
-        <Tabs value={activeTab} onValueChange={(val) => onTabChange?.(val as 'web' | 'actual' | 'try_on')} className="border-b border-primary-100 w-full bg-white shrink-0">
+        <Tabs value={activeTab} onValueChange={(val) => onTabChange?.(val as MediaTab)} className="border-b border-primary-100 w-full bg-white shrink-0">
           <TabsList variant="line" className="px-4 xl:px-8 w-full md:w-fit py-5 justify-start h-11 bg-white rounded-none overflow-x-auto no-scrollbar scrollbar-none flex-nowrap shrink-0">
-            <TabsTrigger value="web" className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
+            <TabsTrigger value={MediaTabEnum.WEB} className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
               Ảnh Website ({webImages.filter(url => !brokenImages?.has(url)).length})
             </TabsTrigger>
-            <TabsTrigger value="actual" className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
+            <TabsTrigger value={MediaTabEnum.ACTUAL} className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
               Ảnh/Video Thực Tế ({actualImages.filter(url => !brokenImages?.has(url)).length})
             </TabsTrigger>
             {tryOnImages && tryOnImages.length > 0 && (
-              <TabsTrigger value="try_on" className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
+              <TabsTrigger value={MediaTabEnum.TRYON} className="text-[10px] p-2 md:text-xs font-black md:p-4 cursor-pointer">
                 Ảnh Thử Nhẫn AI ({tryOnImages.filter(url => !brokenImages?.has(url)).length})
               </TabsTrigger>
             )}

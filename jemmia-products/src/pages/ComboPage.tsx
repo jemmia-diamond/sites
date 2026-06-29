@@ -43,6 +43,7 @@ import {
   MediaPreviewDialog,
   SideStoneTooltip,
 } from "../components/jewelry/JewelryTable";
+import { MediaTab, MediaTabEnum } from "../components/jewelry/JewelryTable/JewelryTable";
 
 export default function ComboPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -181,7 +182,7 @@ export default function ComboPage() {
     diamondId?: string;
     isActual?: boolean;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<"web" | "actual">("web");
+  const [activeTab, setActiveTab] = useState<MediaTab>(MediaTabEnum.WEB);
 
   const activeProductId = uploadConfig?.productId;
   const activeDiamondId = uploadConfig?.diamondId;
@@ -214,7 +215,7 @@ export default function ComboPage() {
 
   const displayList =
     activeJewelry || activeDiamond
-      ? activeTab === "actual"
+      ? activeTab === MediaTabEnum.ACTUAL
         ? allActualImages
         : allWebImages
       : previewList;
@@ -223,7 +224,7 @@ export default function ComboPage() {
     setBrokenImages((prev) => new Set(prev).add(url));
 
   const handlePreview = (images: string[], index: number, config?: any) => {
-    setActiveTab(config?.isActual ? "actual" : "web");
+    setActiveTab(config?.isActual ? MediaTabEnum.ACTUAL : MediaTabEnum.WEB);
     setPreviewList(images);
     setPreviewIndex(index);
     setMediaPreviewUrl(images[index]);
@@ -574,7 +575,7 @@ export default function ComboPage() {
         actualImages={allActualImages}
         activeTab={activeTab}
         onTabChange={(tab) => {
-          if (tab === "actual" || tab === "web") {
+          if (tab === MediaTabEnum.ACTUAL || tab === MediaTabEnum.WEB) {
             setActiveTab(tab);
           }
         }}
