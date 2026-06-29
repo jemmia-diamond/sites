@@ -25,7 +25,7 @@ export function TryOnTaskStack() {
 
   return (
     <div
-      className="fixed bottom-16 md:bottom-4 right-4 z-201 w-[230px] md:w-[320px] transition-all duration-300 ease-in-out"
+      className="fixed bottom-16 md:bottom-4 right-4 z-[203] w-[230px] md:w-[320px] transition-all duration-300 ease-in-out"
       style={{
         height: showPopover ? `${sortedTasks.length * spacingHeight - 8}px` : `${cardHeight}px`,
       }}
@@ -72,7 +72,9 @@ export function TryOnTaskStack() {
             </div>
 
             <div className="flex justify-end gap-3 shrink-0 mt-0.5">
-              {task.status === TryOnApiStatus.COMPLETED && (
+              {(task.status === TryOnApiStatus.COMPLETED ||
+                task.status === TryOnApiStatus.QUEUED ||
+                task.status === TryOnApiStatus.PROCESSING) && (
                 <Button
                   variant={"ghost"}
                   onClick={() => {

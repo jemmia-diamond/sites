@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, use } from "react";
 import axios from "axios";
 import { ProductModel } from "../../../../types";
 import { getSimpleHash } from "../utils/hash";
+import { processTryOnResult } from "../utils/result";
 
 export enum TryOnApiStatus {
   QUEUED = "queued",
@@ -79,22 +80,31 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
     try {
       sessionStorage.setItem("tryon_tasks", JSON.stringify(tasks));
     } catch (e) {
-      console.warn("Storage quota exceeded, trimming tasks list...", e);
+      try {
+        // Clear all cached images to free up space in sessionStorage
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith("tryon_cache_")) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => sessionStorage.removeItem(key));
+
+        // Try saving tasks again
+        sessionStorage.setItem("tryon_tasks", JSON.stringify(tasks));
+        return; // Success!
+      } catch (retryErr) {
+        console.warn("Still exceeded quota after clearing cache. Saving trimmed tasks to sessionStorage only...", retryErr);
+      }
+
+      // If still failing, save a trimmed version to sessionStorage, but DO NOT update the React state 'tasks'
       let trimmed = [...tasks];
-      let success = false;
       while (trimmed.length > 1) {
         trimmed.pop();
         try {
           sessionStorage.setItem("tryon_tasks", JSON.stringify(trimmed));
-          success = true;
           break;
-        } catch {}
-      }
-      if (success) {
-        setTasks(trimmed);
-      } else {
-        try {
-          sessionStorage.removeItem("tryon_tasks");
         } catch {}
       }
     }
@@ -122,22 +132,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
       const { status, result, error } = response.data;
 
       if (status === TryOnApiStatus.COMPLETED) {
-        const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64;
-        let finalImage = "";
-
-        if (useBase64Env) {
-          if (result?.base64) {
-            const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-            finalImage = imageUrl;
-          }
-        } else {
-          if (result?.url) {
-            finalImage = result.url;
-          } else if (result?.base64) {
-            const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-            finalImage = imageUrl;
-          }
-        }
+        const finalImage = await processTryOnResult(result);
 
         if (finalImage) {
           try {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { toast } from "sonner";
 import screenfull from "screenfull";
 import { ProductModel } from "../../../../types";
 import { TryOnContext, ImageTab } from "./TryOnContext";
@@ -21,6 +20,9 @@ import {
 
 import { addJobId } from "../utils/history";
 import { getSimpleHash } from "../utils/hash";
+import { resizeAndCompressImage } from "@/lib/media";
+import { processTryOnResult } from "../utils/result";
+
 
 // Helpers
 
@@ -37,61 +39,6 @@ function freeStorageSpace(): void {
   } catch (e) {
     console.error("Failed to free storage space:", e);
   }
-}
-
-interface ResizeAndCompressOptions {
-  base64OrUrl: string;
-  maxWidth?: number;
-  maxHeight?: number;
-  quality?: number;
-}
-
-function resizeAndCompressImage({
-  base64OrUrl,
-  maxWidth = 1024,
-  maxHeight = 1024,
-  quality = 0.85,
-}: ResizeAndCompressOptions): Promise<string> {
-  return new Promise((resolve) => {
-    if (!base64OrUrl || !base64OrUrl.startsWith("data:image")) {
-      resolve(base64OrUrl);
-      return;
-    }
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      let width = img.naturalWidth || img.width;
-      let height = img.naturalHeight || img.height;
-
-      if (width > maxWidth || height > maxHeight) {
-        if (width > height) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        } else {
-          width = Math.round((width * maxHeight) / height);
-          height = maxHeight;
-        }
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        resolve(base64OrUrl);
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-      const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
-      resolve(compressedBase64);
-    };
-    img.onerror = () => {
-      resolve(base64OrUrl);
-    };
-    img.src = base64OrUrl;
-  });
 }
 
 function safeSessionStorageSetItem(key: string, value: string): boolean {
@@ -154,10 +101,11 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         setIsGenerating(task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING);
         setisTryingOn(task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING);
         setGenerationError(task.error);
-        
-        // Remove the task from the list since we are viewing it now
-        removeTask(task.taskId);
-        
+
+        if (task.status === TryOnApiStatus.COMPLETED || task.status === TryOnApiStatus.FAILED) {
+          removeTask(task.taskId);
+        }
+
         // Reset activeTaskId so we don't trigger this repeatedly
         setActiveTaskId(null);
       }
@@ -184,9 +132,10 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
           setIsGenerating(false);
           setisTryingOn(false);
         }
+        removeTask(task.taskId);
       }
     }
-  }, [tasks, step, isGenerating, selectedRing]);
+  }, [tasks, step, isGenerating, selectedRing, removeTask]);
 
   useEffect(() => {
     setSelectedRingMediaTab(ImageTab.TRY_ON);
@@ -250,7 +199,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       if (typeof handleResetRedBox === "function") {
         handleResetRedBox();
       }
-      const compressed = await resizeAndCompressImage({ base64OrUrl: dataUrl });
+      const compressed = await resizeAndCompressImage({ url: dataUrl });
       setUploadedImage(compressed);
       setImageTranslate([0, 0]);
       setImageScale(1.0);
@@ -343,22 +292,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         const { status, result, error } = response.data;
 
         if (status === TryOnApiStatus.COMPLETED) {
-          const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64;
-          let finalImage = "";
-
-          if (useBase64Env) {
-            if (result?.base64) {
-              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-              finalImage = await resizeAndCompressImage({ base64OrUrl: imageUrl });
-            }
-          } else {
-            if (result?.url) {
-              finalImage = result.url;
-            } else if (result?.base64) {
-              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-              finalImage = await resizeAndCompressImage({ base64OrUrl: imageUrl });
-            }
-          }
+          const finalImage = await processTryOnResult(result);
 
           if (finalImage) {
             setGeneratedImages([finalImage]);
@@ -789,9 +723,19 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     }
 
     const cacheKey = `${TRYON_CACHE_PREFIX}${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
-    const cachedData = force ? null : sessionStorage.getItem(cacheKey);
+    // Clear both cache and active session if forcing a new generation
+    if (force) {
+      sessionStorage.removeItem(cacheKey);
+      sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
+      // Clear any existing polling
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    }
+    const cachedData = sessionStorage.getItem(cacheKey);
 
-    if (cachedData) {
+    if (cachedData && !force) {
       try {
         const cachedUrls = JSON.parse(cachedData) as string[];
         if (cachedUrls && cachedUrls.length > 0) {
@@ -1212,7 +1156,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     const reader = new FileReader();
     reader.onload = async (event) => {
       if (event.target?.result) {
-        const compressed = await resizeAndCompressImage({ base64OrUrl: event.target.result as string });
+        const compressed = await resizeAndCompressImage({ url: event.target.result as string });
         setUploadedImage(compressed);
         setImageTranslate([0, 0]);
         setImageScale(1.0);
