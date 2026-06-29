@@ -245,7 +245,7 @@ export function MediaGallery({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Mobile header */}
-      <div className="md:hidden sticky top-0 z-20 bg-secondary-800 shrink-0">
+      <div className="md:hidden sticky top-0 z-20 bg-secondary-900 shrink-0">
         <div className="flex items-start justify-between gap-2 px-3 md:px-4 pt-3 pb-2">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-black text-white uppercase tracking-tight leading-none">

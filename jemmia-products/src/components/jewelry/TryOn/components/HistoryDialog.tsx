@@ -49,7 +49,7 @@ export const HistoryDialog: React.FC<HistoryDialogProps> = ({
           </div>
 
           {/* Render the reusable HistoryContent */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col">
             <HistoryContent
               onSelectImage={onSelectImage}
               activeImageUrl={activeImageUrl}

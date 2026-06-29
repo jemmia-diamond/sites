@@ -102,3 +102,62 @@ export const extractUrls = (arr: RawMediaInput): string[] => {
     })
     .filter((url): url is string => !!url);
 };
+interface ResizeAndCompressOptions {
+  url: string;
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+}
+
+export function resizeAndCompressImage({
+  url,
+  maxWidth = 1024,
+  maxHeight = 1024,
+  quality = 0.85,
+}: ResizeAndCompressOptions): Promise<string> {
+  return new Promise((resolve) => {
+    if (!url || (!url.startsWith("data:image") && !url.startsWith("http") && !url.startsWith("/"))) {
+      resolve(url);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(url);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      } catch (e) {
+        console.warn("Failed to compress image due to canvas/CORS error, fallback to original url:", e);
+        resolve(url);
+      }
+    };
+    img.onerror = () => {
+      resolve(url);
+    };
+    img.src = url;
+  });
+}
