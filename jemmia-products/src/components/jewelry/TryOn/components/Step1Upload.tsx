@@ -12,6 +12,7 @@ import {
   Check,
   CloudArrowUp,
   X,
+  Question,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { TRYON_CAMERA_CAPTURE_ID, ACTIVE_TRYON_SESSION_KEY } from "../constants";
@@ -229,11 +230,14 @@ export function MobileStep1() {
 }
 
 export function DesktopStep1Left() {
+  const context = use(TryOnContext);
+  const isMobileBehavior = context?.state?.isMobileBehavior ?? false;
+
   return (
     <div className="space-y-2">
       <div className="space-y-2">
         <h4 className="text-primary-900 font-bold text-xl md:text-2xl tracking-tight leading-tight">
-          Upload ảnh bàn tay của bạn
+          {isMobileBehavior ? "Chụp ảnh bàn tay của bạn" : "Upload ảnh bàn tay của bạn"}
         </h4>
       </div>
       <div className="pt-2">
@@ -243,7 +247,9 @@ export function DesktopStep1Left() {
               <SunDim size={20} weight="regular" />
             </div>
             <span className="leading-relaxed text-slate-800">
-              Bàn tay được đặt lên bề mặt phẳng trong điều kiện ánh sáng tốt
+              {isMobileBehavior
+                ? "Đặt bàn tay lên bề mặt phẳng trong điều kiện ánh sáng tốt"
+                : "Bàn tay được đặt lên bề mặt phẳng trong điều kiện ánh sáng tốt"}
             </span>
           </li>
           <li className="flex items-start gap-3">
@@ -272,10 +278,58 @@ export function DesktopStep1Bottom() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { uploadedImage },
-    actions: { handleFileUpload, setStep },
+    state: { uploadedImage, isMobileBehavior },
+    actions: { handleFileUpload, setStep, startCamera },
     meta: { fileInputRef },
   } = context;
+
+  if (isMobileBehavior) {
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          id="tryon-file-upload-drawer"
+          className="hidden"
+          onChange={handleFileUpload}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          id={TRYON_CAMERA_CAPTURE_ID}
+          className="hidden"
+          onChange={handleFileUpload}
+        />
+        <Button
+          onClick={startCamera}
+          variant="secondary"
+          className="w-full h-12 gap-2 font-semibold"
+        >
+          Mở Camera
+          <Camera size={18} weight="bold" />
+        </Button>
+        <Button
+          onClick={() => {
+            const fileInput = document.getElementById(
+              "tryon-file-upload-drawer",
+            ) as HTMLInputElement;
+            fileInput?.click();
+          }}
+          variant="outline-light"
+          className="w-full h-12 gap-2 font-semibold shadow-none"
+        >
+          Upload Ảnh
+          <UploadSimple size={18} weight="bold" />
+        </Button>
+        <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
+          <LockSimple size={14} weight="regular" />
+          <span>Ảnh của bạn là riêng tư và được bảo vệ</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -309,7 +363,7 @@ export function DesktopStep1Right() {
   const context = use(TryOnContext);
   if (!context) return null;
   const {
-    state: { uploadedImage },
+    state: { uploadedImage, isMobileBehavior },
     actions: { processFile, setUploadedImage, setMaxStep },
     meta: { fileInputRef },
   } = context;
@@ -368,6 +422,24 @@ export function DesktopStep1Right() {
       window.removeEventListener("drop", preventDefault);
     };
   }, []);
+
+  if (isMobileBehavior && !uploadedImage) {
+    return (
+      <div
+        onClick={() => {
+          fileInputRef.current?.click();
+        }}
+        className="absolute inset-0 w-full h-full border border-dashed rounded-lg border-primary-200 bg-slate-50 flex flex-col items-center justify-center overflow-hidden cursor-pointer shadow-sm mx-auto"
+      >
+        <img
+          src="https://cdn.hstatic.net/files/200000355853/file/20260616-164034.webp"
+          className="w-full h-full object-contain"
+          alt="Hand Silhouette"
+          draggable={false}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

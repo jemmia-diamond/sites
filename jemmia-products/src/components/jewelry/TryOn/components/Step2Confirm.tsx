@@ -8,6 +8,9 @@ import {
   CornersOutIcon,
   ArrowRightIcon,
   X,
+  CornersOut,
+  ArrowsOutCardinal,
+  ArrowsOutSimple,
 } from "@phosphor-icons/react";
 import { MobileProgressBar } from "./MobileProgressBar";
 import { TryOnContext } from "../context/TryOnContext";
@@ -185,7 +188,7 @@ export function DesktopStep2Left() {
     <div className="space-y-2">
       <div className="space-y-2">
         <h4 className="text-primary-900 font-bold text-xl md:text-2xl tracking-tight leading-tight">
-          Xác nhận ảnh của bạn
+          Đánh dấu vị trí thử nhẫn
         </h4>
       </div>
       <div className="pt-2">
@@ -194,18 +197,26 @@ export function DesktopStep2Left() {
             <>
               <li className="flex items-start gap-3">
                 <div className="text-secondary-800 shrink-0 mt-0.5">
-                  <CornersOutIcon size={20} weight="regular" />
+                  <CornersOut size={20} weight="regular" />
                 </div>
                 <span className="leading-relaxed text-slate-800">
-                  Nhấn giữ và di chuyển chuột để dịch chuyển hoặc xoay ảnh bàn tay.
+                  Đặt vùng đỏ tại vị trí thử nhẫn
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <div className="text-secondary-800 shrink-0 mt-0.5">
-                  <ArrowCounterClockwise size={20} weight="regular" />
+                  <ArrowsOutCardinal size={20} weight="regular" />
                 </div>
                 <span className="leading-relaxed text-slate-800">
-                  Đặt ảnh bàn tay sao cho vị trí đốt ngón tay đeo nhẫn khớp với khung đỏ ở giữa.
+                  Dùng 1 ngón để di chuyển hình ảnh
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="text-secondary-800 shrink-0 mt-0.5">
+                  <ArrowsOutSimple size={20} weight="regular" />
+                </div>
+                <span className="leading-relaxed text-slate-800">
+                  Dùng 2 ngón để phóng to thu nhỏ
                 </span>
               </li>
             </>
@@ -244,6 +255,38 @@ export function DesktopStep2Bottom() {
   } = context;
 
   const isNextDisabled = !uploadedImage || (!isMobileBehavior && (!redBox || !redBox.hasDrawn));
+
+  if (isMobileBehavior) {
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        <Button
+          onClick={() => setStep(3)}
+          disabled={!uploadedImage}
+          variant="secondary"
+          className="w-full h-12 gap-2 font-semibold"
+        >
+          Dùng hình ảnh này
+          <Check size={18} weight="bold" />
+        </Button>
+        <Button
+          onClick={() => {
+            setStep(1);
+            setUploadedImage(null);
+            startCamera();
+          }}
+          variant="outline-light"
+          className="w-full h-12 gap-2 font-semibold shadow-none"
+        >
+          Chụp lại
+          <ArrowCounterClockwise size={18} />
+        </Button>
+        <div className="flex items-center justify-center gap-1.5 text-primary-400 text-xs mt-1 select-none">
+          <LockSimple size={14} weight="regular" />
+          <span>Ảnh của bạn là riêng tư và được bảo vệ</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3.5">

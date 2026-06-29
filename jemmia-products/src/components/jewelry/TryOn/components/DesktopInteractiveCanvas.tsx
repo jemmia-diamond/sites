@@ -2,6 +2,7 @@ import { use } from "react";
 import {
   ArrowClockwise,
   X,
+  Question,
 } from "@phosphor-icons/react";
 import { TryOnContext } from "../context/TryOnContext";
 import { DesktopStep1Right } from "./Step1Upload";
@@ -40,6 +41,7 @@ export function DesktopInteractiveCanvas() {
     setUploadedImage,
     setMaxStep,
     setStep,
+    handleOpenGuide,
   } = actions;
 
   const { ringContainerRef } = meta;
@@ -48,11 +50,10 @@ export function DesktopInteractiveCanvas() {
     <div className="grow flex items-center justify-center bg-[#F8FAFC] p-6 relative overflow-hidden min-w-0">
       <div
         ref={ringContainerRef}
-        className={`max-w-225 h-auto w-full aspect-square bg-black rounded-lg relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${
-          step === 1
+        className={`max-h-full h-full w-auto aspect-square bg-black rounded-lg relative overflow-hidden flex items-center justify-center select-none transition-all duration-300 ${step === 1
             ? "bg-transparent border-none"
             : "bg-black border border-primary-200 shadow-lg"
-        }`}
+          }`}
         style={{
           cursor: step === 2 ? "crosshair" : "default",
           touchAction: "none",
@@ -89,6 +90,37 @@ export function DesktopInteractiveCanvas() {
           </button>
         )}
 
+        {/* Reset button at top center */}
+        {step === 2 && isMobileBehavior && !showResumePopup && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              resetZoom();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center gap-1.5 cursor-pointer border border-slate-200 shadow-md transition-all text-xs font-semibold select-none active:scale-95 animate-in fade-in duration-200"
+            title="Đặt lại vị trí & căn chỉnh"
+          >
+            <ArrowClockwise size={14} className="text-slate-600" />
+            <span>Đặt lại</span>
+          </button>
+        )}
+
+        {isMobileBehavior && step === 2 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenGuide();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="absolute bottom-4 right-4 bg-white/80 hover:bg-white text-slate-800 p-2 rounded-full shadow-lg z-[100] transition-colors border-none cursor-pointer flex items-center justify-center hover:scale-105 active:scale-95 animate-in fade-in duration-200"
+            title="Hướng dẫn cử chỉ"
+          >
+            <Question size={16} weight="bold" />
+          </button>
+        )}
         {uploadedImage && step !== 1 && (
           <div
             style={{
@@ -229,7 +261,6 @@ export function DesktopInteractiveCanvas() {
                 />
               </>
             )}
-
           </div>
         )}
       </div>
