@@ -29,7 +29,7 @@ function BottomSheetOverlay({
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-[200] bg-black/40 touch-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 duration-200",
+        "fixed inset-0 z-203 bg-black/40 touch-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 duration-200",
         className
       )}
       style={{
@@ -176,7 +176,7 @@ export function BottomSheet({ open, onOpenChange, title, children, className, co
             transition: isDragging ? "none" : "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)",
           }}
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[201] flex max-h-[85vh] flex-col rounded-t-2xl bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.12)] outline-none",
+            "fixed inset-x-0 bottom-0 z-[301] flex max-h-[85vh] flex-col rounded-t-2xl bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.12)] outline-none",
             "data-open:animate-in data-open:slide-in-from-bottom data-open:duration-300",
             "data-closed:animate-out data-closed:slide-out-to-bottom data-closed:duration-200",
             className

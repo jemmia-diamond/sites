@@ -36,6 +36,8 @@ export interface TryOnGlobalContextValue {
   setActiveTaskId: (id: string | null) => void;
   isCameraActive: boolean;
   setIsCameraActive: (active: boolean) => void;
+  isHistoryOpen: boolean;
+  setIsHistoryOpen: (open: boolean) => void;
 }
 
 export const TryOnGlobalContext = createContext<TryOnGlobalContextValue | null>(null);
@@ -58,6 +60,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isTryOnGeneratingState, setIsTryOnGeneratingState] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const isTryOnGenerating = tasks.some(t => t.status === TryOnApiStatus.QUEUED || t.status === TryOnApiStatus.PROCESSING);
 
@@ -119,6 +122,10 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
 
   const pollSingleTask = async (task: TryOnTask): Promise<{ task: TryOnTask; changed: boolean }> => {
     if (task.status !== TryOnApiStatus.QUEUED && task.status !== TryOnApiStatus.PROCESSING) {
+      return { task, changed: false };
+    }
+
+    if (task.taskId.startsWith("temp_")) {
       return { task, changed: false };
     }
 
@@ -242,6 +249,8 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
         setActiveTaskId,
         isCameraActive,
         setIsCameraActive,
+        isHistoryOpen,
+        setIsHistoryOpen,
       }}
     >
       {children}

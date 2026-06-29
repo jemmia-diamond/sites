@@ -78,6 +78,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     isMobileBehavior,
     isCameraActive,
     useMirror,
+    isHistoryOpen,
   } = state;
 
   const {
@@ -98,10 +99,11 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
     setGeneratedImages,
     setSelectedGeneratedImage,
     capturePhoto,
+    setIsHistoryOpen,
   } = actions;
 
   const { lightboxRef, videoRef } = meta;
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // isHistoryOpen is lifted to TryOnProvider
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false);
   const { isTryOnGenerating } = useTryOnGlobal();
   return createPortal(
@@ -375,7 +377,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             >
               <span className="relative">
                 <ClockCounterClockwiseIcon weight="bold" size={18} />
-                {isTryOnGenerating && (
+                {(isTryOnGenerating || isGenerating) && (
                   <span className="absolute -top-0.5 -right-1.5 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -387,7 +389,7 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             <Button variant={"ghost"} onClick={() => setIsHistoryOpen(true)}>
               <span className="relative">
                 <span className="flex gap-2"> Lịch sử <ClockCounterClockwiseIcon weight="bold" size={18} /> </span>
-                {isTryOnGenerating && (
+                {(isTryOnGenerating || isGenerating) && (
                   <span className="absolute -top-1 -right-2 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
