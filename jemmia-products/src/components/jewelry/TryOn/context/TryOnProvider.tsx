@@ -101,8 +101,6 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         setisTryingOn(task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING);
         setGenerationError(task.error);
 
-        // Only remove the task if it is completed or failed.
-        // If it is still queued/processing, keep it in the list so context continues to poll it.
         if (task.status === TryOnApiStatus.COMPLETED || task.status === TryOnApiStatus.FAILED) {
           removeTask(task.taskId);
         }
@@ -127,18 +125,13 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
           setIsGenerating(false);
           setisTryingOn(false);
           setGenerationError(null);
-
-          // Remove from tasks list since the user is now viewing the completed result in the active session
-          removeTask(task.taskId);
         } else if (task.status === TryOnApiStatus.FAILED) {
           setToastMessage(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
           setGenerationError(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
           setIsGenerating(false);
           setisTryingOn(false);
-
-          // Remove from tasks list since the generation failed and was captured by the active session
-          removeTask(task.taskId);
         }
+        removeTask(task.taskId);
       }
     }
   }, [tasks, step, isGenerating, selectedRing, removeTask]);
