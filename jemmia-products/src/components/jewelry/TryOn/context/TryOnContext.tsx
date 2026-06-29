@@ -34,6 +34,8 @@ export interface TryOnState {
   showExitPopup: boolean;
   showSaveSuccessPopup: boolean;
   savedSessionStep: number | null;
+  isHistoryOpen: boolean;
+  progress: number;
   alignmentPreviewUrl: string | null;
 
   // Camera hooks state
@@ -74,6 +76,7 @@ export interface TryOnActions {
   setShowResumePopup: (show: boolean) => void;
   setShowExitPopup: (show: boolean) => void;
   setShowSaveSuccessPopup: (show: boolean) => void;
+  setIsHistoryOpen: (open: boolean) => void;
   setSavedSessionStep: (step: number | null) => void;
   setAlignmentPreviewUrl: (url: string | null) => void;
 

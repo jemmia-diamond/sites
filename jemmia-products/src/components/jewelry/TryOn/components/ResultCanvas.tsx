@@ -1,9 +1,10 @@
-import React, { use, useState } from "react";
+import React, { use, useState, useEffect } from "react";
 import { DownloadSimple, WarningCircle, Copy, Check } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TryOnContext } from "../context/TryOnContext";
 import { downloadFile } from "@/lib/download";
 import { copyImage } from "@/lib/media";
+import { CircularProgress } from "./CircularProgress";
 
 interface ResultCanvasProps {
   onViewProduct?: () => void;
@@ -23,11 +24,13 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
     selectedGeneratedImage,
     generatedImages,
     generationError,
+    progress,
   } = state;
 
   const {
     handleSelectGeneratedImage,
     setIsFullscreen,
+    setIsHistoryOpen,
   } = actions;
 
   const handleCopy = async (imageUrl: string) => {
@@ -53,35 +56,49 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
       </div>
     );
   }
+  // progress state is lifted to TryOnProvider
+
+  const getStatusText = (prog: number) => {
+    const p = Math.floor(prog);
+    if (p <= 15) return "Đang tải và tối ưu hóa chất lượng hình ảnh";
+    if (p <= 30) return "Đang kiểm tra điều kiện ánh sáng của ảnh gốc";
+    if (p <= 45) return "Đang phân tích cấu trúc bàn tay và ngón tay";
+    if (p <= 60) return "Đang xác định vị trí đặt nhẫn tối ưu";
+    if (p <= 75) return "Đang tính toán kích thước và tỷ lệ góc chụp";
+    if (p <= 90) return "Đang hòa trộn ánh sáng và đổ bóng thực tế";
+    return "Đang hoàn thiện những chi tiết cuối cùng";
+  };
+
   if (isGenerating) {
     /* State A: Loading / isGenerating is true */
     return (
-      <div className="w-full h-full bg-slate-100 border border-slate-200 shadow-md rounded-lg relative overflow-hidden flex items-center justify-center select-none mx-auto">
+      <div className="w-full h-full bg-slate-100 border border-slate-200 shadow-md rounded-lg relative overflow-hidden flex items-center justify-center select-none mx-auto min-h-[300px]">
         <img
           src={uploadedImage || ""}
           className="w-full h-full object-cover blur-md scale-105"
           alt="Hand Preview Blur"
           draggable={false}
         />
-        <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-4 text-center px-6">
-          {/* Radiating IOS Tick Spinner */}
-          <svg
-            className={`${
-              isMobile ? "w-12 h-12" : "w-16 h-16"
-            } animate-spin text-white`}
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-white text-base font-normal leading-relaxed select-none drop-shadow-md">
-            Quá trình tạo ảnh mất khoảng 90 giây, vui lòng chờ trong giây lát
-          </span>
+        <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center gap-4 text-center px-6">
+          {/* Circular Progress Ring */}
+          <CircularProgress progress={progress} />
+          <div className="flex flex-col">
+            {/* Active status text based on progress */}
+            <span className="text-white text-xs md:text-sm font-medium tracking-wide animate-pulse drop-shadow-md select-none min-h-[40px] flex items-center justify-center">
+              {getStatusText(progress)}
+            </span>
+
+            <p className="text-white/80 text-xs -mt-2 md:text-sm font-normal leading-relaxed select-none  drop-shadow-md">
+              Quá trình xử lý ảnh sẽ tự động lưu trong{" "}
+              <button
+                type="button"
+                onClick={() => setIsHistoryOpen(true)}
+                className="underline text-white font-semibold hover:text-slate-200 transition-colors bg-transparent border-none p-0 inline cursor-pointer outline-none align-baseline"
+              >
+                Lịch sử
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -124,24 +141,21 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
         />
         {/* Overlay actions inside the image */}
         <div
-          className={`absolute bottom-4 right-4 flex items-center ${
-            isMobile ? "gap-3" : "gap-4"
-          }`}
+          className={`absolute bottom-4 right-4 flex items-center ${isMobile ? "gap-3" : "gap-4"
+            }`}
         >
           <button
             onClick={() => selectedGeneratedImage && downloadFile(selectedGeneratedImage)}
-            className={`${
-              isMobile ? "w-11 h-11" : "w-12 h-12"
-            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            className={`${isMobile ? "w-11 h-11" : "w-12 h-12"
+              } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
             title="Tải xuống hình ảnh"
           >
             <DownloadSimple size={isMobile ? 20 : 22} />
           </button>
           <button
             onClick={() => selectedGeneratedImage && handleCopy(selectedGeneratedImage)}
-            className={`${
-              isMobile ? "w-11 h-11" : "w-12 h-12"
-            } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+            className={`${isMobile ? "w-11 h-11" : "w-12 h-12"
+              } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
             title="Sao chép hình ảnh"
           >
             {copied ? (
@@ -153,12 +167,11 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
           {onViewProduct && (
             <button
               onClick={onViewProduct}
-              className={`${
-                isMobile ? "w-11 h-11" : "w-12 h-12"
-              } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
+              className={`${isMobile ? "w-11 h-11" : "w-12 h-12"
+                } bg-white hover:bg-slate-50 rounded-full shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform`}
               title="Xem thông tin sản phẩm"
             >
-              <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg" alt="ring-icon"/>
+              <img src="https://cdn.hstatic.net/files/200000355853/file/ring.svg" alt="ring-icon" />
             </button>
           )}
         </div>

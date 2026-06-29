@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 export function TryOnTaskStack() {
-  const { tasks, removeTask, setActiveTaskId, openTryOn, isCameraActive } = useTryOnGlobal();
+  const { tasks, removeTask, setActiveTaskId, openTryOn, isCameraActive, setIsHistoryOpen } = useTryOnGlobal();
   const [showPopover, setShowPopover] = useState(false);
   const isMobile = useIsMobile();
 
@@ -61,13 +61,28 @@ export function TryOnTaskStack() {
                 <span className="text-[8px] md:text-[10px] text-white/60 font-bold uppercase tracking-wider truncate">
                   {task.ring.type || "Nhẫn"} - {task.ring.attributes?.designCode || "--"}
                 </span>
-                <p className="text-[10px] md:text-xs text-white leading-tight mt-0.5 line-clamp-2">
-                  {task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING
-                    ? "Quá trình tạo ảnh mất khoảng 90 giây, vui lòng chờ trong giây lát"
-                    : task.status === TryOnApiStatus.COMPLETED
-                      ? "Quá trình tạo ảnh đã hoàn tất, hình ảnh của bạn đã sẵn sàng"
-                      : `Lỗi: ${task.error || "Không thể tạo ảnh"}`}
-                </p>
+                <div className="text-[10px] md:text-xs text-white leading-tight mt-0.5 line-clamp-2">
+                  {task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING ? (
+                    <span>
+                      Quá trình xử lý ảnh sẽ tự động lưu trong{" "}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsHistoryOpen(true);
+                          openTryOn();
+                        }}
+                        className="underline text-white font-semibold hover:text-slate-200 transition-colors bg-transparent border-none p-0 inline cursor-pointer outline-none align-baseline"
+                      >
+                        Lịch sử
+                      </button>
+                    </span>
+                  ) : task.status === TryOnApiStatus.COMPLETED ? (
+                    "Quá trình tạo ảnh đã hoàn tất, hình ảnh của bạn đã sẵn sàng"
+                  ) : (
+                    `Lỗi: ${task.error || "Không thể tạo ảnh"}`
+                  )}
+                </div>
               </div>
             </div>
 
@@ -80,6 +95,7 @@ export function TryOnTaskStack() {
                   onClick={() => {
                     setActiveTaskId(task.taskId);
                     openTryOn();
+                    setShowPopover(false);
                   }}
                   className={"text-white hover:text-secondary-800"}
                   size={"sm"}

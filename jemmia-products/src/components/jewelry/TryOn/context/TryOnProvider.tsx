@@ -84,8 +84,62 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
   const [savedSessionStep, setSavedSessionStep] = useState<number | null>(null);
   const [alignmentPreviewUrl, setAlignmentPreviewUrl] = useState<string | null>(null);
   const [selectedRingMediaTab, setSelectedRingMediaTab] = useState<ImageTab>(ImageTab.TRY_ON);
+  const [progress, setProgress] = useState(0);
+  const [pendingResultImage, setPendingResultImage] = useState<string | null>(null);
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 
-  const { addTask, tasks, activeTaskId, setActiveTaskId, setIsCameraActive, removeTask } = useTryOnGlobal();
+  useEffect(() => {
+    if (!isGenerating) {
+      setProgress(0);
+      setPendingResultImage(null);
+      return;
+    }
+
+    // If we've reached 100% and it's finished, handle transition after a 500ms delay so 100% displays clearly
+    if (pendingResultImage !== null && progress >= 100) {
+      const delayId = setTimeout(() => {
+        setGeneratedImages([pendingResultImage]);
+        setGeneratedImage(pendingResultImage);
+        setSelectedGeneratedImage(pendingResultImage);
+        setIsGenerating(false);
+        setisTryingOn(false);
+        setGenerationError(null);
+        setPendingResultImage(null);
+      }, 500);
+      return () => clearTimeout(delayId);
+    }
+
+    const isFinished = pendingResultImage !== null;
+    const intervalTime = isFinished ? 120 : 1000;
+
+    const timeoutId = setTimeout(() => {
+      setProgress((prev) => {
+        if (isFinished) {
+          const diff = Math.random() * 6 + 12; // 12% to 18% per tick
+          return Math.min(prev + diff, 100);
+        } else {
+          if (prev >= 99) return 99;
+          let diff = 0.5;
+          if (prev < 15) {
+            diff = Math.random() * 0.5 + 0.5; // 0.5 to 1.0
+          } else if (prev < 50) {
+            diff = Math.random() * 0.3 + 0.3; // 0.3 to 0.6
+          } else if (prev < 80) {
+            diff = Math.random() * 0.15 + 0.15; // 0.15 to 0.30
+          } else if (prev < 95) {
+            diff = Math.random() * 0.05 + 0.05; // 0.05 to 0.10
+          } else {
+            diff = Math.random() * 0.01 + 0.01; // 0.01 to 0.02
+          }
+          return Math.min(prev + diff, 99);
+        }
+      });
+    }, intervalTime);
+
+    return () => clearTimeout(timeoutId);
+  }, [isGenerating, pendingResultImage, progress]);
+
+  const { addTask, tasks, activeTaskId, setActiveTaskId, setIsCameraActive, removeTask, isHistoryOpen, setIsHistoryOpen } = useTryOnGlobal();
 
   // Listen to activeTaskId from global context to load a specific task result
   useEffect(() => {
@@ -114,18 +168,14 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
   // Sync generating state with global tasks for the currently selected ring
   useEffect(() => {
-    if (step === 4 && isGenerating && selectedRing) {
+    if (step === 4 && isGenerating && currentTaskId) {
       const task = tasks.find(
-        (t) => t.ring.id === selectedRing.id && t.status !== TryOnApiStatus.QUEUED && t.status !== TryOnApiStatus.PROCESSING
+        (t) => t.taskId === currentTaskId && t.status !== TryOnApiStatus.QUEUED && t.status !== TryOnApiStatus.PROCESSING
       );
       if (task) {
         if (task.status === TryOnApiStatus.COMPLETED && task.resultImage) {
-          setGeneratedImages([task.resultImage]);
-          setGeneratedImage(task.resultImage);
-          setSelectedGeneratedImage(task.resultImage);
-          setIsGenerating(false);
-          setisTryingOn(false);
-          setGenerationError(null);
+          // Set to pending result image, let progress handle reaching 100% and transition
+          setPendingResultImage(task.resultImage);
         } else if (task.status === TryOnApiStatus.FAILED) {
           setToastMessage(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
           setGenerationError(task.error || "Không thể tạo hình ảnh thử trực tuyến.");
@@ -135,7 +185,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         removeTask(task.taskId);
       }
     }
-  }, [tasks, step, isGenerating, selectedRing, removeTask]);
+  }, [tasks, step, isGenerating, selectedRing, removeTask, currentTaskId]);
 
   useEffect(() => {
     setSelectedRingMediaTab(ImageTab.TRY_ON);
@@ -398,6 +448,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
           setMaxStep(4);
           setIsGenerating(true);
           setisTryingOn(true);
+          setCurrentTaskId(session.taskId);
           addTask({
             taskId: session.taskId,
             ring: session.selectedRing,
@@ -464,6 +515,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
                 if (session.taskId) {
                   setIsGenerating(true);
                   setisTryingOn(true);
+                  setCurrentTaskId(session.taskId);
                   addTask({
                     taskId: session.taskId,
                     ring: session.selectedRing,
@@ -784,6 +836,18 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     setSelectedGeneratedImage(null);
     setGenerationError(null);
 
+    const tempTaskId = `temp_${Date.now()}`;
+    setCurrentTaskId(tempTaskId);
+    addTask({
+      taskId: tempTaskId,
+      ring: selectedRing,
+      uploadedImage,
+      status: TryOnApiStatus.QUEUED,
+      resultImage: null,
+      error: null,
+      createdAt: Date.now(),
+    });
+
     try {
       const canvas = document.createElement("canvas");
       const imgHand = new Image();
@@ -922,7 +986,9 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       };
       safeSessionStorageSetItem(ACTIVE_TRYON_SESSION_KEY, JSON.stringify(sessionData));
 
-      // Add task to global list
+      // Remove temp task and add real task to global list
+      setCurrentTaskId(taskId);
+      removeTask(tempTaskId);
       addTask({
         taskId,
         ring: selectedRing,
@@ -933,6 +999,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         createdAt: Date.now(),
       });
     } catch (e) {
+      removeTask(tempTaskId);
       setToastMessage("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setGenerationError("Lỗi kết nối máy chủ khi tạo ảnh thử trực tuyến.");
       setIsGenerating(false);
@@ -1225,6 +1292,8 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       isLoadingRings,
       isLoadingMore,
       selectedRingMediaTab,
+      isHistoryOpen,
+      progress,
     },
     actions: {
       setStep,
@@ -1244,6 +1313,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       setShowResumePopup,
       setShowExitPopup,
       setShowSaveSuccessPopup,
+      setIsHistoryOpen,
       setSavedSessionStep,
       setAlignmentPreviewUrl,
       startCamera,
