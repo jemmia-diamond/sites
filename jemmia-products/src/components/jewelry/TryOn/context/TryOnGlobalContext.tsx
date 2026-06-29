@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, use } from "react";
 import axios from "axios";
 import { ProductModel } from "../../../../types";
 import { getSimpleHash } from "../utils/hash";
-import { resizeAndCompressImage } from "@/lib/media";
+import { processTryOnResult } from "../utils/result";
 
 export enum TryOnApiStatus {
   QUEUED = "queued",
@@ -132,19 +132,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
       const { status, result, error } = response.data;
 
       if (status === TryOnApiStatus.COMPLETED) {
-        const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64;
-        let finalImage = "";
-
-        if (useBase64Env) {
-          if (result?.base64) {
-            const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-            finalImage = await resizeAndCompressImage({ url: imageUrl });
-          }
-        } else {
-          if (result?.url) {
-            finalImage = result.url;
-          }
-        }
+        const finalImage = await processTryOnResult(result);
 
         if (finalImage) {
           try {

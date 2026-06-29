@@ -21,6 +21,7 @@ import {
 import { addJobId } from "../utils/history";
 import { getSimpleHash } from "../utils/hash";
 import { resizeAndCompressImage } from "@/lib/media";
+import { processTryOnResult } from "../utils/result";
 
 
 // Helpers
@@ -291,22 +292,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
         const { status, result, error } = response.data;
 
         if (status === TryOnApiStatus.COMPLETED) {
-          const useBase64Env = import.meta.env.VITE_TRYON_USE_BASE64 === "true";
-          let finalImage = "";
-
-          if (useBase64Env) {
-            if (result?.base64) {
-              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-              finalImage = await resizeAndCompressImage({ url: imageUrl });
-            }
-          } else {
-            if (result?.url) {
-              finalImage = result.url;
-            } else if (result?.base64) {
-              const imageUrl = `data:${result.mimeType || "image/png"};base64,${result.base64}`;
-              finalImage = await resizeAndCompressImage({ url: imageUrl });
-            }
-          }
+          const finalImage = await processTryOnResult(result);
 
           if (finalImage) {
             setGeneratedImages([finalImage]);
