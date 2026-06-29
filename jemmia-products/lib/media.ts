@@ -11,7 +11,6 @@ export const getDisplayUrl = (url: string): string => {
   return isHeic(url) ? `${API_BASE_URL}/site/files/cloudflare-transform?url=${encodeURIComponent(url)}` : url;
 };
 
-
 export function convertToPngBlob(blob: Blob): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -109,55 +108,36 @@ interface ResizeAndCompressOptions {
   quality?: number;
 }
 
-export function resizeAndCompressImage({
+export async function resizeAndCompressImage({
   url,
   maxWidth = 1024,
   maxHeight = 1024,
   quality = 0.85,
 }: ResizeAndCompressOptions): Promise<string> {
-  return new Promise((resolve) => {
+  try {
     if (!url || (!url.startsWith("data:image") && !url.startsWith("http") && !url.startsWith("/"))) {
-      resolve(url);
-      return;
+      return url;
     }
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        let width = img.naturalWidth || img.width;
-        let height = img.naturalHeight || img.height;
+    // Convert URL/data URL to Blob
+    const response = await fetch(url);
+    const blob = await response.blob();
 
-        if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          } else {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
+    // Dynamically import browser-image-compression to keep initial bundle size optimized
+    const imageCompression = (await import("browser-image-compression")).default;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          resolve(url);
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
-        resolve(compressedBase64);
-      } catch (e) {
-        console.warn("Failed to compress image due to canvas/CORS error, fallback to original url:", e);
-        resolve(url);
-      }
+    const options = {
+      maxSizeMB: quality * 2, // Map quality setting (0-1) to rough max MB size (e.g. 0.85 -> 1.7MB limit)
+      maxWidthOrHeight: Math.max(maxWidth, maxHeight),
+      useWebWorker: true,
+      fileType: "image/jpeg",
     };
-    img.onerror = () => {
-      resolve(url);
-    };
-    img.src = url;
-  });
+
+    const compressedBlob = await imageCompression(blob as File, options);
+    const compressedBase64 = await imageCompression.getDataUrlFromFile(compressedBlob as File);
+    return compressedBase64;
+  } catch (e) {
+    console.warn("Failed to compress image using browser-image-compression, fallback to original url:", e);
+    return url;
+  }
 }
