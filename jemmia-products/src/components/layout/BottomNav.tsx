@@ -1,10 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTryOnGlobal } from "../jewelry/TryOn/context/TryOnGlobalContext";
+import { use } from "react";
+import { TryOnContext } from "../jewelry/TryOn/context/TryOnContext";
 
 export function BottomNav() {
   const location = useLocation();
   const { hasUnreadResult, openTryOn, isTryOnGenerating } = useTryOnGlobal();
+  const context = use(TryOnContext);
+  if (!context) return null;
+
+  const { state } = context;
+  const { isGenerating } = state;
 
   const navItems = [
     {
@@ -58,7 +65,7 @@ export function BottomNav() {
       >
         <span className="relative nav-tab-item nav-tab-item-inactive">
           Thử nhẫn
-          {(hasUnreadResult || isTryOnGenerating) && (
+          {(hasUnreadResult || isTryOnGenerating || isGenerating) && (
             <span className="absolute -top-1 -right-2 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
