@@ -52,6 +52,7 @@ export function JewelryTable({
   const queryClient = useQueryClient();
   const [serialModal, setSerialModal] = useState<{ variants: any[]; sku: string; totalQuantity?: number; totalHaravanQuantity?: number } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [previewList, setPreviewList] = useState<string[]>([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
@@ -108,16 +109,18 @@ export function JewelryTable({
   const handlePreview = (images: string[], index: number, config?: any) => {
     setPreviewList(images);
     setPreviewIndex(index);
-    setPreviewUrl(images[index]);
+    setPreviewUrl(images[index] || null);
     setSelectedMedia(null);
     setUploadConfig(config || null);
     setActiveTab(config?.isActual ? MediaTabEnum.ACTUAL : MediaTabEnum.WEB);
+    setIsMediaDialogOpen(true);
   };
 
   const closeMediaDialog = () => {
     setPreviewUrl(null);
     setSelectedMedia(null);
     setUploadConfig(null);
+    setIsMediaDialogOpen(false);
   };
 
 
@@ -180,6 +183,7 @@ export function JewelryTable({
       />
 
       <MediaPreviewDialog
+        isOpen={isMediaDialogOpen}
         previewUrl={previewUrl}
         previewList={displayList}
         previewIndex={previewIndex}
@@ -211,6 +215,7 @@ export enum MediaTabEnum {
   TRYON = "try_on",
 }
 interface MediaPreviewDialogProps {
+  isOpen?: boolean;
   previewUrl: string | null;
   previewList: string[];
   previewIndex: number;
@@ -233,6 +238,7 @@ interface MediaPreviewDialogProps {
 }
 
 export function MediaPreviewDialog({
+  isOpen,
   previewUrl,
   previewList,
   previewIndex,
@@ -254,6 +260,9 @@ export function MediaPreviewDialog({
 }: MediaPreviewDialogProps) {
   // const validPreviewList = previewList.filter((url) => !brokenImages.has(url));
   const validPreviewList = previewList;
+  const isDialogOpen = isOpen !== undefined
+    ? isOpen
+    : (!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig));
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedMediaUrlsForDelete, setSelectedMediaUrlsForDelete] = useState<string[]>([]);
@@ -267,15 +276,19 @@ export function MediaPreviewDialog({
     const deletedUrl = selectedMediaUrlsForDelete[0];
     await onUploadSuccess?.(true);
     const newList = validPreviewList.filter(
-      (url) => url !== deletedUrl
+      (url) => !selectedMediaUrlsForDelete.includes(url)
     );
 
-    if (newList.length === 0) {
-      onSelectMedia(null);
+    if (selectedMedia) {
+      if (newList.length === 0) {
+        onSelectMedia(null);
+      } else {
+        const currentIndex = validPreviewList.indexOf(deletedUrl);
+        const nextIndex = Math.min(currentIndex, newList.length - 1);
+        onSelectMedia(newList[nextIndex]);
+      }
     } else {
-      const currentIndex = validPreviewList.indexOf(deletedUrl);
-      const nextIndex = Math.min(currentIndex, newList.length - 1);
-      onSelectMedia(newList[nextIndex]);
+      onSelectMedia(null);
     }
 
     setSelectedMediaUrlsForDelete([]);
@@ -284,7 +297,7 @@ export function MediaPreviewDialog({
 
   return (
     <>
-      <Dialog open={!!previewUrl || (validPreviewList.length === 0 && !!uploadConfig)} onOpenChange={(open) => !open && onClose()}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="!w-[90%] md:max-w-[1200px] h-[85vh] bg-white rounded-none border-none p-0 overflow-hidden shadow-2xl flex flex-col outline-none" showCloseButton={false}>
           {selectedMedia && (
             <div className="flex-1 min-h-0 w-full h-full">

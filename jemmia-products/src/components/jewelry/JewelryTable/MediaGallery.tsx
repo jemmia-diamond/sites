@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -73,9 +73,13 @@ export function MediaGallery({
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [copyingUrl, setCopyingUrl] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setSelectedMediaUrls([]);
   }, [activeTab]);
+
+  useEffect(() => {
+    setSelectedMediaUrls(prev => prev.filter(url => validPreviewList.includes(url)));
+  }, [validPreviewList]);
 
   const handleToggleSelect = (url: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
