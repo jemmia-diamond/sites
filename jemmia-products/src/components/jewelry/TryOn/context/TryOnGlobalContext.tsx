@@ -142,11 +142,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
         const finalImage = await processTryOnResult(result);
 
         if (finalImage) {
-          try {
-            // Save cache for TryOn context
-            const cacheKey = `tryon_cache_${task.ring.id}_${getSimpleHash(task.uploadedImage)}`;
-            sessionStorage.setItem(cacheKey, JSON.stringify([finalImage]));
-          } catch {}
+
 
           return {
             task: {

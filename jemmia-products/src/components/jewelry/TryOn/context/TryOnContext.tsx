@@ -109,6 +109,7 @@ export interface TryOnActions {
   handleResumeSession: () => void;
   handleGenerateAlignmentPreview: () => void;
   handleResetAll: () => void;
+  handleTryNewRing: () => void;
   handleSelectGeneratedImage: (img: string | null) => void;
   handleStepClick: (targetStep: number) => void;
   handleSelectRing: (ring: ProductModel) => void;

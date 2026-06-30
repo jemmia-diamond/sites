@@ -360,9 +360,6 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
               );
             }
 
-            // Save cache
-            const cacheKey = `${TRYON_CACHE_PREFIX}${targetRing.id}_${getSimpleHash(targetImage)}`;
-            safeSessionStorageSetItem(cacheKey, JSON.stringify([finalImage]));
 
             if (pollingIntervalRef.current) {
               clearInterval(pollingIntervalRef.current);
@@ -632,8 +629,8 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
       const r_orig = W_orig / H_orig;
       const S_base = r_orig < 1
-        ? containerWidthVal / W_orig
-        : containerWidthVal / H_orig;
+        ? containerWidthVal / H_orig
+        : containerWidthVal / W_orig;
       const S_total = S_base * imageScale;
 
       const redBoxLeft = (redBox.x / 100) * containerWidthVal;
@@ -709,6 +706,22 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
     setMaxStep(1);
   };
 
+  const handleTryNewRing = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    setIsGenerating(false);
+    setisTryingOn(false);
+    setSelectedRing(null);
+    setGeneratedImage(null);
+    setGeneratedImages([]);
+    setSelectedGeneratedImage(null);
+    setGenerationError(null);
+    setStep(3);
+    setMaxStep(3);
+  };
+
   const handleSelectGeneratedImage = (img: string | null) => {
     setSelectedGeneratedImage(img);
     setGeneratedImage(img);
@@ -774,59 +787,13 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       return;
     }
 
-    const cacheKey = `${TRYON_CACHE_PREFIX}${selectedRing.id}_${getSimpleHash(uploadedImage)}`;
-    // Clear both cache and active session if forcing a new generation
+    // Clear active session if forcing a new generation
     if (force) {
-      sessionStorage.removeItem(cacheKey);
       sessionStorage.removeItem(ACTIVE_TRYON_SESSION_KEY);
       // Clear any existing polling
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
-      }
-    }
-    const cachedData = sessionStorage.getItem(cacheKey);
-
-    if (cachedData && !force) {
-      try {
-        const cachedUrls = JSON.parse(cachedData) as string[];
-        if (cachedUrls && cachedUrls.length > 0) {
-          setStep(4);
-          setIsGenerating(true);
-          setGeneratedImages([]);
-          setSelectedGeneratedImage(null);
-          setGenerationError(null);
-
-          setTimeout(() => {
-            setGeneratedImages(cachedUrls);
-            setGeneratedImage(cachedUrls[0]);
-            setSelectedGeneratedImage(cachedUrls[0]);
-            setIsGenerating(false);
-            setisTryingOn(false);
-
-            addTask({
-              taskId: `cache_${selectedRing.id}_${getSimpleHash(uploadedImage)}`,
-              ring: selectedRing,
-              uploadedImage,
-              status: TryOnApiStatus.COMPLETED,
-              resultImage: cachedUrls[0],
-              error: null,
-              createdAt: Date.now(),
-            });
-
-            if (!isOpen) {
-              sessionStorage.setItem("tryon_unread_result", "true");
-              window.dispatchEvent(
-                new CustomEvent("tryon:unread-change", {
-                  detail: { hasUnread: true },
-                })
-              );
-            }
-          }, 1000);
-          return;
-        }
-      } catch (err) {
-        console.error("Error parsing cached data:", err);
       }
     }
 
@@ -876,8 +843,8 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
           const r_orig = W_orig / H_orig;
           const S_base = r_orig < 1
-            ? containerWidthVal / W_orig
-            : containerWidthVal / H_orig;
+            ? containerWidthVal / H_orig
+            : containerWidthVal / W_orig;
           const S_total = S_base * imageScale;
 
           const redBoxLeft = (redBox.x / 100) * containerWidthVal;
@@ -1080,8 +1047,8 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
 
         const r_orig = W_orig / H_orig;
         const S_base = r_orig < 1
-          ? containerWidthVal / W_orig
-          : containerWidthVal / H_orig;
+          ? containerWidthVal / H_orig
+          : containerWidthVal / W_orig;
         const S_total = S_base * imageScale;
 
         const redBoxLeft = (redBox.x / 100) * containerWidthVal;
@@ -1338,6 +1305,7 @@ export function TryOnProvider({ children, isOpen, onClose }: TryOnProviderProps)
       handleResumeSession,
       handleGenerateAlignmentPreview,
       handleResetAll,
+      handleTryNewRing,
       handleSelectGeneratedImage,
       handleStepClick,
       handleSelectRing,

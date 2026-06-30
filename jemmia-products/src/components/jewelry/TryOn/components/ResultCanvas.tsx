@@ -131,7 +131,7 @@ export function ResultCanvas({ onViewProduct }: ResultCanvasProps) {
 
   /* State C: Final / selectedGeneratedImage is not null */
   return (
-    <div className="max-w-225 h-full lg:h-auto w-full aspect-square bg-black border border-slate-200 shadow-md rounded-lg relative overflow-hidden mx-auto flex items-center justify-center">
+    <div className="max-h-full h-full w-auto md:aspect-square bg-black border border-slate-200 shadow-md rounded-lg relative overflow-hidden mx-auto flex items-center justify-center">
       <div className="relative w-full h-full max-w-full max-h-full bg-white overflow-hidden">
         <img
           src={selectedGeneratedImage}
