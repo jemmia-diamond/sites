@@ -35,6 +35,8 @@ export function HistoryContent({
     try {
       const response = await axios.post<{ list: any[] }>("/image-generation/jobs", {
         ids: jobIds,
+        limit: 200,
+        offset: 0,
       });
       const list = response.data.list || [];
 

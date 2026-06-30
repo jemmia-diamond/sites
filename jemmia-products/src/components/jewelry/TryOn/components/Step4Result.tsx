@@ -24,7 +24,7 @@ export function MobileStep4() {
   const {
     handleStepClick,
     handleTryOn,
-    handleResetAll,
+    handleTryNewRing,
   } = actions;
 
   return (
@@ -59,7 +59,7 @@ export function MobileStep4() {
           </Button>
         )}
         <Button
-          onClick={handleResetAll}
+          onClick={handleTryNewRing}
           variant="secondary"
           className="w-full h-11 text-sm font-normal"
         >
@@ -142,7 +142,7 @@ export function DesktopStep4Bottom() {
 
   const {
     handleTryOn,
-    handleResetAll,
+    handleTryNewRing,
   } = actions;
 
   return (
@@ -159,7 +159,7 @@ export function DesktopStep4Bottom() {
           </Button>
         )}
         <Button
-          onClick={handleResetAll}
+          onClick={handleTryNewRing}
           variant="secondary"
           className="w-full h-11 tracking-wider font-normal"
         >

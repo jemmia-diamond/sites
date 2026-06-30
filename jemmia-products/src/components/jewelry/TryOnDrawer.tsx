@@ -369,21 +369,21 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             <button
               onClick={() => setIsMobileHistoryOpen((prev) => !prev)}
               className={cn(
-                "p-1.5 rounded-full transition-colors cursor-pointer",
+                "p-1.5 rounded-full transition-colors relative cursor-pointer",
                 isMobileHistoryOpen
                   ? "text-teal-700 bg-teal-50"
                   : "text-primary-900/60 hover:text-primary-900 hover:bg-primary-50"
               )}
             >
-              <span className="relative">
-                <ClockCounterClockwiseIcon weight="bold" size={18} />
+                <span>
+                  <ClockCounterClockwiseIcon weight="bold" size={18} />
+                </span>
                 {(isTryOnGenerating || isGenerating) && (
-                  <span className="absolute -top-0.5 -right-1.5 flex h-2 w-2">
+                  <span className="absolute top-0 right-0 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                   </span>
                 )}
-              </span>
             </button>
           ) : (
             <Button variant={"ghost"} onClick={() => setIsHistoryOpen(true)}>
@@ -555,9 +555,8 @@ function TryOnDrawerInner({ onClose }: TryOnDrawerInnerProps) {
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full ${
-              useMirror ? "transform scale-x-[-1]" : ""
-            }`}
+            className={`absolute inset-0 w-full h-full ${useMirror ? "transform scale-x-[-1]" : ""
+              }`}
           />
 
           {/* Header Controls */}
