@@ -423,6 +423,29 @@ export function DesktopStep1Right() {
     };
   }, []);
 
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf("image") !== -1) {
+          const file = item.getAsFile();
+          if (file) {
+            processFile(file);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [processFile]);
+
   if (isMobileBehavior && !uploadedImage) {
     return (
       <div
