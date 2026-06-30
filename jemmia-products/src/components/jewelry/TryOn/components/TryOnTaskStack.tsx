@@ -6,20 +6,22 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 export function TryOnTaskStack() {
-  const { tasks, removeTask, setActiveTaskId, openTryOn, isCameraActive, setIsHistoryOpen } = useTryOnGlobal();
+  const { tasks, removeTask, dismissTask, setActiveTaskId, openTryOn, isCameraActive, setIsHistoryOpen } = useTryOnGlobal();
   const [showPopover, setShowPopover] = useState(false);
   const isMobile = useIsMobile();
 
   const cardHeight = isMobile ? 84 : 132;
   const spacingHeight = isMobile ? 92 : 140;
 
-  const sortedTasks = [...tasks].sort((a, b) => {
+  const visibleTasks = tasks.filter((t) => !t.dismissedFromStack);
+
+  const sortedTasks = [...visibleTasks].sort((a, b) => {
     if (a.status === TryOnApiStatus.COMPLETED && b.status !== TryOnApiStatus.COMPLETED) return -1;
     if (a.status !== TryOnApiStatus.COMPLETED && b.status === TryOnApiStatus.COMPLETED) return 1;
     return b.createdAt - a.createdAt;
   });
 
-  if (!tasks?.length || isCameraActive) {
+  if (!sortedTasks?.length || isCameraActive) {
     return null;
   }
 
@@ -105,7 +107,13 @@ export function TryOnTaskStack() {
               )}
               <Button
                 variant={"ghost"}
-                onClick={() => removeTask(task.taskId)}
+                onClick={() => {
+                  if (task.status === TryOnApiStatus.QUEUED || task.status === TryOnApiStatus.PROCESSING) {
+                    dismissTask(task.taskId);
+                  } else {
+                    removeTask(task.taskId);
+                  }
+                }}
                 className={"text-white hover:text-secondary-800"}
                 size={"sm"}
               >

@@ -19,6 +19,7 @@ export interface TryOnTask {
   resultImage: string | null;
   error: string | null;
   createdAt: number;
+  dismissedFromStack?: boolean;
 }
 
 export interface TryOnGlobalContextValue {
@@ -32,6 +33,7 @@ export interface TryOnGlobalContextValue {
   tasks: TryOnTask[];
   addTask: (task: TryOnTask) => void;
   removeTask: (taskId: string) => void;
+  dismissTask: (taskId: string) => void;
   activeTaskId: string | null;
   setActiveTaskId: (id: string | null) => void;
   isCameraActive: boolean;
@@ -76,6 +78,12 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
 
   const removeTask = (taskId: string) => {
     setTasks((prev) => prev.filter((t) => t.taskId !== taskId));
+  };
+
+  const dismissTask = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.taskId === taskId ? { ...t, dismissedFromStack: true } : t))
+    );
   };
 
   // Sync tasks with session storage
@@ -149,6 +157,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
               ...task,
               status: TryOnApiStatus.COMPLETED,
               resultImage: finalImage,
+              dismissedFromStack: false,
             },
             changed: true,
           };
@@ -159,6 +168,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
             ...task,
             status: TryOnApiStatus.FAILED,
             error: error || "Không thể tạo hình ảnh thử trực tuyến.",
+            dismissedFromStack: false,
           },
           changed: true,
         };
@@ -170,6 +180,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
             ...task,
             status: TryOnApiStatus.FAILED,
             error: "Phiên tạo ảnh đã hết hạn.",
+            dismissedFromStack: false,
           },
           changed: true,
         };
@@ -241,6 +252,7 @@ export function TryOnGlobalProvider({ children }: { children: React.ReactNode })
         tasks,
         addTask,
         removeTask,
+        dismissTask,
         activeTaskId,
         setActiveTaskId,
         isCameraActive,
