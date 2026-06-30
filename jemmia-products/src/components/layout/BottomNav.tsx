@@ -8,10 +8,7 @@ export function BottomNav() {
   const location = useLocation();
   const { hasUnreadResult, openTryOn, isTryOnGenerating } = useTryOnGlobal();
   const context = use(TryOnContext);
-  if (!context) return null;
-
-  const { state } = context;
-  const { isGenerating } = state;
+  const isGenerating = context?.state?.isGenerating ?? false;
 
   const navItems = [
     {
