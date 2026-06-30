@@ -19,7 +19,7 @@ import {
   TrashIcon,
 } from "@phosphor-icons/react";
 import axios from "axios";
-import { isHeic, getDisplayUrl, getThumbnailUrl } from "@/lib/media";
+import { isHeic, getDisplayUrl } from "@/lib/media";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaTab, MediaTabEnum } from "./JewelryTable";
 
@@ -471,7 +471,7 @@ export function MediaGallery({
                       onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                     />
                   ) : (
-                    <img src={getThumbnailUrl(url, 'medium')} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" decoding="async" onError={() => onImageError(url)} />
+                    <img src={getDisplayUrl(url)} className="h-full w-full object-cover transition-transform border border-primary-200 duration-700 group-hover:scale-110" alt={`Media ${i}`} loading="lazy" onError={() => onImageError(url)} />
                   )}
                   {isVid && (
                     <div className="absolute top-2 left-2 bg-secondary-900/80 px-1.5 py-1 rounded-full flex items-center gap-1 z-10 pointer-events-none">
