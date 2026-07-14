@@ -4,6 +4,9 @@ import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const target = env.VITE_API_BASE_URL;
+
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -18,22 +21,22 @@ export default defineConfig(({mode}) => {
       // Proxy API requests to backend so cookies work with SameSite=Lax
       proxy: {
         '/auth': {
-          target: 'https://api.salesaya.com',
+          target,
           changeOrigin: true,
           secure: true,
         },
         '/product-types': {
-          target: 'https://api.salesaya.com',
+          target,
           changeOrigin: true,
           secure: true,
         },
         '/image-generation': {
-          target: 'https://api.salesaya.com',
+          target,
           changeOrigin: true,
           secure: true,
         },
         '/site': {
-          target: 'https://api.salesaya.com',
+          target,
           changeOrigin: true,
           secure: true,
         },
