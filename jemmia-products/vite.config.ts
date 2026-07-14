@@ -5,7 +5,7 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const target = env.VITE_API_BASE_URL;
+  const target = env.VITE_API_BASE_URL || 'https://salesaya-api.jemmia.vn';
 
   return {
     plugins: [react(), tailwindcss()],
