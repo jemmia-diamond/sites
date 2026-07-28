@@ -1,7 +1,15 @@
 import casContent from "./public/cas.txt";
+import homeContent from "./public/home.md";
 
 const STATIC_FILES = {
-  "/cas.txt": casContent,
+  "/cas.txt": {
+    content: casContent,
+    contentType: "text/plain; charset=utf-8",
+  },
+  "/jemmia-diamond.md": {
+    content: homeContent,
+    contentType: "text/markdown; charset=utf-8",
+  },
 };
 
 /**
@@ -11,10 +19,11 @@ const STATIC_FILES = {
  */
 export function handleStaticRequest(pathname) {
   if (Object.prototype.hasOwnProperty.call(STATIC_FILES, pathname)) {
-    return new Response(STATIC_FILES[pathname], {
+    const file = STATIC_FILES[pathname];
+    return new Response(file.content, {
       status: 200,
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": file.contentType,
         "Cache-Control": "public, max-age=3600",
         "X-Content-Type-Options": "nosniff",
       },
