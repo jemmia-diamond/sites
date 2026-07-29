@@ -134,6 +134,8 @@ export interface JewelryDesign {
   variants: JewelryVariant[];
 }
 
+export type DiamondStockStatus = typeof STOCK_STATUS.REAL_INCOMING | typeof STOCK_STATUS.IN_STOCK | typeof STOCK_STATUS.UNAVAILABLE;
+
 export interface DiamondFilter {
   salePriceFrom?: number;
   salePriceTo?: number;
@@ -143,7 +145,7 @@ export interface DiamondFilter {
   edgeShortFrom?: number;
   edgeShortTo?: number;
   warehouseIds?: string[];
-  stockStatus?: typeof STOCK_STATUS.REAL_INCOMING | typeof STOCK_STATUS.IN_STOCK | typeof STOCK_STATUS.UNAVAILABLE;
+  stockStatus?: DiamondStockStatus;
   color?: string[];
   clarity?: string[];
   fluorescence?: string[];
@@ -192,7 +194,7 @@ export interface DiamondModel {
   id: string;
   title: string;
   type: "diamond";
-  stockStatus?: string;
+  stockStatus?: DiamondStockStatus;
   warehouses: {
     name: string;
   }[];

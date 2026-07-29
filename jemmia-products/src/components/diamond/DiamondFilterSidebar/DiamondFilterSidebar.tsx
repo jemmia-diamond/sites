@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { DiamondFilter } from "../../../types";
+import { DiamondFilter, DiamondStockStatus } from "../../../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FilterSection } from "./FilterSection";
@@ -205,7 +205,7 @@ export function DiamondFilterSidebar({
     });
   };
 
-  const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK" | "UNAVAILABLE") => {
+  const handleStockStatusChange = (status: DiamondStockStatus) => {
     handleFastFilterChange((prev) => ({
       ...prev,
       stockStatus: status,
@@ -596,7 +596,7 @@ export function DiamondFilterSidebar({
               filters={filters}
               warehouses={WAREHOUSES_LIST}
               onWarehouseToggle={handleWarehouseToggle}
-              disabled={filters.stockStatus === "REAL_INCOMING"}
+              disabled={filters.stockStatus === "REAL_INCOMING" || filters.stockStatus === "UNAVAILABLE"}
             />
           </FilterSection>
 

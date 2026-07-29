@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { DiamondModel } from "../../../types";
+import { DiamondModel, DiamondStockStatus } from "../../../types";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ interface DiamondTableProps {
   isFetchingNextPage?: boolean;
   expandedId: string | null;
   onToggleExpand: (id: string | null) => void;
-  stockStatus?: string;
+  stockStatus?: DiamondStockStatus;
 }
 
 export function DiamondTable({ diamonds, lastElementRef, isFetchingNextPage, expandedId, onToggleExpand, stockStatus }: DiamondTableProps) {

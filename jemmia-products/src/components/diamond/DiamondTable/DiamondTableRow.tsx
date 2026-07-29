@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CaretDown, Image } from "@phosphor-icons/react";
-import { DiamondModel, ProductModel } from "../../../types";
+import { DiamondModel, ProductModel, DiamondStockStatus } from "../../../types";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -19,7 +19,7 @@ interface DiamondTableRowProps {
   onPreview: (images: string[], index: number, config?: any) => void;
   onUploadSuccess?: () => void;
   onToggleExpand: (id: string) => void;
-  stockStatus?: string;
+  stockStatus?: DiamondStockStatus;
   key?: string | number;
 }
 
