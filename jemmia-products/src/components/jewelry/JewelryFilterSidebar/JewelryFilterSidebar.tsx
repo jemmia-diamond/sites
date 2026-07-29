@@ -12,6 +12,7 @@ import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
 import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { WAREHOUSES_LIST } from "@/src/config";
 
 interface JewelryFilterSidebarProps {
   onApply: (filters: JewelryFilter) => void;
@@ -70,16 +71,6 @@ const RING_BAND_STYLES = [
   "WR - Split",
   "WR - Twist",
   "WR - Wrap",
-];
-
-const WAREHOUSES_LIST = [
-  {
-    id: "1582708",
-    name: "Hồ Chí Minh",
-    ids: ["1592770", "1582708", "1110168"],
-  },
-  { id: "1592778", name: "Hà Nội", ids: ["1592778"] },
-  { id: "1593276", name: "Cần Thơ", ids: ["1593276"] },
 ];
 
 const STOCK_LABELS: Record<string, string> = {

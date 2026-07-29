@@ -10,6 +10,7 @@ import { StockStatusFilter } from "./StockStatusFilter";
 import { WarehouseFilter } from "./WarehouseFilter";
 import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
 import { Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { WAREHOUSES_LIST } from "@/src/config";
 
 interface DiamondFilterSidebarProps {
   onApply: (filters: DiamondFilter) => void;
@@ -40,18 +41,9 @@ const COLORS = ["D", "E", "F", "G", "H", "I"];
 const CLARITIES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2"];
 const FLUORESCENCE = ["None", "Faint", "Medium", "Strong", "Very Strong"];
 
-const WAREHOUSES_LIST = [
-  {
-    id: "1582708",
-    name: "Hồ Chí Minh",
-    ids: ["1592770", "1582708", "1110168"],
-  },
-  { id: "1592778", name: "Hà Nội", ids: ["1592778"] },
-  { id: "1593276", name: "Cần Thơ", ids: ["1593276"] },
-];
-
 const STOCK_LABELS: Record<string, string> = {
   REAL_INCOMING: "Đang về",
+  UNAVAILABLE: "Chưa có sẵn",
   IN_STOCK: "Có hàng",
 };
 
@@ -213,11 +205,11 @@ export function DiamondFilterSidebar({
     });
   };
 
-  const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK") => {
+  const handleStockStatusChange = (status: "REAL_INCOMING" | "IN_STOCK" | "UNAVAILABLE") => {
     handleFastFilterChange((prev) => ({
       ...prev,
       stockStatus: status,
-      warehouseIds: status === "REAL_INCOMING" ? [] : prev.warehouseIds,
+      warehouseIds: (status === "REAL_INCOMING" || status === "UNAVAILABLE") ? [] : prev.warehouseIds,
     }));
   };
 

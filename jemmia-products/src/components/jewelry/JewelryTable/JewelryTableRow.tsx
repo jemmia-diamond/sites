@@ -11,6 +11,7 @@ import { CaretDown, ArrowSquareOut } from "@phosphor-icons/react";
 import { formatPriceMillion, formatDateTime } from "./utils/formatters";
 import { Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { WAREHOUSE_ID_TO_NAMES } from "@/src/config";
 
 interface ReferencePriceTooltipProps {
   isExpanded: boolean;
@@ -97,14 +98,6 @@ interface JewelryTableRowProps {
   product: ProductModel;
   key?: string | number;
 }
-
-const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
-  "1592770": ["[HCM] Cửa Hàng HCM"],
-  "1582708": ["[HCM] Kế Toán"],
-  "1110168": ["[HCM] Admin"],
-  "1592778": ["[HN] Cửa Hàng HN"],
-  "1593276": ["[CT] Cửa Hàng CT", "[CT] Cửa Hàng Cần Thơ"],
-};
 
 export function JewelryTableRow({
   product,

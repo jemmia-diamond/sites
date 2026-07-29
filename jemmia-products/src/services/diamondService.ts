@@ -1,14 +1,14 @@
 import axios from "axios";
 import { DiamondFilter, DiamondModel, PaginateResponse } from "../types";
+import { DEFAULT_WAREHOUSE_IDS } from "@/src/config";
 
 export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateResponse<DiamondModel>> {
   const limit = filters.limit || 10;
   const offset = ((filters.page || 1) - 1) * limit;
 
-  const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
   const warehouseIdsToUse = filters.warehouseIds && filters.warehouseIds.length > 0
     ? filters.warehouseIds
-    : defaultWarehouses;
+    : DEFAULT_WAREHOUSE_IDS;
 
   let params: any = {};
 
@@ -18,6 +18,13 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
       offset,
       searchQuery: filters.searchQuery.toUpperCase().replace(/^GIA/, ""),
       sortBySalePrice: filters.sortBySalePrice,
+    };
+  } else if (filters.stockStatus === "UNAVAILABLE") {
+    params = {
+      limit,
+      offset,
+      stockStatus: "UNAVAILABLE",
+      sortBySalePrice: "DESC",
     };
   } else {
     params = {
