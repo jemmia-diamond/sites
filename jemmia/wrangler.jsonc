@@ -15,7 +15,8 @@
     {
       "type": "Text",
       "globs": [
-        "**/*.txt"
+        "**/*.txt",
+        "**/*.md"
       ],
       "fallthrough": true
     }
