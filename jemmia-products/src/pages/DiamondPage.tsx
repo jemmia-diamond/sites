@@ -471,6 +471,7 @@ export default function DiamondPage() {
               isFetchingNextPage={isFetchingNextPage}
               expandedId={expandedId}
               onToggleExpand={(id) => setExpandedId((prev) => (prev === id ? null : id))}
+              stockStatus={filters.stockStatus}
             />
           )}
         </div>

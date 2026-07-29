@@ -11,6 +11,7 @@ import { WarehouseFilter } from "./WarehouseFilter";
 import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { WAREHOUSES_LIST } from "@/src/config";
 
 interface ComboFilterSidebarProps {
   onApply: (filters: Omit<ComboFilter, "page">) => void;
@@ -33,16 +34,6 @@ const STONE_SIZES = [
   "7.0",
   "7.2",
   "8.1",
-];
-
-const WAREHOUSES_LIST = [
-  {
-    id: "1582708",
-    name: "Hồ Chí Minh",
-    ids: ["1592770", "1582708", "1110168"],
-  },
-  { id: "1592778", name: "Hà Nội", ids: ["1592778"] },
-  { id: "1593276", name: "Cần Thơ", ids: ["1593276"] },
 ];
 
 export function ComboFilterSidebar({

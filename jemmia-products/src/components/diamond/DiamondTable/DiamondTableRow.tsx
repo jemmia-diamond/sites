@@ -1,13 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CaretDown, Image } from "@phosphor-icons/react";
-import { DiamondModel, ProductModel } from "../../../types";
+import { DiamondModel, ProductModel, DiamondStockStatus } from "../../../types";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { formatPriceVND } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
 import { AlertCircle } from "lucide-react";
+import { VALID_WAREHOUSE_NAMES } from "@/src/config";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
@@ -18,6 +19,7 @@ interface DiamondTableRowProps {
   onPreview: (images: string[], index: number, config?: any) => void;
   onUploadSuccess?: () => void;
   onToggleExpand: (id: string) => void;
+  stockStatus?: DiamondStockStatus;
   key?: string | number;
 }
 
@@ -29,7 +31,8 @@ export function DiamondTableRow({
   onImageError,
   onPreview,
   onUploadSuccess,
-  onToggleExpand
+  onToggleExpand,
+  stockStatus
 }: DiamondTableRowProps) {
   const codeProduct = {
     id: diamond.id,
@@ -39,9 +42,13 @@ export function DiamondTableRow({
     products: [],
   } as unknown as ProductModel;
 
-  const isIncoming =  diamond.quantity === 0 && diamond.warehouses.length === 0;
+  const hasUnavailableWarehouse = (diamond.warehouses || []).some(
+    (wh) => wh.name && wh.name.trim() !== "" && !VALID_WAREHOUSE_NAMES.includes(wh.name.trim())
+  );
+  const isUnavailable = diamond.stockStatus === "UNAVAILABLE" || stockStatus === "UNAVAILABLE" || hasUnavailableWarehouse;
+  const isIncoming = !isUnavailable && diamond.quantity === 0 && diamond.warehouses.length === 0;
   const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
-  const hasStock = !isIncoming && diamond.warehouses.length > 0 && hasAvailableQty;
+  const hasStock = !isUnavailable && !isIncoming && diamond.warehouses.length > 0 && hasAvailableQty;
 
   const actualImages = [
     ...(diamond.images?.map((img) => img.url) || []),
@@ -120,12 +127,14 @@ export function DiamondTableRow({
           <Badge
             className={cn(
               "rounded-full px-2 md:px-2 py-1 text-[8px] md:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
-              hasStock
+              isUnavailable
+                ? "bg-amber-50 text-amber-600"
+                : hasStock
                 ? "bg-emerald-50 text-emerald-600"
                 : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
             )}
           >
-            {isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng")}
+            {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
           </Badge>
         </TableCell>
 
@@ -327,15 +336,17 @@ export function DiamondTableRow({
                   <span className="text-[10px] text-primary-500 font-semibold">Barcode: <span className="text-[10px] text-primary-700 font-semibold">{`${diamond.barcode}`}</span></span>
                 </div>
                 {/* Status */}
-                <Badge
+                 <Badge
                   className={cn(
                     "rounded-full px-2 py-1 text-[8px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
-                    hasStock
+                    isUnavailable
+                      ? "bg-amber-50 text-amber-600"
+                      : hasStock
                       ? "bg-emerald-50 text-emerald-600"
                       : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
                   )}
                 >
-                  {isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng")}
+                  {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
                 </Badge>
                 {/* GIA */}
                 {diamond.attributes.giaPdfUrl ? (

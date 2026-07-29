@@ -1,14 +1,15 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { DiamondFilter } from "../../../types";
+import { DiamondFilter, DiamondStockStatus } from "../../../types";
 
 interface StockStatusFilterProps {
   filters: DiamondFilter;
-  onStockStatusChange: (status: "REAL_INCOMING" | "IN_STOCK") => void;
+  onStockStatusChange: (status: DiamondStockStatus) => void;
 }
 
-const STOCK_OPTIONS: { label: string; value: "IN_STOCK" | "REAL_INCOMING" }[] = [
+const STOCK_OPTIONS: { label: string; value: DiamondStockStatus }[] = [
   { label: "Có hàng", value: "IN_STOCK" },
+  { label: "Chưa có sẵn", value: "UNAVAILABLE" },
   { label: "Đang về", value: "REAL_INCOMING" },
 ];
 
