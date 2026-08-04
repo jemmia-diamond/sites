@@ -11,6 +11,7 @@ import { WarehouseFilter } from "./WarehouseFilter";
 import { StoneSizeFilter } from "./StoneSizeFilter";
 import { PriceRangeFilter } from "./PriceRangeFilter";
 import { MultiSelectButtonFilter } from "./MultiSelectButtonFilter";
+import { FinenessFilter } from "./FinenessFilter";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { WAREHOUSES_LIST } from "@/src/config";
 
@@ -79,6 +80,8 @@ const STOCK_LABELS: Record<string, string> = {
   OUT_OF_STOCK: "Hết hàng",
 };
 
+const FINENESSES = ["Vàng 14K", "Vàng 18K"];
+
 export function JewelryFilterSidebar({
   onApply,
   currentFilters,
@@ -100,6 +103,7 @@ export function JewelryFilterSidebar({
     salePriceTo: undefined,
     ringHeadStyles: [],
     ringBandStyles: [],
+    fineness: undefined,
   };
 
   const [filters, setFilters] = useState<JewelryFilter>(initialFilters);
@@ -246,6 +250,13 @@ export function JewelryFilterSidebar({
     });
   };
 
+  const handleFinenessChange = (fineness: string) => {
+    handleFastFilterChange((prev) => ({
+      ...prev,
+      fineness: prev.fineness === fineness ? undefined : fineness,
+    }));
+  };
+
   const handleMinPriceChange = (value: number | undefined) => {
     setFilters((prev) => ({ ...prev, salePriceFrom: value }));
   };
@@ -327,6 +338,14 @@ export function JewelryFilterSidebar({
               return parts.length > 1 ? parts[1] : parts[0];
             })
             .join(", "),
+        });
+      }
+
+      if (currentFilters.fineness) {
+        chips.push({
+          key: "fineness",
+          value: currentFilters.fineness,
+          label: currentFilters.fineness,
         });
       }
 
@@ -543,6 +562,14 @@ export function JewelryFilterSidebar({
               filters={filters}
               stoneSizes={STONE_SIZES}
               onSizeToggle={handleSizeToggle}
+            />
+          </FilterSection>
+
+          <FilterSection label="Chất liệu">
+            <FinenessFilter
+              filters={filters}
+              finenesses={FINENESSES}
+              onFinenessChange={handleFinenessChange}
             />
           </FilterSection>
 

@@ -101,6 +101,10 @@ export const jewelryService = {
       if (filters.ringBandStyles && filters.ringBandStyles.length > 0) {
         params.ringBandStyles = filters.ringBandStyles;
       }
+
+      if (filters.fineness) {
+        params.fineness = filters.fineness;
+      }
     }
 
     const response = await axios.get<PaginateResponse<ProductModel>>("site/products/jewelries", {

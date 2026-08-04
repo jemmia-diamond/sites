@@ -6,3 +6,4 @@ export { StockStatusFilter } from "./StockStatusFilter";
 export { WarehouseFilter } from "./WarehouseFilter";
 export { StoneSizeFilter } from "./StoneSizeFilter";
 export { PriceRangeFilter } from "./PriceRangeFilter";
+export { FinenessFilter } from "./FinenessFilter";
