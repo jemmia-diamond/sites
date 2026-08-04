@@ -98,6 +98,7 @@ export interface JewelryFilter {
   searchQuery?: string;
   ringHeadStyles?: string[];
   ringBandStyles?: string[];
+  fineness?: string;
   missingMedia?: boolean;
   limit?: number;
 }
