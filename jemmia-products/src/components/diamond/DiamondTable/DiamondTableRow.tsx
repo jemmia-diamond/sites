@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { CaretDown, Image } from "@phosphor-icons/react";
 import { DiamondModel, ProductModel, DiamondStockStatus } from "../../../types";
 import { cn, formatWarehouseName } from "@/lib/utils";
-import { formatPriceVND } from "./utils/formatters";
+import { formatPriceVND, floorToDecimal } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
@@ -91,7 +91,7 @@ export function DiamondTableRow({
 
         <TableCell className="px-1 md:px-1 py-2 text-center">
           <span className="text-[10px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
-            {Math.floor(diamond.attributes.edgeSize1 * 10) / 10}x{Math.floor(diamond.attributes.edgeSize2 * 10) / 10} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
+            {floorToDecimal(diamond.attributes.edgeSize1)}x{floorToDecimal(diamond.attributes.edgeSize2)} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
           </span>
         </TableCell>
 
