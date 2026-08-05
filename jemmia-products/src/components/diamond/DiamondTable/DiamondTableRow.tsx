@@ -80,18 +80,18 @@ export function DiamondTableRow({
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center justify-start gap-2">
               <ProductCodes product={codeProduct} isExpanded={false} className="w-[130px] !justify-start align-caret-right" />
-                  {diamond.inCombo && (
-                  <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
-                    Không bán lẻ
-                  </Badge>
-                )}
+              {diamond.inCombo && (
+                <Badge className="bg-amber-500 text-white text-[8px] px-1 py-0 h-3 leading-none border-none font-semibold rounded-sm tracking-tighter">
+                  Không bán lẻ
+                </Badge>
+              )}
             </div>
           </div>
         </TableCell>
 
         <TableCell className="px-1 md:px-1 py-2 text-center">
           <span className="text-[10px] font-semibold text-primary-500 tracking-tight whitespace-nowrap">
-            {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
+            {Math.floor(diamond.attributes.edgeSize1 * 10) / 10}x{Math.floor(diamond.attributes.edgeSize2 * 10) / 10} · {diamond.attributes.carat}ct · {diamond.attributes.shape} · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.fluorescence || "NONE"}
           </span>
         </TableCell>
 
@@ -130,8 +130,8 @@ export function DiamondTableRow({
               isUnavailable
                 ? "bg-amber-50 text-amber-600"
                 : hasStock
-                ? "bg-emerald-50 text-emerald-600"
-                : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
+                  ? "bg-emerald-50 text-emerald-600"
+                  : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
             )}
           >
             {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
@@ -336,14 +336,14 @@ export function DiamondTableRow({
                   <span className="text-[10px] text-primary-500 font-semibold">Barcode: <span className="text-[10px] text-primary-700 font-semibold">{`${diamond.barcode}`}</span></span>
                 </div>
                 {/* Status */}
-                 <Badge
+                <Badge
                   className={cn(
                     "rounded-full px-2 py-1 text-[8px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
                     isUnavailable
                       ? "bg-amber-50 text-amber-600"
                       : hasStock
-                      ? "bg-emerald-50 text-emerald-600"
-                      : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
+                        ? "bg-emerald-50 text-emerald-600"
+                        : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
                   )}
                 >
                   {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
