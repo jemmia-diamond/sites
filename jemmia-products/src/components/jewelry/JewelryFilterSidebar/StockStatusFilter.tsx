@@ -1,6 +1,6 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { StockStatusFilter as StockStatusFilterType, JewelryFilter } from "../../../types";
+import { StockStatusFilter as StockStatusFilterType, JewelryFilter, STOCK_STATUS, STOCK_LABELS } from "../../../types";
 
 interface StockStatusFilterProps {
   filters: JewelryFilter;
@@ -8,8 +8,9 @@ interface StockStatusFilterProps {
 }
 
 const STOCK_OPTIONS: { label: string; value: StockStatusFilterType }[] = [
-  { label: "Có hàng", value: "IN_STOCK" },
-  { label: "Hết hàng", value: "OUT_OF_STOCK" },
+  { label: STOCK_LABELS[STOCK_STATUS.IN_STOCK], value: STOCK_STATUS.IN_STOCK },
+  { label: STOCK_LABELS[STOCK_STATUS.INCOMING], value: STOCK_STATUS.INCOMING },
+  { label: STOCK_LABELS[STOCK_STATUS.OUT_OF_STOCK], value: STOCK_STATUS.OUT_OF_STOCK },
 ];
 
 export function StockStatusFilter({ filters, onStockStatusChange }: StockStatusFilterProps) {

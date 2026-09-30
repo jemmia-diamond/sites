@@ -1,6 +1,7 @@
 import axios from "axios";
 import { DiamondFilter, DiamondModel, PaginateResponse } from "../types";
 import { DEFAULT_WAREHOUSE_IDS } from "@/src/config";
+import { STOCK_STATUS } from "../types";
 
 export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateResponse<DiamondModel>> {
   const limit = filters.limit || 10;
@@ -19,22 +20,18 @@ export async function fetchDiamonds(filters: DiamondFilter): Promise<PaginateRes
       searchQuery: filters.searchQuery.toUpperCase().replace(/^GIA/, ""),
       sortBySalePrice: filters.sortBySalePrice,
     };
-  } else if (filters.stockStatus === "UNAVAILABLE") {
-    params = {
-      limit,
-      offset,
-      stockStatus: "UNAVAILABLE",
-      sortBySalePrice: "DESC",
-    };
   } else {
+    const stockStatus = filters.stockStatus || STOCK_STATUS.IN_STOCK;
     params = {
       limit,
       offset,
-      stockStatus: filters.stockStatus || "IN_STOCK",
+      stockStatus,
       sortBySalePrice: filters.sortBySalePrice,
     };
 
-    if (filters.stockStatus !== "REAL_INCOMING") {
+    // Warehouse scoping only means something for stock that is physically in a retail
+    // location. Incoming stock has no location yet, and out-of-stock has none anywhere.
+    if (stockStatus === STOCK_STATUS.IN_STOCK) {
       params.warehouseIds = warehouseIdsToUse;
     }
 
