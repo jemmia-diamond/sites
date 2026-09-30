@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { DiamondFilter, DiamondStockStatus } from "../../../types";
+import { DiamondFilter, DiamondStockStatus, STOCK_STATUS, STOCK_LABELS } from "../../../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FilterSection } from "./FilterSection";
@@ -41,11 +41,6 @@ const COLORS = ["D", "E", "F", "G", "H", "I"];
 const CLARITIES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2"];
 const FLUORESCENCE = ["None", "Faint", "Medium", "Strong", "Very Strong"];
 
-const STOCK_LABELS: Record<string, string> = {
-  REAL_INCOMING: "Đang về",
-  UNAVAILABLE: "Chưa có sẵn",
-  IN_STOCK: "Có hàng",
-};
 
 export function DiamondFilterSidebar({
   onApply,
@@ -209,7 +204,7 @@ export function DiamondFilterSidebar({
     handleFastFilterChange((prev) => ({
       ...prev,
       stockStatus: status,
-      warehouseIds: (status === "REAL_INCOMING" || status === "UNAVAILABLE") ? [] : prev.warehouseIds,
+      warehouseIds: status === STOCK_STATUS.IN_STOCK ? prev.warehouseIds : [],
     }));
   };
 
@@ -596,7 +591,7 @@ export function DiamondFilterSidebar({
               filters={filters}
               warehouses={WAREHOUSES_LIST}
               onWarehouseToggle={handleWarehouseToggle}
-              disabled={filters.stockStatus === "REAL_INCOMING" || filters.stockStatus === "UNAVAILABLE"}
+              disabled={filters.stockStatus !== STOCK_STATUS.IN_STOCK}
             />
           </FilterSection>
 

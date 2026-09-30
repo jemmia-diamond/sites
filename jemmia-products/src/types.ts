@@ -1,14 +1,37 @@
 
+/**
+ * The three canonical stock states. Mutually exclusive and jointly exhaustive: every product is
+ * in exactly one, so the three filters partition the catalogue.
+ *
+ * The backend computes this and returns it as `stockStatus`; nothing in the UI should derive it
+ * from quantities or warehouse arrays. Doing so is what let one sold diamond read "Đang về" on
+ * the row while matching no filter at all.
+ *
+ * Retired: REAL_INCOMING and REAL_OUT_OF_STOCK (prefixed only because INCOMING and OUT_OF_STOCK
+ * were broken server-side) and UNAVAILABLE (stock held in a non-retail warehouse, now folded
+ * into OUT_OF_STOCK). The backend still accepts the old names for one release.
+ */
 export const STOCK_STATUS = {
   IN_STOCK: "IN_STOCK",
   INCOMING: "INCOMING",
   OUT_OF_STOCK: "OUT_OF_STOCK",
-  REAL_OUT_OF_STOCK: "REAL_OUT_OF_STOCK",
-  REAL_INCOMING: "REAL_INCOMING",
-  UNAVAILABLE: "UNAVAILABLE",
 } as const;
 
 export type StockStatus = typeof STOCK_STATUS[keyof typeof STOCK_STATUS];
+
+/** The only place a status is turned into Vietnamese. */
+export const STOCK_LABELS: Record<StockStatus, string> = {
+  [STOCK_STATUS.IN_STOCK]: "Có hàng",
+  [STOCK_STATUS.INCOMING]: "Đang về",
+  [STOCK_STATUS.OUT_OF_STOCK]: "Chưa có sẵn",
+};
+
+/** Badge colours, keyed the same way so a new state cannot be added without one. */
+export const STOCK_BADGE_CLASSES: Record<StockStatus, string> = {
+  [STOCK_STATUS.IN_STOCK]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  [STOCK_STATUS.INCOMING]: "bg-blue-50 text-blue-700 border-blue-200",
+  [STOCK_STATUS.OUT_OF_STOCK]: "bg-gray-100 text-gray-500 border-gray-200",
+};
 
 export interface Bookmark {
   id: string;
@@ -68,7 +91,8 @@ export interface PaginateResponse<T> {
   meta: PaginateMeta;
 }
 
-export type StockStatusFilter = "all" | typeof STOCK_STATUS.IN_STOCK | typeof STOCK_STATUS.OUT_OF_STOCK | typeof STOCK_STATUS.REAL_OUT_OF_STOCK;
+/** `undefined` means "no stock filter" — never send a sentinel value to mean "all". */
+export type StockStatusFilter = StockStatus;
 
 export interface Warehouse {
   id: string;
@@ -110,7 +134,6 @@ export interface JewelryVariant {
   material: string;
   size: number;
   weight: string;
-  status: "HÀNG SẴN" | "HẾT HÀNG";
   quantity: number;
   originalPrice: number;
   salePrice: number;
@@ -135,7 +158,8 @@ export interface JewelryDesign {
   variants: JewelryVariant[];
 }
 
-export type DiamondStockStatus = typeof STOCK_STATUS.REAL_INCOMING | typeof STOCK_STATUS.IN_STOCK | typeof STOCK_STATUS.UNAVAILABLE;
+/** Diamonds and jewelry now share one vocabulary. Kept as an alias for call sites. */
+export type DiamondStockStatus = StockStatus;
 
 export interface DiamondFilter {
   salePriceFrom?: number;
@@ -195,7 +219,7 @@ export interface DiamondModel {
   id: string;
   title: string;
   type: "diamond";
-  stockStatus?: DiamondStockStatus;
+  stockStatus: StockStatus;
   warehouses: {
     name: string;
   }[];

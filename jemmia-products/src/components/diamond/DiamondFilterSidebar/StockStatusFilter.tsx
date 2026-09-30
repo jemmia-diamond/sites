@@ -1,16 +1,18 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { DiamondFilter, DiamondStockStatus } from "../../../types";
+import { DiamondFilter, DiamondStockStatus, STOCK_STATUS, STOCK_LABELS } from "../../../types";
 
 interface StockStatusFilterProps {
   filters: DiamondFilter;
   onStockStatusChange: (status: DiamondStockStatus) => void;
 }
 
+// "Chưa có sẵn" used to send UNAVAILABLE, which means "stock exists but only in a non-retail
+// warehouse" (37 stones) -- not "sold out" (6,100+). That is why a sold diamond matched no filter.
 const STOCK_OPTIONS: { label: string; value: DiamondStockStatus }[] = [
-  { label: "Có hàng", value: "IN_STOCK" },
-  { label: "Chưa có sẵn", value: "UNAVAILABLE" },
-  { label: "Đang về", value: "REAL_INCOMING" },
+  { label: STOCK_LABELS[STOCK_STATUS.IN_STOCK], value: STOCK_STATUS.IN_STOCK },
+  { label: STOCK_LABELS[STOCK_STATUS.INCOMING], value: STOCK_STATUS.INCOMING },
+  { label: STOCK_LABELS[STOCK_STATUS.OUT_OF_STOCK], value: STOCK_STATUS.OUT_OF_STOCK },
 ];
 
 export function StockStatusFilter({ filters, onStockStatusChange }: StockStatusFilterProps) {

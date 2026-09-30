@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { JewelryFilter, StockStatusFilter } from "../../../types";
+import { JewelryFilter, StockStatusFilter, STOCK_LABELS } from "../../../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -73,12 +73,6 @@ const RING_BAND_STYLES = [
   "WR - Twist",
   "WR - Wrap",
 ];
-
-const STOCK_LABELS: Record<string, string> = {
-  all: "Tất cả",
-  IN_STOCK: "Có hàng",
-  OUT_OF_STOCK: "Hết hàng",
-};
 
 const FINENESSES = ["Vàng 14K", "Vàng 18K"];
 

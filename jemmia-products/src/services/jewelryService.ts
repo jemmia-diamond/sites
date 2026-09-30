@@ -65,17 +65,11 @@ export const jewelryService = {
         params.salePriceTo = (filters.salePriceTo * priceMultiplier) / priceDivisor;
       }
 
+      // One vocabulary end to end. "No filter" is omission -- this used to send
+      // ["OUT_OF_STOCK"] to mean "all", which only worked because that value hit a
+      // disable-the-filter branch server-side.
       if (filters.stockStatus) {
-        if (filters.stockStatus === "all") {
-          params.stockStatus = ["OUT_OF_STOCK"];
-        } else if (filters.stockStatus === "IN_STOCK") {
-          params.stockStatus = ["IN_STOCK"];
-        } else if (filters.stockStatus === "OUT_OF_STOCK") {
-          // Map UI "OUT_OF_STOCK" to backend "REAL_OUT_OF_STOCK"
-          params.stockStatus = ["REAL_OUT_OF_STOCK"];
-        } else {
-          params.stockStatus = [filters.stockStatus];
-        }
+        params.stockStatus = [filters.stockStatus];
       }
 
       if (filters.storageSize1 && filters.storageSize1.length > 0) {
@@ -107,7 +101,7 @@ export const jewelryService = {
       }
     }
 
-    const response = await axios.get<PaginateResponse<ProductModel>>("site/products/jewelries", {
+    const response = await axios.get<PaginateResponse<ProductModel>>("/site/products/jewelries", {
       params,
       // Handle the multiple params with same key: ?warehouseIds=1&warehouseIds=2
       paramsSerializer: {

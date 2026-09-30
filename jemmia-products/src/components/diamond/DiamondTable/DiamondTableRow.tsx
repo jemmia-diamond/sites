@@ -8,7 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
 import { AlertCircle } from "lucide-react";
-import { VALID_WAREHOUSE_NAMES } from "@/src/config";
+import { STOCK_STATUS, STOCK_LABELS, STOCK_BADGE_CLASSES } from "@/src/types";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
@@ -42,13 +42,12 @@ export function DiamondTableRow({
     products: [],
   } as unknown as ProductModel;
 
-  const hasUnavailableWarehouse = (diamond.warehouses || []).some(
-    (wh) => wh.name && wh.name.trim() !== "" && !VALID_WAREHOUSE_NAMES.includes(wh.name.trim())
-  );
-  const isUnavailable = diamond.stockStatus === "UNAVAILABLE" || stockStatus === "UNAVAILABLE" || hasUnavailableWarehouse;
-  const isIncoming = !isUnavailable && diamond.quantity === 0 && diamond.warehouses.length === 0;
-  const hasAvailableQty = (diamond.attributes.qty_available ?? diamond.quantity) > 0;
-  const hasStock = !isUnavailable && !isIncoming && diamond.warehouses.length > 0 && hasAvailableQty;
+  // Status comes from the server. Deriving it here from quantity/warehouses is what made a sold
+  // stone read "Đang về" while matching no filter -- `hasStock` was unreachable whenever the
+  // warehouses array was empty, so no diamond could ever render as out of stock.
+  const status = diamond.stockStatus;
+  const isIncoming = status === STOCK_STATUS.INCOMING;
+  const hasStock = status === STOCK_STATUS.IN_STOCK;
 
   const actualImages = [
     ...(diamond.images?.map((img) => img.url) || []),
@@ -127,14 +126,10 @@ export function DiamondTableRow({
           <Badge
             className={cn(
               "rounded-full px-2 md:px-2 py-1 text-[8px] md:text-[10px] font-semibold tracking-widest border-none shadow-sm whitespace-nowrap",
-              isUnavailable
-                ? "bg-amber-50 text-amber-600"
-                : hasStock
-                  ? "bg-emerald-50 text-emerald-600"
-                  : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
+              STOCK_BADGE_CLASSES[status],
             )}
           >
-            {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
+            {STOCK_LABELS[status]}
           </Badge>
         </TableCell>
 
@@ -339,14 +334,10 @@ export function DiamondTableRow({
                 <Badge
                   className={cn(
                     "rounded-full px-2 py-1 text-[8px] font-black tracking-widest border-none shadow-sm whitespace-nowrap",
-                    isUnavailable
-                      ? "bg-amber-50 text-amber-600"
-                      : hasStock
-                        ? "bg-emerald-50 text-emerald-600"
-                        : (isIncoming ? "bg-blue-50 text-blue-600" : "bg-primary-50 text-primary-300")
+                    STOCK_BADGE_CLASSES[status],
                   )}
                 >
-                  {isUnavailable ? "Chưa có sẵn" : (isIncoming ? "Đang Về" : (hasStock ? "Có hàng" : "Hết hàng"))}
+                  {STOCK_LABELS[status]}
                 </Badge>
                 {/* GIA */}
                 {diamond.attributes.giaPdfUrl ? (

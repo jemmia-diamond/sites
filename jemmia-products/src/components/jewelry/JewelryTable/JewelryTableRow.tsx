@@ -12,6 +12,7 @@ import { formatPriceMillion, formatDateTime } from "./utils/formatters";
 import { Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { WAREHOUSE_ID_TO_NAMES } from "@/src/config";
+import { StockStatus, STOCK_STATUS, STOCK_LABELS, STOCK_BADGE_CLASSES } from "@/src/types";
 
 interface ReferencePriceTooltipProps {
   isExpanded: boolean;
@@ -164,7 +165,12 @@ export function JewelryTableRow({
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
-  const hasStock = totalStockCount > 0;
+  // Prefer the server's canonical status; fall back to the local sum only for shapes the
+  // backend does not yet stamp (bundles assembled client-side from sub-products).
+  const status: StockStatus =
+    product.stockStatus ??
+    (totalStockCount > 0 ? STOCK_STATUS.IN_STOCK : STOCK_STATUS.OUT_OF_STOCK);
+  const hasStock = status === STOCK_STATUS.IN_STOCK;
   const fourView = !isBundle && product.attributes?.["4view"];
   const subProductNam = isBundle
     ? product.products?.find((p) => p.attributes?.gender === "Nam") ||
@@ -382,12 +388,10 @@ export function JewelryTableRow({
           <Badge
             className={cn(
               "rounded-full px-2 md:px-3 py-1 text-[8px] md:text-[10px] font-black tracking-widest border-none shadow-sm",
-              hasStock
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-primary-50 text-primary-300",
+              STOCK_BADGE_CLASSES[status],
             )}
           >
-            {hasStock ? "Có hàng" : "Hết hàng"}
+            {STOCK_LABELS[status]}
           </Badge>
         </TableCell>
         <TableCell className="px-6 md:px-2 text-center">
@@ -508,12 +512,10 @@ export function JewelryTableRow({
               <Badge
                 className={cn(
                   "rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
-                  hasStock
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-primary-50 text-primary-300",
+                  STOCK_BADGE_CLASSES[status],
                 )}
               >
-                {hasStock ? "Có hàng" : "Hết hàng"}
+                {STOCK_LABELS[status]}
               </Badge>
               <Button
                 size="icon"

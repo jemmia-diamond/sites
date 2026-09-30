@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { DiamondModel, ProductModel } from "../types";
+import { DiamondModel, ProductModel, STOCK_LABELS, STOCK_BADGE_CLASSES } from "../types";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useFilterSidebarCollapse } from "@/hooks/useFilterSidebarCollapse";
@@ -771,6 +771,16 @@ function ComboTableRows({
           <span className="text-[10px] font-semibold text-secondary-900">
             {formatWarehouseName(variant?.stockAt)}
           </span>
+          {jewelry?.stockStatus && (
+            <Badge
+              className={cn(
+                "mt-1 rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
+                STOCK_BADGE_CLASSES[jewelry.stockStatus],
+              )}
+            >
+              {STOCK_LABELS[jewelry.stockStatus]}
+            </Badge>
+          )}
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center w-[110px] lg:w-[145px] xl:w-[180px]">
           <div className="flex justify-center">
@@ -839,6 +849,16 @@ function ComboTableRows({
           <span className="text-[10px] font-semibold text-secondary-900">
             {formatWarehouseName(diamond.warehouses?.[0]?.name)}
           </span>
+          {diamond.stockStatus && (
+            <Badge
+              className={cn(
+                "mt-1 rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
+                STOCK_BADGE_CLASSES[diamond.stockStatus],
+              )}
+            >
+              {STOCK_LABELS[diamond.stockStatus]}
+            </Badge>
+          )}
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center w-[110px] lg:w-[145px] xl:w-[180px]">
           <div className="flex justify-center">

@@ -103,7 +103,7 @@ export default function JewelryPage() {
       nextFilters.salePriceTo = undefined;
     } else {
       const getResetValue = (k: string): any => {
-        if (k === "stockStatus") return "all";
+        if (k === "stockStatus") return "IN_STOCK";
         if (
           [
             "warehouseIds",
