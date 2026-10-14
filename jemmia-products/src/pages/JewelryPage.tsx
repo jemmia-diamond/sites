@@ -149,6 +149,7 @@ export default function JewelryPage() {
 
   const {
     data,
+    dataUpdatedAt,
     isLoading,
     isError,
     isFetching,
@@ -494,6 +495,7 @@ export default function JewelryPage() {
             <JewelryTable
               jewelries={allJewelries}
               warehouseIds={debouncedFilters.warehouseIds}
+              dataUpdatedAt={dataUpdatedAt}
               stockStatus={debouncedFilters.stockStatus}
               lastElementRef={lastElementRef}
               isFetchingNextPage={isFetchingNextPage}

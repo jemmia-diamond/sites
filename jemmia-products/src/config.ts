@@ -10,7 +10,11 @@ export const WAREHOUSE_ID_TO_NAMES: Record<string, string[]> = {
   "1710693": ["[CT] Admin"],
 };
 
-export const VALID_WAREHOUSE_NAMES = Object.values(WAREHOUSE_ID_TO_NAMES).flat();
+// Deliberately retail-only. Production holds live stock in at least 12 further locations
+// (Hàng Mượn, Hàng Khách Đặt, Bảo Hành, Kiểm Định, Xưởng, Kho trung gian, ...) totalling ~474
+// units. They are NOT listed here: these keys feed DEFAULT_WAREHOUSE_IDS, so adding one makes
+// its stock count toward product listings. Names for those locations come from the server on
+// each serial (`stockLocations`), which is the only list that stays correct as warehouses change.
 
 export const WAREHOUSES_LIST = [
   { id: "1582708", name: "Hồ Chí Minh", ids: ["1592770", "1582708", "1110168"] },

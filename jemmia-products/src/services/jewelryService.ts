@@ -1,5 +1,6 @@
 import axios from "axios";
 import { JewelryFilter, PaginateResponse, ProductModel, ProductType } from "../types";
+import { DEFAULT_WAREHOUSE_IDS } from "../config";
 
 export const jewelryService = {
   getProductTypes: async (): Promise<ProductType[]> => {
@@ -40,8 +41,10 @@ export const jewelryService = {
         params.types = filters.types;
       }
 
-      // Warehouse logic
-      const defaultWarehouses = ["1592770", "1582708", "1110168", "1592778", "1593276"];
+      // Warehouse logic. The default is every warehouse the app knows about -- the hardcoded
+      // list this replaced was missing [HN] Admin and [CT] Admin, so an unfiltered search
+      // silently omitted their stock.
+      const defaultWarehouses = DEFAULT_WAREHOUSE_IDS;
       if (filters.warehouseIds && filters.warehouseIds.length > 0) {
         params.warehouseIds = filters.warehouseIds.flatMap(id => id.split(",")).filter(id => id && !isNaN(Number(id)));
       } else {
