@@ -25,13 +25,6 @@ interface JewelryFilterSidebarProps {
   isOpen?: boolean;
 }
 
-const ALL_WAREHOUSE_IDS = [
-  "1592770",
-  "1582708",
-  "1110168",
-  "1592778",
-  "1593276",
-];
 
 const STONE_SIZES = [
   "3.6",

@@ -11,7 +11,6 @@ import { CaretDown, ArrowSquareOut } from "@phosphor-icons/react";
 import { formatPriceMillion, formatDateTime } from "./utils/formatters";
 import { Info } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { WAREHOUSE_ID_TO_NAMES } from "@/src/config";
 import { StockStatus, STOCK_STATUS, STOCK_LABELS, STOCK_BADGE_CLASSES } from "@/src/types";
 
 interface ReferencePriceTooltipProps {
@@ -104,7 +103,6 @@ export function JewelryTableRow({
   product,
 }: JewelryTableRowProps) {
   const {
-    warehouseIds,
     stockStatus,
     expandedId,
     brokenImages,
@@ -142,21 +140,8 @@ export function JewelryTableRow({
       .join(" / ")
     : product.attributes?.designCode;
 
-  const stockBySKU = !isBundle ? getGroupedStock(product, warehouseIds) : {};
+  const stockBySKU = !isBundle ? groupBySku(product) : {};
 
-  const totalStockCount = isBundle
-    ? product.products!.reduce((acc, p) => {
-      const subProductStockBySKU = getGroupedStock(p, warehouseIds);
-      const subProductStockCount = Object.values(subProductStockBySKU).reduce(
-        (subAcc, curr) => subAcc + curr.totalHaravanQuantity,
-        0,
-      );
-      return acc + subProductStockCount;
-    }, 0)
-    : Object.values(stockBySKU).reduce(
-      (acc, curr) => acc + curr.totalHaravanQuantity,
-      0,
-    );
 
   const allVariants = (product.variants || []) as any[];
   const allPrices = allVariants
@@ -165,12 +150,9 @@ export function JewelryTableRow({
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
-  // Prefer the server's canonical status; fall back to the local sum only for shapes the
-  // backend does not yet stamp (bundles assembled client-side from sub-products).
-  const status: StockStatus =
-    product.stockStatus ??
-    (totalStockCount > 0 ? STOCK_STATUS.IN_STOCK : STOCK_STATUS.OUT_OF_STOCK);
-  const hasStock = status === STOCK_STATUS.IN_STOCK;
+  // The server stamps every product, wedding pairs included (salesaya productStockStatusSql /
+  // weddingPairStockStatusSql). Nothing here derives a status of its own.
+  const status: StockStatus = product.stockStatus ?? STOCK_STATUS.OUT_OF_STOCK;
   const fourView = !isBundle && product.attributes?.["4view"];
   const subProductNam = isBundle
     ? product.products?.find((p) => p.attributes?.gender === "Nam") ||
@@ -580,7 +562,7 @@ export function JewelryTableRow({
                           </div>
                         </div>
                         <ExpandedPanel
-                          stockBySKU={getGroupedStock(subProduct, warehouseIds)}
+                          stockBySKU={groupBySku(subProduct)}
                           isEarring={
                             subProduct.type
                               ?.toLowerCase()
@@ -624,111 +606,37 @@ export function JewelryTableRow({
   );
 }
 
-// Helper to group stock for sub-products
-function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
-  let variants = (product.variants || []) as any[];
-  const hasWarehouseFilter = warehouseIds && warehouseIds.length > 0;
-
-  if (hasWarehouseFilter) {
-    const selectedWarehouseNames = warehouseIds
-      .flatMap((id) => WAREHOUSE_ID_TO_NAMES[id] || [])
-      .filter(Boolean);
-    if (selectedWarehouseNames.length > 0) {
-      const normalizedSelectedNames = selectedWarehouseNames.map((name) =>
-        name.trim().toLowerCase(),
-      );
-      const selectedIds = new Set(warehouseIds.map(String));
-      variants = variants.filter((v) => {
-        // Where the stock actually is wins over where it was last counted. A piece counted at
-        // one store but physically held in a selected warehouse must not disappear from that
-        // warehouse's view -- matching on the counted name alone is what hid it before.
-        const locations = Array.isArray(v.stockLocations) ? v.stockLocations : [];
-        if (locations.some((l: any) => selectedIds.has(String(l.id)))) return true;
-
-        const countedAt = v.lastCountedAt ?? v.stockAt;
-        if (!countedAt) return false;
-        const normalizedCountedAt = String(countedAt).trim().toLowerCase();
-        return normalizedSelectedNames.some((selectedName) =>
-          normalizedCountedAt.includes(selectedName),
-        );
-      });
-    }
-  }
-
-  const stockBySKU: Record<
+/**
+ * Groups a product's serial rows by SKU for display. Every figure shown -- "Khả dụng", the
+ * "Xem Serials" count, row dimming -- is the server's (product.skuStock); nothing here computes
+ * stock. The server has also already scoped serials to the selected warehouses, and ignores the
+ * warehouse filter during search, so the rows are shown exactly as received.
+ *
+ * If the server sends no skuStock (a backend older than salesaya#155), the counts stay undefined
+ * and render as "—" rather than a misleading 0.
+ */
+function groupBySku(product: ProductModel) {
+  const groups: Record<
     string,
     {
       variants: any[];
-      totalQuantity: number;
-      totalHaravanQuantity: number;
+      inStockSerialCount?: number;
+      availableQty?: number;
       firstVariant: any;
     }
   > = {};
-
-  // Step 1: Group variants by SKU and sum internal quantities.
-  variants.forEach((v) => {
-    const hv = product.haravanVariants?.find(
-      (h) => String(h.variant_id) === String(v.id),
-    );
-    const vWithHv = { ...v, haravanVariant: hv };
+  for (const v of (product.variants || []) as any[]) {
     const sku = v.sku || "N/A";
-
-    if (!stockBySKU[sku]) {
-      stockBySKU[sku] = {
-        variants: [],
-        totalQuantity: 0,
-        totalHaravanQuantity: 0, // Will calculate in step 2
-        firstVariant: vWithHv,
-      };
-    }
-
-    stockBySKU[sku].variants.push(vWithHv);
-    stockBySKU[sku].totalQuantity += v.quantity || 0;
-  });
-
-  // Step 2: Calculate Haravan quantity for each SKU.
-  for (const sku in stockBySKU) {
-    if (hasWarehouseFilter) {
-      // Calculate the sum of physical internal stock (serials quantity)
-      const sumOfSerials = stockBySKU[sku].variants.reduce(
-        (acc, v) => acc + (v.quantity || 0),
-        0,
-      );
-
-      if (sumOfSerials > 0) {
-        // If sum of serials > 0, take sum of serials
-        stockBySKU[sku].totalHaravanQuantity = sumOfSerials;
-      } else {
-        // If sum of serials is 0, display the Haravan quantity
-        const uniqueVariantIds = new Set(
-          stockBySKU[sku].variants.map((v) => v.id),
-        );
-        uniqueVariantIds.forEach((variantId) => {
-          const hv = product.haravanVariants?.find(
-            (h) => String(h.variant_id) === String(variantId),
-          );
-          if (hv) {
-            stockBySKU[sku].totalHaravanQuantity += hv.qty_available || 0;
-          }
-        });
-      }
-    } else {
-      // If not filtering, sum from the main haravanVariants source, ensuring uniqueness.
-      const uniqueVariantIds = new Set(
-        stockBySKU[sku].variants.map((v) => v.id),
-      );
-      uniqueVariantIds.forEach((variantId) => {
-        const hv = product.haravanVariants?.find(
-          (h) => String(h.variant_id) === String(variantId),
-        );
-        if (hv) {
-          stockBySKU[sku].totalHaravanQuantity += hv.qty_available || 0;
-        }
-      });
+    groups[sku] ??= { variants: [], firstVariant: v };
+    groups[sku].variants.push(v);
+  }
+  for (const s of product.skuStock ?? []) {
+    if (groups[s.sku]) {
+      groups[s.sku].inStockSerialCount = s.inStockSerialCount;
+      groups[s.sku].availableQty = s.availableQty;
     }
   }
-
-  return stockBySKU;
+  return groups;
 }
 
 interface ExpandedPanelProps {
@@ -736,8 +644,8 @@ interface ExpandedPanelProps {
     string,
     {
       variants: any[];
-      totalQuantity: number;
-      totalHaravanQuantity: number;
+      inStockSerialCount?: number;
+      availableQty?: number;
       firstVariant: any;
     }
   >;
@@ -869,7 +777,7 @@ function ExpandedPanel({
           const variant = group.firstVariant;
           const hasSale =
             variant.basePrice > 0 && variant.basePrice !== variant.salePrice;
-          const isDimmed = group.totalHaravanQuantity === 0;
+          const isDimmed = group.availableQty === 0;
 
           return (
             <div
@@ -921,7 +829,7 @@ function ExpandedPanel({
 
                 <div className={cn("px-4 py-2 md:py-3.5 flex items-center gap-2", isDimmed && "opacity-50")}>
                   <Badge className="rounded-full bg-secondary-800 text-white text-[10px] md:text-[11px] font-black shadow-sm px-2 py-0.5">
-                    Khả dụng: {group.totalHaravanQuantity}
+                    Khả dụng: {group.availableQty ?? "—"}
                   </Badge>
                   <a
                     href={`https://jemmiavn.myharavan.com/admin/products/${product.id}/variants/${variant.id}`}
@@ -976,15 +884,15 @@ function ExpandedPanel({
                       onOpenSerialModal(
                         group.variants,
                         sku,
-                        group.totalQuantity,
-                        group.totalHaravanQuantity,
+                        group.inStockSerialCount,
+                        group.availableQty,
                       )
                     }
                   >
                     <span>Xem Serials</span>
-                    {group.totalQuantity > 0 && (
+                    {(group.inStockSerialCount ?? 0) > 0 && (
                       <span className="flex items-center justify-center h-4 w-4 rounded-full text-[8px] md:text-[9px] font-black transition-all duration-300 bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white">
-                        {group.totalQuantity}
+                        {group.inStockSerialCount}
                       </span>
                     )}
                   </Button>
@@ -1009,7 +917,7 @@ function ExpandedPanel({
                       </p>
                       <div className="flex items-center gap-1 mt-0.5">
                         <Badge className="rounded-full bg-secondary-800 text-white text-[9px] font-black shadow-sm px-1.5 py-0">
-                          Khả dụng: {group.totalHaravanQuantity}
+                          Khả dụng: {group.availableQty ?? "—"}
                         </Badge>
                       </div>
                     </div>
@@ -1085,15 +993,15 @@ function ExpandedPanel({
                           onOpenSerialModal(
                             group.variants,
                             sku,
-                            group.totalQuantity,
-                            group.totalHaravanQuantity,
+                            group.inStockSerialCount,
+                            group.availableQty,
                           )
                         }
                       >
                         <span>Xem Serials</span>
-                        {group.totalQuantity > 0 && (
+                        {(group.inStockSerialCount ?? 0) > 0 && (
                           <span className="flex items-center justify-center h-3.5 w-3.5 rounded-full text-[7px] font-black transition-all duration-300 bg-secondary-900/10 text-secondary-900 group-hover:bg-white/20 group-hover:text-white">
-                            {group.totalQuantity}
+                            {group.inStockSerialCount}
                           </span>
                         )}
                       </Button>

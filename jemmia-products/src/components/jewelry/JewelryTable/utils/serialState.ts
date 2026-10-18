@@ -32,6 +32,13 @@ export const SERIAL_STATE_LABELS: Record<SerialState, string> = {
   [SERIAL_STATE.SOLD]: "Đã bán",
 };
 
+/** Badge colours, keyed the same way so a new state cannot be added without one. */
+export const SERIAL_STATE_BADGE_CLASSES: Record<SerialState, string> = {
+  [SERIAL_STATE.IN_STOCK]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  [SERIAL_STATE.OFF_RETAIL]: "bg-amber-50 text-amber-700 border-amber-200",
+  [SERIAL_STATE.SOLD]: "bg-gray-100 text-gray-500 border-gray-200",
+};
+
 /** Tab order, also the precedence for picking which tab to open on. */
 export const TAB_ORDER: SerialState[] = [
   SERIAL_STATE.IN_STOCK,
@@ -65,8 +72,12 @@ export function getSerialState(v: any): SerialState {
  *
  * A non-empty result means the two sources disagree and the user must be shown both rather than
  * one of them posing as the truth. Empty means they agree, or there is nothing to compare.
+ *
+ * The server sends it as `locationMismatch` -- the same field the Salesaya extension renders, so
+ * both show the same note. The rule below is only for a backend that does not send it yet.
  */
 export function getStockMismatch(v: any): SerialStockLocation[] {
+  if (Array.isArray(v?.locationMismatch)) return v.locationMismatch;
   const locations: SerialStockLocation[] = Array.isArray(v?.stockLocations) ? v.stockLocations : [];
   if (locations.length === 0) return [];
 

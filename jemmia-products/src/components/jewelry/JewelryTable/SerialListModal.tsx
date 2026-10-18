@@ -20,8 +20,8 @@ import {
   getSerialState,
   getStockMismatch,
   type SerialState,
-  type SerialStockLocation,
 } from "./utils/serialState";
+import { StockMismatchNote } from "./StockMismatchNote";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
@@ -40,20 +40,6 @@ function formatGoldWeight(weightInChi: number | null | undefined): string {
   return lyPart > 0 ? `${chiPart}c${phanPart}${lyPart}` : `${chiPart}c${phanPart}`;
 }
 
-function StockMismatchNote({ locations }: { locations: SerialStockLocation[] }) {
-  if (locations.length === 0) return null;
-  return (
-    <span className="flex items-start gap-1 text-[9px] font-semibold text-amber-600 leading-tight mt-0.5">
-      <WarningCircle size={10} weight="fill" className="shrink-0 mt-[1px]" />
-      <span>
-        Tồn kho:{" "}
-        {locations
-          .map((l) => `${formatWarehouseName(l.name) || "Không rõ"} (${l.qty_available})`)
-          .join(", ")}
-      </span>
-    </span>
-  );
-}
 
 interface SerialListModalProps {
   variants: any[];
