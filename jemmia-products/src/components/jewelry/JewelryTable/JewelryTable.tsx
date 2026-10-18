@@ -31,6 +31,8 @@ import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 interface JewelryTableProps {
   jewelries: ProductModel[];
   warehouseIds?: string[];
+  /** When the product query last returned; surfaced in the serial modal header. */
+  dataUpdatedAt?: number;
   stockStatus?: string;
   lastElementRef?: (node: HTMLElement | null) => void;
   isFetchingNextPage?: boolean;
@@ -43,6 +45,7 @@ interface JewelryTableProps {
 export function JewelryTable({
   jewelries,
   warehouseIds,
+  dataUpdatedAt,
   stockStatus,
   lastElementRef,
   isFetchingNextPage,
@@ -126,6 +129,10 @@ export function JewelryTable({
 
   const handleOpenSerialModal = (variants: any[], sku: string, totalQuantity?: number, totalHaravanQuantity?: number) => {
     setSerialModal({ variants, sku, totalQuantity, totalHaravanQuantity });
+    // The serial list is read as live truth, so it must never be older than the click that
+    // opened it. The page query does not refetch on focus, so an open tab can otherwise serve
+    // hours-old stock state.
+    void queryClient.invalidateQueries({ queryKey: ["jewelry-designs"] });
   };
 
   const handleUploadSuccess = async (fromGallery?: boolean) => {
@@ -177,7 +184,7 @@ export function JewelryTable({
         sku={serialModal?.sku || ""}
         totalQuantity={serialModal?.totalQuantity}
         totalHaravanQuantity={serialModal?.totalHaravanQuantity}
-        stockStatus={stockStatus}
+        dataUpdatedAt={dataUpdatedAt}
         open={!!serialModal}
         onClose={() => setSerialModal(null)}
       />

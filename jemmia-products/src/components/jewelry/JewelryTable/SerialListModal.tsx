@@ -13,6 +13,15 @@ import { formatDateTime } from "./utils/formatters";
 import { cn, formatWarehouseName } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  SERIAL_STATE,
+  SERIAL_STATE_LABELS,
+  TAB_ORDER,
+  getSerialState,
+  getStockMismatch,
+  type SerialState,
+  type SerialStockLocation,
+} from "./utils/serialState";
 
 function formatGoldWeight(weightInChi: number | null | undefined): string {
   if (weightInChi === undefined || weightInChi === null || isNaN(weightInChi) || weightInChi <= 0) return "N/A";
@@ -31,12 +40,28 @@ function formatGoldWeight(weightInChi: number | null | undefined): string {
   return lyPart > 0 ? `${chiPart}c${phanPart}${lyPart}` : `${chiPart}c${phanPart}`;
 }
 
+function StockMismatchNote({ locations }: { locations: SerialStockLocation[] }) {
+  if (locations.length === 0) return null;
+  return (
+    <span className="flex items-start gap-1 text-[9px] font-semibold text-amber-600 leading-tight mt-0.5">
+      <WarningCircle size={10} weight="fill" className="shrink-0 mt-[1px]" />
+      <span>
+        Tồn kho:{" "}
+        {locations
+          .map((l) => `${formatWarehouseName(l.name) || "Không rõ"} (${l.qty_available})`)
+          .join(", ")}
+      </span>
+    </span>
+  );
+}
+
 interface SerialListModalProps {
   variants: any[];
   sku: string;
   totalQuantity?: number;
   totalHaravanQuantity?: number;
-  stockStatus?: string;
+  /** When the underlying product query last returned, so two people can see they differ. */
+  dataUpdatedAt?: number;
   open: boolean;
   onClose: () => void;
 }
@@ -143,20 +168,16 @@ function UnclearDataWarning({ unclearSerials, compact }: UnclearDataWarningProps
 function SerialListDesktopTable({
   activeSerials,
   showOrderCol,
-  isOutOfStockTab,
 }: {
   activeSerials: any[];
   showOrderCol: boolean;
-  isOutOfStockTab: boolean;
 }) {
-    console.log(activeSerials);
-
   return (
     <div className="hidden md:block">
       <div className="min-w-[800px]">
         <div className="flex items-center px-8 py-2.5 border-b border-primary-100 bg-primary-50/40 sticky top-0 z-10">
           <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider">Serial</span>
-          <span className="w-[120px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Vị trí kho</span>
+          <span className="w-[150px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Kiểm kho gần nhất</span>
           <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">TL vàng</span>
           <span className="w-[80px] shrink-0 text-[10px] font-bold text-primary-400 uppercase tracking-wider text-center">Viên chủ</span>
           <span className="flex-1 text-center text-[10px] font-bold text-primary-400 uppercase tracking-wider">Chính sách</span>
@@ -170,10 +191,7 @@ function SerialListDesktopTable({
             activeSerials.map((v, index) => (
               <div
                 key={`${v.id}-${index}`}
-                className={cn(
-                  "flex items-center px-8 py-3 hover:bg-primary-50/40 transition-all",
-                  (v.quantity || 0) === 0 && !isOutOfStockTab && "opacity-40 grayscale-[20%]"
-                )}
+                className="flex items-center px-8 py-3 hover:bg-primary-50/40 transition-all"
               >
                 <div className="w-[80px] shrink-0 flex flex-col justify-center items-start gap-1">
                   <span className="text-xs font-bold text-secondary-900 tracking-tight leading-none">
@@ -185,10 +203,11 @@ function SerialListDesktopTable({
                     </Badge>
                   )}
                 </div>
-                <div className="w-[120px] shrink-0 text-center">
+                <div className="w-[150px] shrink-0 flex flex-col items-center text-center">
                   <span className="text-xs text-secondary-900 font-medium">
-                    {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
+                    {formatWarehouseName(v.lastCountedAt ?? v.stockAt) || "Kho tổng"}
                   </span>
+                  <StockMismatchNote locations={getStockMismatch(v)} />
                 </div>
                 <div className="w-[80px] shrink-0 text-center flex flex-col justify-center items-center">
                   <span className="text-xs font-semibold text-secondary-800 leading-none block">
@@ -249,23 +268,17 @@ function SerialListDesktopTable({
 function SerialListMobileCards({
   activeSerials,
   showOrderCol,
-  isOutOfStockTab,
 }: {
   activeSerials: any[];
   showOrderCol: boolean;
-  isOutOfStockTab: boolean;
 }) {
-  console.log(activeSerials);
   return (
     <div className="space-y-2">
       {activeSerials.length > 0 ? (
         activeSerials.map((v, index) => (
           <div
             key={`${v.id}-${index}`}
-            className={cn(
-              "bg-white border border-primary-100 rounded-sm p-2 hover:bg-primary-50/40 transition-all shadow-sm",
-              (v.quantity || 0) === 0 && !isOutOfStockTab && "opacity-40 grayscale-[20%]"
-            )}
+            className="bg-white border border-primary-100 rounded-sm p-2 hover:bg-primary-50/40 transition-all shadow-sm"
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-1 flex-wrap">
@@ -278,8 +291,9 @@ function SerialListMobileCards({
                   </Badge>
                 )}
               </div>
-              <span className="text-[9px] text-secondary-900 font-bold tracking-wider shrink-0">
-                {v.stockAt ? formatWarehouseName(v.stockAt) : "Kho tổng"}
+              <span className="flex flex-col items-end text-[9px] text-secondary-900 font-bold tracking-wider shrink-0">
+                {formatWarehouseName(v.lastCountedAt ?? v.stockAt) || "Kho tổng"}
+                <StockMismatchNote locations={getStockMismatch(v)} />
               </span>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
@@ -361,70 +375,91 @@ function SerialListEmptyState({ large }: { large?: boolean }) {
   );
 }
 
+/**
+ * When this data was fetched. Two people comparing screens have to be able to tell they are on
+ * different snapshots — the whole original incident was one stale tab against one fresh one.
+ */
+function DataFreshnessNote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
+  if (!dataUpdatedAt) return null;
+  const at = new Date(dataUpdatedAt);
+  const hh = String(at.getHours()).padStart(2, "0");
+  const mm = String(at.getMinutes()).padStart(2, "0");
+  return (
+    <span className="text-[9px] font-semibold text-primary-300 tracking-wider whitespace-nowrap">
+      Dữ liệu lúc {hh}:{mm}
+    </span>
+  );
+}
+
+function SerialTabTrigger({
+  value,
+  count,
+  activeTab,
+  size,
+}: {
+  value: SerialState;
+  count: number;
+  activeTab: SerialState;
+  size: "mobile" | "desktop";
+}) {
+  return (
+    <TabsTrigger
+      value={value}
+      className={cn(
+        "font-bold cursor-pointer pb-2 relative transition-all duration-200 rounded-none",
+        size === "mobile" ? "flex-1 text-xs" : "text-xs md:text-sm px-1",
+        activeTab === value
+          ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
+          : "text-primary-300 hover:text-secondary-900"
+      )}
+    >
+      {SERIAL_STATE_LABELS[value]} ({count})
+    </TabsTrigger>
+  );
+}
+
 export function SerialListModal({
   variants,
-  sku: _sku,
-  totalQuantity,
-  totalHaravanQuantity,
-  stockStatus,
+  dataUpdatedAt,
   open,
   onClose,
 }: SerialListModalProps) {
   const isMobile = useIsMobile();
   const [cachedVariants, setCachedVariants] = useState<any[]>([]);
-  const [cachedSku, setCachedSku] = useState("");
-  const [cachedTotalQuantity, setCachedTotalQuantity] = useState<number | undefined>(undefined);
-  const [cachedTotalHaravanQuantity, setCachedTotalHaravanQuantity] = useState<number | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<"inStock" | "outOfStock">("inStock");
+  const [activeTab, setActiveTab] = useState<SerialState>(SERIAL_STATE.IN_STOCK);
 
+  // RFID scans older than this are not trusted. Orthogonal to location: such serials are
+  // surfaced through the "Dữ liệu không rõ" warning rather than being hidden from a tab.
   const threshold = new Date("2026-05-12T00:00:00+07:00").getTime();
 
   useEffect(() => {
-    if (open) {
-      const filtered = (variants || []).filter((v) => v.attributes?.serialNumber !== null);
-      setCachedVariants(filtered);
-      setCachedSku(_sku);
-      setCachedTotalQuantity(totalQuantity);
-      setCachedTotalHaravanQuantity(totalHaravanQuantity);
+    if (!open) return;
+    const filtered = (variants || []).filter((v) => v.attributes?.serialNumber !== null);
+    setCachedVariants(filtered);
 
-      const hasInStock = filtered.some((v) => {
-        if ((v.quantity || 0) <= 0) return false;
-        if (!v.lastRfidScanTime) return false;
-        return new Date(v.lastRfidScanTime).getTime() > threshold;
-      });
+    // Open on the first tab that has rows, so the modal never greets you with an empty list.
+    setActiveTab(
+      TAB_ORDER.find((state) => filtered.some((v) => getSerialState(v) === state)) ??
+        SERIAL_STATE.IN_STOCK
+    );
+  }, [open, variants]);
 
-      if (hasInStock) {
-        setActiveTab("inStock");
-      } else {
-        setActiveTab("outOfStock");
-      }
-    }
-  }, [open, variants, _sku, totalQuantity, totalHaravanQuantity, stockStatus]);
+  const serialsByState = {
+    [SERIAL_STATE.IN_STOCK]: cachedVariants.filter((v) => getSerialState(v) === SERIAL_STATE.IN_STOCK),
+    [SERIAL_STATE.OFF_RETAIL]: cachedVariants.filter((v) => getSerialState(v) === SERIAL_STATE.OFF_RETAIL),
+    [SERIAL_STATE.SOLD]: cachedVariants.filter((v) => getSerialState(v) === SERIAL_STATE.SOLD),
+  } satisfies Record<SerialState, any[]>;
 
-  const inStockSerials = cachedVariants
-    .filter((v) => (v.quantity || 0) > 0)
-    .filter((v) => {
-      if (!v.lastRfidScanTime) return false;
-      return new Date(v.lastRfidScanTime).getTime() > threshold;
-    })
-    .sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+  const displaySerials = serialsByState[activeTab];
+  const showOrderCol = activeTab === SERIAL_STATE.SOLD;
 
-  const outOfStockSerials = cachedVariants
-    .filter((v) => (v.quantity || 0) === 0);
-
-  const displaySerials = activeTab === "inStock" ? inStockSerials : outOfStockSerials;
-
+  // Unsold serials whose last scan is missing or predates the trusted window.
   const scannedBeforeOrNoScan = cachedVariants
-    .filter((v) => (v.quantity || 0) > 0)
+    .filter((v) => getSerialState(v) !== SERIAL_STATE.SOLD)
     .filter((v) => {
       if (!v.lastRfidScanTime) return true;
       return new Date(v.lastRfidScanTime).getTime() <= threshold;
     });
-
-  const hasDiff =
-    typeof cachedTotalQuantity === "number" &&
-    typeof cachedTotalHaravanQuantity === "number" &&
-    cachedTotalQuantity !== cachedTotalHaravanQuantity;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) onClose();
@@ -439,40 +474,30 @@ export function SerialListModal({
         contentClassName="px-0"
         title={
           <div className="flex flex-col gap-1.5 pb-2">
-            <span className="text-xs font-bold text-secondary-900 tracking-wider">DANH SÁCH SERIALS</span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-bold text-secondary-900 tracking-wider">DANH SÁCH SERIALS</span>
+              <DataFreshnessNote dataUpdatedAt={dataUpdatedAt} />
+            </div>
             <UnclearDataWarning unclearSerials={scannedBeforeOrNoScan} compact />
           </div>
         }
       >
         <div className="px-4 py-2 flex flex-col gap-4">
-          <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-full">
+          <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as SerialState)} className="w-full">
             <TabsList variant="line" className="w-full flex border-b border-primary-100 px-0 h-9">
-              <TabsTrigger
-                value="inStock"
-                className={cn(
-                  "flex-1 font-bold text-xs cursor-pointer pb-2 relative transition-all duration-200 rounded-none",
-                  activeTab === "inStock"
-                    ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
-                    : "text-primary-300 hover:text-secondary-900"
-                )}
-              >
-                Có hàng ({inStockSerials.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="outOfStock"
-                className={cn(
-                  "flex-1 font-bold text-xs cursor-pointer pb-2 relative transition-all duration-200 rounded-none",
-                  activeTab === "outOfStock"
-                    ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
-                    : "text-primary-300 hover:text-secondary-900"
-                )}
-              >
-                Đã bán ({outOfStockSerials.length})
-              </TabsTrigger>
+              {TAB_ORDER.map((state) => (
+                <SerialTabTrigger
+                  key={state}
+                  value={state}
+                  count={serialsByState[state].length}
+                  activeTab={activeTab}
+                  size="mobile"
+                />
+              ))}
             </TabsList>
           </Tabs>
           <div>
-            <SerialListMobileCards activeSerials={displaySerials} showOrderCol={activeTab === "outOfStock"} isOutOfStockTab={activeTab === "outOfStock"} />
+            <SerialListMobileCards activeSerials={displaySerials} showOrderCol={showOrderCol} />
           </div>
         </div>
       </BottomSheet>
@@ -484,9 +509,12 @@ export function SerialListModal({
       <DialogContent className="w-[95%] md:w-full md:max-w-[900px] gap-0 bg-white rounded-none border-none shadow-2xl p-0 overflow-hidden outline-none flex flex-col max-h-[90vh] md:max-h-[75vh]">
         <DialogHeader className="pt-5 md:pt-6 pb-0 bg-white sticky top-0 z-20 flex flex-col gap-4 flex-shrink-0">
           <div className="flex flex-row justify-between items-center w-full px-4 md:px-8">
-            <DialogTitle className="text-base md:text-lg font-bold tracking-wider text-secondary-900">
-              DANH SÁCH SERIALS
-            </DialogTitle>
+            <div className="flex items-baseline gap-3">
+              <DialogTitle className="text-base md:text-lg font-bold tracking-wider text-secondary-900">
+                DANH SÁCH SERIALS
+              </DialogTitle>
+              <DataFreshnessNote dataUpdatedAt={dataUpdatedAt} />
+            </div>
             <DialogClose className="cursor-pointer shrink-0 text-primary-400 hover:text-secondary-900 transition-colors">
               <X className="h-4 w-4 md:h-5 md:w-5" />
               <span className="sr-only">Close</span>
@@ -494,30 +522,17 @@ export function SerialListModal({
           </div>
 
           <div className="flex flex-row items-end justify-between border-b border-primary-100 w-full px-4 md:px-8 pb-0">
-            <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-fit">
+            <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as SerialState)} className="w-fit">
               <TabsList variant="line" className="flex justify-start px-0 gap-6 h-9">
-                <TabsTrigger
-                  value="inStock"
-                  className={cn(
-                    "font-bold text-xs md:text-sm cursor-pointer pb-2 relative transition-all duration-200 rounded-none px-1",
-                    activeTab === "inStock"
-                      ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
-                      : "text-primary-300 hover:text-secondary-900"
-                  )}
-                >
-                  Có hàng ({inStockSerials.length})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="outOfStock"
-                  className={cn(
-                    "font-bold text-xs md:text-sm cursor-pointer pb-2 relative transition-all duration-200 rounded-none px-1",
-                    activeTab === "outOfStock"
-                      ? "text-secondary-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary-900"
-                      : "text-primary-300 hover:text-secondary-900"
-                  )}
-                >
-                  Đã bán ({outOfStockSerials.length})
-                </TabsTrigger>
+                {TAB_ORDER.map((state) => (
+                  <SerialTabTrigger
+                    key={state}
+                    value={state}
+                    count={serialsByState[state].length}
+                    activeTab={activeTab}
+                    size="desktop"
+                  />
+                ))}
               </TabsList>
             </Tabs>
 
@@ -527,7 +542,7 @@ export function SerialListModal({
           </div>
         </DialogHeader>
         <div className="flex-1 overflow-auto bg-white pb-3">
-          <SerialListDesktopTable activeSerials={displaySerials} showOrderCol={activeTab === "outOfStock"} isOutOfStockTab={activeTab === "outOfStock"} />
+          <SerialListDesktopTable activeSerials={displaySerials} showOrderCol={showOrderCol} />
         </div>
       </DialogContent>
     </Dialog>

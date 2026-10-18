@@ -637,11 +637,19 @@ function getGroupedStock(product: ProductModel, warehouseIds?: string[]) {
       const normalizedSelectedNames = selectedWarehouseNames.map((name) =>
         name.trim().toLowerCase(),
       );
+      const selectedIds = new Set(warehouseIds.map(String));
       variants = variants.filter((v) => {
-        if (!v.stockAt) return false;
-        const normalizedStockAt = String(v.stockAt).trim().toLowerCase();
+        // Where the stock actually is wins over where it was last counted. A piece counted at
+        // one store but physically held in a selected warehouse must not disappear from that
+        // warehouse's view -- matching on the counted name alone is what hid it before.
+        const locations = Array.isArray(v.stockLocations) ? v.stockLocations : [];
+        if (locations.some((l: any) => selectedIds.has(String(l.id)))) return true;
+
+        const countedAt = v.lastCountedAt ?? v.stockAt;
+        if (!countedAt) return false;
+        const normalizedCountedAt = String(countedAt).trim().toLowerCase();
         return normalizedSelectedNames.some((selectedName) =>
-          normalizedStockAt.includes(selectedName),
+          normalizedCountedAt.includes(selectedName),
         );
       });
     }
