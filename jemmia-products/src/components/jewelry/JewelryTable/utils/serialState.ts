@@ -72,8 +72,12 @@ export function getSerialState(v: any): SerialState {
  *
  * A non-empty result means the two sources disagree and the user must be shown both rather than
  * one of them posing as the truth. Empty means they agree, or there is nothing to compare.
+ *
+ * The server sends it as `locationMismatch` -- the same field the Salesaya extension renders, so
+ * both show the same note. The rule below is only for a backend that does not send it yet.
  */
 export function getStockMismatch(v: any): SerialStockLocation[] {
+  if (Array.isArray(v?.locationMismatch)) return v.locationMismatch;
   const locations: SerialStockLocation[] = Array.isArray(v?.stockLocations) ? v.stockLocations : [];
   if (locations.length === 0) return [];
 
