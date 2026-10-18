@@ -46,6 +46,16 @@ export interface HaravanVariant {
   qty_comitted: number;
 }
 
+/** One SKU's availability, as the server reports it. */
+export interface SkuStock {
+  sku: string;
+  serialCount: number;
+  /** Serials in the "Có hàng" state — equals the serial modal's Có hàng tab. */
+  inStockSerialCount: number;
+  /** What the site shows as "Khả dụng". */
+  availableQty: number;
+}
+
 export interface ProductModel {
   id: string;
   title: string;
@@ -74,6 +84,8 @@ export interface ProductModel {
   variants?: ProductModel[];
   products?: ProductModel[];
   haravanVariants?: HaravanVariant[];
+  /** Per-SKU availability computed by the server (salesaya skuStockSummary); render it as is. */
+  skuStock?: SkuStock[];
 }
 
 export interface PaginateMeta {

@@ -1,14 +1,15 @@
+import { diamondLocationNames } from "../utils/diamondLocations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CaretDown, Image } from "@phosphor-icons/react";
 import { DiamondModel, ProductModel, DiamondStockStatus } from "../../../types";
-import { cn, formatWarehouseName } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { formatPriceVND, floorToDecimal } from "./utils/formatters";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CompactGallery } from "../../jewelry/JewelryTable/CompactGallery";
 import { ProductCodes } from "../../jewelry/JewelryTable/ProductCodes";
 import { AlertCircle } from "lucide-react";
-import { STOCK_STATUS, STOCK_LABELS, STOCK_BADGE_CLASSES } from "@/src/types";
+import { STOCK_LABELS, STOCK_BADGE_CLASSES } from "@/src/types";
 
 interface DiamondTableRowProps {
   diamond: DiamondModel;
@@ -46,8 +47,7 @@ export function DiamondTableRow({
   // stone read "Đang về" while matching no filter -- `hasStock` was unreachable whenever the
   // warehouses array was empty, so no diamond could ever render as out of stock.
   const status = diamond.stockStatus;
-  const isIncoming = status === STOCK_STATUS.INCOMING;
-  const hasStock = status === STOCK_STATUS.IN_STOCK;
+  const locations = diamondLocationNames(diamond);
 
   const actualImages = [
     ...(diamond.images?.map((img) => img.url) || []),
@@ -135,12 +135,12 @@ export function DiamondTableRow({
 
         <TableCell className="px-1 md:px-1 py-2 text-center">
           <div className="flex flex-wrap justify-center gap-1">
-            {isIncoming || diamond.warehouses.length === 0 ? (
+            {locations.length === 0 ? (
               <span className="text-[8px] md:text-[9px] font-semibold text-primary-300 italic">N/A</span>
             ) : (
-              diamond.warehouses.map((wh, idx) => (
+              locations.map((name, idx) => (
                 <span key={idx} className="text-secondary-900 text-[8px] md:text-[10px] font-black tracking-tight whitespace-nowrap">
-                  {formatWarehouseName(wh.name)}
+                  {name}
                 </span>
               ))
             )}
@@ -246,12 +246,12 @@ export function DiamondTableRow({
                     Không bán lẻ
                   </Badge>
                 )}
-                {diamond.warehouses.length > 0 && !isIncoming && diamond.warehouses.map((wh, idx) => (
+                {locations.map((name, idx) => (
                   <span key={idx} className={cn(
                     "text-[10px] px-0.5 font-semibold tracking-tight whitespace-nowrap",
                     isExpanded ? "text-white bg-secondary-700" : "bg-primary-50 text-secondary-900",
                   )}>
-                    {formatWarehouseName(wh.name)}
+                    {name}
                   </span>
                 ))}
               </div>
@@ -265,7 +265,7 @@ export function DiamondTableRow({
                   {diamond.attributes.edgeSize1.toFixed(1)}x{diamond.attributes.edgeSize2.toFixed(1)} · {diamond.attributes.carat}ct · {diamond.attributes.color} · {diamond.attributes.clarity} · {diamond.attributes.shape}
                 </span>
 
-                {(isIncoming || diamond.warehouses.length === 0) && (
+                {locations.length === 0 && (
                   <span className={cn(
                     "text-xs font-semibold italic",
                     isExpanded ? "text-white/60" : "text-primary-300"

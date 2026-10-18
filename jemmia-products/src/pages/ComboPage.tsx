@@ -15,6 +15,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { DiamondModel, ProductModel, STOCK_LABELS, STOCK_BADGE_CLASSES } from "../types";
+import {
+  SERIAL_STATE_BADGE_CLASSES,
+  SERIAL_STATE_LABELS,
+  getSerialState,
+  getStockMismatch,
+} from "../components/jewelry/JewelryTable/utils/serialState";
+import { StockMismatchNote } from "../components/jewelry/JewelryTable/StockMismatchNote";
+import { diamondLocationNames } from "../components/diamond/utils/diamondLocations";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useFilterSidebarCollapse } from "@/hooks/useFilterSidebarCollapse";
@@ -769,18 +777,22 @@ function ComboTableRows({
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words min-w-32">
           <span className="text-[10px] font-semibold text-secondary-900">
-            {formatWarehouseName(variant?.stockAt)}
+            {formatWarehouseName(variant?.lastCountedAt ?? variant?.stockAt)}
           </span>
-          {jewelry?.stockStatus && (
-            <Badge
-              className={cn(
-                "mt-1 rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
-                STOCK_BADGE_CLASSES[jewelry.stockStatus],
-              )}
-            >
-              {STOCK_LABELS[jewelry.stockStatus]}
-            </Badge>
-          )}
+          <StockMismatchNote locations={getStockMismatch(variant)} />
+          {(() => {
+            const serialState = getSerialState(variant);
+            return (
+              <Badge
+                className={cn(
+                  "mt-1 rounded-full px-1.5 py-0 text-[8px] font-bold tracking-widest border-none shadow-sm",
+                  SERIAL_STATE_BADGE_CLASSES[serialState],
+                )}
+              >
+                {SERIAL_STATE_LABELS[serialState]}
+              </Badge>
+            );
+          })()}
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center w-[110px] lg:w-[145px] xl:w-[180px]">
           <div className="flex justify-center">
@@ -847,7 +859,7 @@ function ComboTableRows({
         </TableCell>
         <TableCell className="px-2 xl:px-4 py-2 text-center whitespace-normal break-words">
           <span className="text-[10px] font-semibold text-secondary-900">
-            {formatWarehouseName(diamond.warehouses?.[0]?.name)}
+            {diamondLocationNames(diamond).join(", ") || "N/A"}
           </span>
           {diamond.stockStatus && (
             <Badge
@@ -1097,12 +1109,16 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                         )}
                       </span>
                     </div>
-                    {product.variant?.stockAt && (
+                    {(product.variant?.lastCountedAt ?? product.variant?.stockAt) && (
                       <div className="text-primary-400 col-span-2">
                         Kho:{" "}
                         <span className="text-primary-700 font-semibold">
-                          {formatWarehouseName(product.variant.stockAt)}
+                          {formatWarehouseName(product.variant.lastCountedAt ?? product.variant.stockAt)}
+                        </span>{" "}
+                        <span className="font-semibold text-secondary-900">
+                          · {SERIAL_STATE_LABELS[getSerialState(product.variant)]}
                         </span>
+                        <StockMismatchNote locations={getStockMismatch(product.variant)} />
                       </div>
                     )}
                   </>
@@ -1125,16 +1141,15 @@ function ComboTableRow({ combo }: { combo: any; key?: string | number }) {
                         {product.product.attributes.fluorescence}
                       </span>
                     </div>
-                    {product.product.warehouses?.[0]?.name && (
-                      <div className="text-primary-400 col-span-2">
-                        Kho:{" "}
-                        <span className="text-primary-700 font-semibold">
-                          {formatWarehouseName(
-                            product.product.warehouses[0].name,
-                          )}
-                        </span>
-                      </div>
-                    )}
+                    <div className="text-primary-400 col-span-2">
+                      Kho:{" "}
+                      <span className="text-primary-700 font-semibold">
+                        {diamondLocationNames(product.product).join(", ") || "N/A"}
+                      </span>{" "}
+                      <span className="font-semibold text-secondary-900">
+                        · {STOCK_LABELS[product.product.stockStatus]}
+                      </span>
+                    </div>
                   </>
                 )}
               </div>
@@ -1403,7 +1418,7 @@ function ComboDetailsSheetContent({
           />
           <DetailRow
             label="Kho"
-            value={formatWarehouseName(variant?.stockAt)}
+            value={formatWarehouseName(variant?.lastCountedAt ?? variant?.stockAt)}
           />
           {isBundle ? (
             <>
@@ -1481,7 +1496,7 @@ function ComboDetailsSheetContent({
           <DetailRow label="Kích thước" value={diamondSize} />
           <DetailRow
             label="Kho"
-            value={formatWarehouseName(diamond.warehouses?.[0]?.name)}
+            value={diamondLocationNames(diamond).join(", ") || "N/A"}
           />
         </div>
       </div>
