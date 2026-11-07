@@ -14,6 +14,9 @@ both must say the same thing about the same piece.
   - Product badge: `stockStatus`.
   - Per-SKU "Khả dụng" and the serial counts: `skuStock` (after #94).
   - Each serial: `serialState`, `lastCountedAt` and `locationMismatch`.
+  - Prices: `salePrice`, `discountType` and `discountValue`, as the server sends them. Promotion
+    rules live in `salesaya/backend-v2/src/product/pricing/`. Never apply a discount in the
+    browser.
 - Statuses and their Vietnamese labels are defined once:
   - `src/types.ts` (`STOCK_STATUS`, `STOCK_LABELS`): products and diamonds.
   - `src/components/jewelry/JewelryTable/utils/serialState.ts`: serials.
@@ -23,7 +26,8 @@ both must say the same thing about the same piece.
   during search. Don't filter serials again on the client.
 - If a number looks wrong, the fix is almost never here. Trace it first through
   `salesaya/backend-v2/src/product/stock/` (read its `CLAUDE.md`), then `data-platform`
-  (dbt marts, Haravan ingestion), then `fn` (cron jobs).
+  (dbt marts, Haravan ingestion), then the scheduled sync jobs (RFID count sheets and order
+  references, every 3h).
 
 ## Domain facts that look like bugs but aren't
 
